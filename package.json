@@ -34,6 +34,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.1",
     "@openzeppelin/contracts-upgradeable": "^4.8.1",
+    "@p12/contracts-lib": "^0.0.5",
     "hardhat-deploy": "^0.11.22"
   }
 }

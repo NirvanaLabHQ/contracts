@@ -8,6 +8,7 @@ specifiers:
   '@nomiclabs/hardhat-waffle': ^2.0.3
   '@openzeppelin/contracts': ^4.8.1
   '@openzeppelin/contracts-upgradeable': ^4.8.1
+  '@p12/contracts-lib': ^0.0.5
   '@typechain/ethers-v5': ^10.0.0
   '@typechain/hardhat': ^6.0.0
   '@types/chai': ^4.3.0
@@ -26,6 +27,7 @@ specifiers:
 dependencies:
   '@openzeppelin/contracts': 4.8.1
   '@openzeppelin/contracts-upgradeable': 4.8.1
+  '@p12/contracts-lib': 0.0.5
   hardhat-deploy: 0.11.22
 
 devDependencies:
@@ -591,6 +593,13 @@ packages:
 
   /@openzeppelin/contracts/4.8.1:
     resolution: {integrity: sha512-xQ6eUZl+RDyb/FiZe1h+U7qr/f4p/SrTSQcTPH2bjur3C5DbuW/zFgCU/b1P/xcIaEqJep+9ju4xDRi3rmChdQ==}
+    dev: false
+
+  /@p12/contracts-lib/0.0.5:
+    resolution: {integrity: sha512-io8F8cEDwnfxLER95QgRKqbPzldSHjUbsl50O7EqCxJmCe4uu2hTwYh1QuD/u1swxQGMalhU0NbgwhpDLIRi1g==}
+    dependencies:
+      '@openzeppelin/contracts': 4.8.1
+      '@openzeppelin/contracts-upgradeable': 4.8.1
     dev: false
 
   /@resolver-engine/core/0.3.3:
