@@ -21,6 +21,21 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: pnpm/action-setup@v2.2.4
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
@@ -36,29 +51,3 @@ jobs:
         run: |
           forge test -vvv
         id: forge-test
-
-  hardhat:
-    strategy:
-      fail-fast: true
-
-    name: Hardhat project
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Setup Node 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16.x'
-          cache: 'npm'
-
-      - name: Install Node dependencies
-        run: |
-          npm ci
-        
-      - name: Run Hardhat tests
-        run: |
-          npm run test
-        id: hardhat-test
