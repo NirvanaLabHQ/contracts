@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 
-import "src/RebornToken.sol";
+import "src/RBT.sol";
 
 contract TokenTest is Test {
     RBT token;
