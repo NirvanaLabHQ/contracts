@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 
 import fs from "fs";
 import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-deploy";
@@ -96,6 +97,14 @@ const config: HardhatUserConfig = {
         return line;
       },
     }),
+  },
+  etherscan: {
+    // Your API key for Etherscan
+    // Obtain one at https://etherscan.io/
+    apiKey: {
+      bscTestnet: process.env.BNB_SCAN_API_KEY!,
+      bsc: process.env.BNB_SCAN_API_KEY!,
+    },
   },
   external: {
     contracts: [
