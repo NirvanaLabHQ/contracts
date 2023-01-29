@@ -3,25 +3,52 @@ pragma solidity 0.8.17;
 
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 
-contract RebornPortal is IRebornPortal {
+contract RebornPortal is
+    IRebornPortal,
+    SafeOwnableUpgradeable,
+    UUPSUpgradeable
+{
     using SafeERC20 for IRebornToken;
     error InsufficientAmount();
 
     /** you need buy a soup before reborn */
-    uint256 soupPrice = 0.1 * 1 ether;
+    uint256 public soupPrice = 0.1 * 1 ether;
 
     /**
      * @dev talent and property price in compact mode
      * @dev talant price first 8 bytes then property 8 bytes
      * @dev  4 2 0 for talent   6 4 2 1 0 for property
      */
-    uint256 _price = 0x00000000000004200000000000064210;
+    uint256 private _price = 0x00000000000004200000000000064210;
 
-    IRebornToken rebornToken;
+    IRebornToken public rebornToken;
+
+    function initialize(
+        IRebornToken rebornToken_,
+        uint256 soupPrice_,
+        uint256 price_,
+        address owner_
+    ) public initializer {
+        rebornToken = rebornToken_;
+        soupPrice = soupPrice_;
+        _price = price_;
+        __Ownable_init(owner_);
+    }
+
+    // solhint-disable-next-line no-empty-blocks
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        override
+        onlyOwner
+    {}
 
     function incarnate(Innate memory innate) external payable override {
         _incarnate(innate);
@@ -40,11 +67,9 @@ contract RebornPortal is IRebornPortal {
     }
 
     /**
-     * @dev engrave the result on chain and reward 
+     * @dev engrave the result on chain and reward
      */
-    function engrave() external override {
-        
-    }
+    function engrave() external override {}
 
     /**
      * @dev run erc20 permit to approve

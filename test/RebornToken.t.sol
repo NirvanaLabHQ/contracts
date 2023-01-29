@@ -3,18 +3,32 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
+import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 
 import "src/RebornToken.sol";
 
 contract TokenTest is Test {
     RBT token;
+    DeployProxy internal _deployProxy;
     address owner = address(2);
     address user = address(20);
 
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     function setUp() public {
-        token = new RBT("REBORN", "RBT", 10**10 * 1 ether, owner);
+        /// @dev deploy deployProxy tool
+        _deployProxy = new DeployProxy();
+        RBT tokenImpl = new RBT();
+        bytes memory initData = abi.encodeWithSelector(
+            RBT.initialize.selector,
+            "REBORN",
+            "RBT",
+            10**10 * 1 ether,
+            owner
+        );
+        token = RBT(
+            _deployProxy.deployErc1967Proxy(address(tokenImpl), initData)
+        );
     }
 
     /** owner can mint token if it's not enough */

@@ -1,21 +1,34 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.17;
 
-import {ERC20Capped, ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
-import {SafeOwnable} from "@p12/contracts-lib/contracts/access/SafeOwnable.sol";
-import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
+import {ERC20CappedUpgradeable, ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
+import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {ERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
 
-contract RBT is ERC20Permit, ERC20Capped, SafeOwnable {
-    constructor(
+contract RBT is
+    ERC20PermitUpgradeable,
+    ERC20CappedUpgradeable,
+    SafeOwnableUpgradeable,
+    UUPSUpgradeable
+{
+    function initialize(
         string memory name_,
         string memory symbol_,
         uint256 cap_,
         address owner_
-    )
-        ERC20(name_, symbol_)
-        SafeOwnable(owner_)
-        ERC20Capped(cap_)
-        ERC20Permit(name_)
+    ) public initializer {
+        __ERC20_init_unchained(name_, symbol_);
+        __ERC20Capped_init(cap_);
+        __ERC20Permit_init(name_);
+        __Ownable_init(owner_);
+    }
+
+    // solhint-disable-next-line no-empty-blocks
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        override
+        onlyOwner
     {}
 
     /**
@@ -31,12 +44,12 @@ contract RBT is ERC20Permit, ERC20Capped, SafeOwnable {
     function _mint(address account, uint256 amount)
         internal
         virtual
-        override(ERC20Capped, ERC20)
+        override(ERC20CappedUpgradeable, ERC20Upgradeable)
     {
         require(
-            ERC20.totalSupply() + amount <= cap(),
+            ERC20Upgradeable.totalSupply() + amount <= cap(),
             "ERC20Capped: cap exceeded"
         );
-        ERC20._mint(account, amount);
+        ERC20Upgradeable._mint(account, amount);
     }
 }
