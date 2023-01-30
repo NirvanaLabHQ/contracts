@@ -6,11 +6,14 @@ import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOw
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
 
+import {IRebornToken} from "src/interfaces/IRebornToken.sol";
+
 contract RBT is
     ERC20PermitUpgradeable,
     ERC20CappedUpgradeable,
     SafeOwnableUpgradeable,
-    UUPSUpgradeable
+    UUPSUpgradeable,
+    IRebornToken
 {
     function initialize(
         string memory name_,
