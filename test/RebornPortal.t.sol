@@ -112,8 +112,8 @@ contract TokenTest is Test, IRebornDefination {
         bytes memory callData = abi.encodeWithSignature(
             "incarnate((uint8,uint8),uint256,uint256,bytes32,bytes32,uint8)",
             Innate(
-                IRebornDefination.TALANT.Degen,
-                IRebornDefination.PROPERTIES.BASIC
+                IRebornDefination.TALANT.Genius,
+                IRebornDefination.PROPERTIES.S
             ),
             MAX_INT,
             deadline,

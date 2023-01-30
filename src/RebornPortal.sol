@@ -3,11 +3,10 @@ pragma solidity 0.8.17;
 
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
-
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 
@@ -16,7 +15,7 @@ contract RebornPortal is
     SafeOwnableUpgradeable,
     UUPSUpgradeable
 {
-    using SafeERC20 for IRebornToken;
+    using SafeERC20Upgradeable for IRebornToken;
     error InsufficientAmount();
 
     /** you need buy a soup before reborn */
@@ -70,6 +69,22 @@ contract RebornPortal is
      * @dev engrave the result on chain and reward
      */
     function engrave() external override {}
+
+    /**
+     * @dev set soup price
+     */
+    function setSoupPrice(uint256 price) external override onlyOwner {
+        soupPrice = price;
+        emit NewSoupPrice(price);
+    }
+
+    /**
+     * @dev set other price
+     */
+    function setPrice(uint256 price) external override onlyOwner {
+        _price = price;
+        emit NewPrice(price);
+    }
 
     /**
      * @dev run erc20 permit to approve

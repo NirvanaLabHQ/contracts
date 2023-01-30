@@ -22,6 +22,10 @@ interface IRebornDefination {
     }
 
     event Incarnate(TALANT indexed talent, PROPERTIES indexed properties);
+
+    event NewSoupPrice(uint256 price);
+
+    event NewPrice(uint256 price);
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -40,4 +44,10 @@ interface IRebornPortal is IRebornDefination {
 
     /** save data on chain and get reward */
     function engrave() external;
+
+    /** set soup price */
+    function setSoupPrice(uint256 price) external;
+
+    /** set others price */
+    function setPrice(uint256 price) external;
 }
