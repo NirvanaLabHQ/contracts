@@ -32,6 +32,8 @@ interface IRebornDefination {
     event NewSoupPrice(uint256 price);
 
     event NewPricePoint(uint256 price);
+
+    error InsufficientAmount();
 }
 
 interface IRebornPortal is IRebornDefination {
