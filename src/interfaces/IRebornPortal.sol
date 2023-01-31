@@ -21,11 +21,16 @@ interface IRebornDefination {
         PROPERTIES properties;
     }
 
-    event Incarnate(TALANT indexed talent, PROPERTIES indexed properties);
+    event Incarnate(
+        uint256 indexed talentPoint,
+        uint256 indexed PropertyPoint,
+        TALANT talent,
+        PROPERTIES properties
+    );
 
     event NewSoupPrice(uint256 price);
 
-    event NewPrice(uint256 price);
+    event NewPricePoint(uint256 price);
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -48,6 +53,6 @@ interface IRebornPortal is IRebornDefination {
     /** set soup price */
     function setSoupPrice(uint256 price) external;
 
-    /** set others price */
-    function setPrice(uint256 price) external;
+    /** set price and point */
+    function setPriceAndPoint(uint256 price) external;
 }

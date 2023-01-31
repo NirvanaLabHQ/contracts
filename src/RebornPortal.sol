@@ -23,22 +23,25 @@ contract RebornPortal is
 
     /**
      * @dev talent and property price in compact mode
-     * @dev talant price first 8 bytes then property 8 bytes
-     * @dev  4 2 0 for talent   6 4 2 1 0 for property
+     * @dev |   bytes8  |   bytes8  |   bytes8    |   bytes8    |
+     * @dev |talentPrice|talentPoint|PropertyPrice|PropertyPoint|
+     * @dev  4 2 0 for talent price   6  4  2  1  0  for property price
+     * @dev  5 4 3 for talent point   35 30 25 20 15 for property point
      */
-    uint256 private _price = 0x00000000000004200000000000064210;
+    uint256 private _priceAndPoint =
+        0x00000000004020000000000000504030000000604020100000000231e19140f;
 
     IRebornToken public rebornToken;
 
     function initialize(
         IRebornToken rebornToken_,
         uint256 soupPrice_,
-        uint256 price_,
+        uint256 priceAndPoint_,
         address owner_
     ) public initializer {
         rebornToken = rebornToken_;
         soupPrice = soupPrice_;
-        _price = price_;
+        _priceAndPoint = priceAndPoint_;
         __Ownable_init(owner_);
     }
 
@@ -81,9 +84,9 @@ contract RebornPortal is
     /**
      * @dev set other price
      */
-    function setPrice(uint256 price) external override onlyOwner {
-        _price = price;
-        emit NewPrice(price);
+    function setPriceAndPoint(uint256 pricePoint) external override onlyOwner {
+        _priceAndPoint = pricePoint;
+        emit NewPricePoint(_priceAndPoint);
     }
 
     /**
@@ -119,28 +122,58 @@ contract RebornPortal is
 
         // reborn token needed
         uint256 rbtAmount = talentPrice(innate.talent) +
-            propertiesPrice(innate.properties);
+            propertyPrice(innate.properties);
 
         rebornToken.transferFrom(msg.sender, address(this), rbtAmount);
 
-        emit Incarnate(innate.talent, innate.properties);
+        emit Incarnate(
+            talentPoint(innate.talent),
+            propertyPoint(innate.properties),
+            innate.talent,
+            innate.properties
+        );
     }
 
     /**
      * @dev calculate talent price in $REBORN for each talent
      */
     function talentPrice(TALANT talent) public view returns (uint256) {
-        return (((_price >> 64) >> (uint256(talent) * 4)) & 0xf) * 1 ether;
+        return
+            (((_priceAndPoint >> 192) >> (uint8(talent) * 8)) & 0xff) * 1 ether;
+    }
+
+    /**
+     * @dev calculate talent point for each talent
+     */
+    function talentPoint(TALANT talent) public view returns (uint256) {
+        return ((_priceAndPoint >> 128) >> (uint8(talent) * 8)) & 0xff;
     }
 
     /**
      * @dev calculate properties price in $REBORN for each properties
      */
-    function propertiesPrice(PROPERTIES properties)
+    function propertyPrice(PROPERTIES properties)
         public
         view
         returns (uint256)
     {
-        return ((_price >> (uint256(properties) * 4)) & 0xf) * 1 ether;
+        return
+            (((_priceAndPoint >> 64) >> (uint8(properties) * 8)) & 0xff) *
+            1 ether;
     }
+
+    /**
+     * @dev calculate properties point for each property
+     */
+    function propertyPoint(PROPERTIES properties)
+        public
+        view
+        returns (uint256)
+    {
+        return (_priceAndPoint >> (uint8(properties) * 8)) & 0xff;
+    }
+
+    /**
+     * @dev calculate properties born in $REBORN for each properties
+     */
 }

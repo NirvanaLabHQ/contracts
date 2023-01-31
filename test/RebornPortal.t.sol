@@ -32,11 +32,12 @@ contract TokenTest is Test, IRebornDefination {
         _deployProxy = new DeployProxy();
         RebornPortal portalImpl = new RebornPortal();
         rbt = deployRBT();
+        mintRBT(rbt, owner, user, 100 ether);
         bytes memory initData = abi.encodeWithSelector(
             RebornPortal.initialize.selector,
             address(rbt),
             0.1 * 1 ether,
-            0x00000000000004200000000000064210,
+            0x00000000004020000000000000504030000000604020100000000231e19140f,
             owner
         );
         portal = RebornPortal(
@@ -58,18 +59,42 @@ contract TokenTest is Test, IRebornDefination {
         );
     }
 
+    function mintRBT(
+        RBT rbt,
+        address owner,
+        address account,
+        uint256 amount
+    ) public {
+        vm.prank(owner);
+        rbt.mint(account, amount);
+    }
+
     function testTalantPrice() public {
         assertEq(portal.talentPrice(TALANT.Degen), 0);
         assertEq(portal.talentPrice(TALANT.Gifted), 2 ether);
         assertEq(portal.talentPrice(TALANT.Genius), 4 ether);
     }
 
+    function testTalantPoint() public {
+        assertEq(portal.talentPoint(TALANT.Degen), 3);
+        assertEq(portal.talentPoint(TALANT.Gifted), 4);
+        assertEq(portal.talentPoint(TALANT.Genius), 5);
+    }
+
     function testPropertiesPrice() public {
-        assertEq(portal.propertiesPrice(PROPERTIES.BASIC), 0);
-        assertEq(portal.propertiesPrice(PROPERTIES.C), 1 ether);
-        assertEq(portal.propertiesPrice(PROPERTIES.B), 2 ether);
-        assertEq(portal.propertiesPrice(PROPERTIES.A), 4 ether);
-        assertEq(portal.propertiesPrice(PROPERTIES.S), 6 ether);
+        assertEq(portal.propertyPrice(PROPERTIES.BASIC), 0);
+        assertEq(portal.propertyPrice(PROPERTIES.C), 1 ether);
+        assertEq(portal.propertyPrice(PROPERTIES.B), 2 ether);
+        assertEq(portal.propertyPrice(PROPERTIES.A), 4 ether);
+        assertEq(portal.propertyPrice(PROPERTIES.S), 6 ether);
+    }
+
+    function testPropertiesPoint() public {
+        assertEq(portal.propertyPoint(PROPERTIES.BASIC), 15);
+        assertEq(portal.propertyPoint(PROPERTIES.C), 20);
+        assertEq(portal.propertyPoint(PROPERTIES.B), 25);
+        assertEq(portal.propertyPoint(PROPERTIES.A), 30);
+        assertEq(portal.propertyPoint(PROPERTIES.S), 35);
     }
 
     /**
@@ -106,6 +131,14 @@ contract TokenTest is Test, IRebornDefination {
 
         // sign
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(10, hash);
+
+        vm.expectEmit(true, true, true, true);
+        emit Incarnate(
+            5,
+            35,
+            IRebornDefination.TALANT.Genius,
+            IRebornDefination.PROPERTIES.S
+        );
 
         hoax(user);
         // rbt.permit(user, address(portal), MAX_INT, deadline, v, r, s);

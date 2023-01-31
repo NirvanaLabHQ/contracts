@@ -12,3 +12,4 @@ artifacts/
 #Hardhat plugin files
 typechain-types/
 .env
+solcInputs
