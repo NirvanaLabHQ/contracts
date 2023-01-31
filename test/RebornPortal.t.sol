@@ -134,6 +134,7 @@ contract TokenTest is Test, IRebornDefination {
 
         vm.expectEmit(true, true, true, true);
         emit Incarnate(
+            user,
             5,
             35,
             IRebornDefination.TALANT.Genius,

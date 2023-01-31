@@ -22,6 +22,7 @@ interface IRebornDefination {
     }
 
     event Incarnate(
+        address indexed user,
         uint256 indexed talentPoint,
         uint256 indexed PropertyPoint,
         TALANT talent,

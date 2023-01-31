@@ -127,6 +127,7 @@ contract RebornPortal is
         rebornToken.transferFrom(msg.sender, address(this), rbtAmount);
 
         emit Incarnate(
+            msg.sender,
             talentPoint(innate.talent),
             propertyPoint(innate.properties),
             innate.talent,
