@@ -9,8 +9,9 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
+import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 
-contract RebornStorage {
+contract RebornStorage is IRebornDefination {
     /** you need buy a soup before reborn */
     uint256 public soupPrice = 0.1 * 1 ether;
 
@@ -25,4 +26,13 @@ contract RebornStorage {
         0x00000000004020000000000000504030000000604020100000000231e19140f;
 
     IRebornToken public rebornToken;
+
+    mapping(address => bool) public signers;
+
+    mapping(address => uint16) public rounds;
+
+    mapping(uint256 => LifeDetail) public details;
+
+    /// @dev gap for potential vairable
+    uint256[44] private _gap;
 }

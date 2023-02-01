@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
@@ -13,9 +13,9 @@ import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/crypto
 contract TokenTest is Test, IRebornDefination {
     RebornPortal portal;
     RBT rbt;
-    DeployProxy internal _deployProxy;
     address owner = vm.addr(2);
     address user = vm.addr(10);
+    address signer = vm.addr(11);
     // solhint-disable-next-line var-name-mixedcase
     bytes32 private constant _PERMIT_TYPEHASH =
         keccak256(
@@ -27,36 +27,33 @@ contract TokenTest is Test, IRebornDefination {
         );
 
     function setUp() public {
-        // deploy portal
-        portal = new RebornPortal();
-        _deployProxy = new DeployProxy();
-        RebornPortal portalImpl = new RebornPortal();
         rbt = deployRBT();
         mintRBT(rbt, owner, user, 100 ether);
-        bytes memory initData = abi.encodeWithSelector(
-            RebornPortal.initialize.selector,
-            address(rbt),
+
+        // deploy portal
+        portal = deployPortal();
+        vm.prank(owner);
+        address[] memory toAdd = new address[](1);
+        toAdd[0] = signer;
+        address[] memory toRemove;
+        portal.updateSigners(toAdd, toRemove);
+    }
+
+    function deployPortal() public returns (RebornPortal portal) {
+        portal = new RebornPortal();
+        portal.initialize(
+            rbt,
             0.1 * 1 ether,
             0x00000000004020000000000000504030000000604020100000000231e19140f,
-            owner
-        );
-        portal = RebornPortal(
-            _deployProxy.deployErc1967Proxy(address(portalImpl), initData)
+            owner,
+            "",
+            ""
         );
     }
 
     function deployRBT() public returns (RBT token) {
-        RBT tokenImpl = new RBT();
-        bytes memory initData = abi.encodeWithSelector(
-            RBT.initialize.selector,
-            "REBORN",
-            "RBT",
-            10**10 * 1 ether,
-            owner
-        );
-        token = RBT(
-            _deployProxy.deployErc1967Proxy(address(tokenImpl), initData)
-        );
+        token = new RBT();
+        token.initialize("REBORN", "RBT", 10**10 * 1 ether, owner);
     }
 
     function mintRBT(
@@ -156,5 +153,26 @@ contract TokenTest is Test, IRebornDefination {
             v
         );
         payable(address(portal)).call{value: 0.1 * 1 ether}(callData);
+    }
+
+    function testEngrave(
+        bytes32 seed,
+        uint208 reward,
+        uint16 score,
+        uint16 age
+    ) public {
+        vm.assume(reward < rbt.cap() - 100 ether);
+        mintRBT(rbt, owner, address(portal), reward);
+
+        uint16 l = uint16(portal.findLocation(score));
+
+        vm.expectEmit(true, true, true, true);
+        emit Engrave(seed, user, score, reward);
+
+        vm.prank(signer);
+        portal.engrave(seed, user, reward, score, age, l);
+
+
+        // assertEq(portal.details[], b);
     }
 }
