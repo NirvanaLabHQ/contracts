@@ -21,6 +21,7 @@ contract RankUpgradeable is Initializable {
 
     // rank from small to larger locate start from 1
     function _enter(uint256 value, uint256 locate) internal returns (uint256) {
+        scores[++idx] = value;
         // 0 means no rank and check it is smaller than min in rank
         if (locate == 0 && value <= minScoreInRank) {
             return idx;
@@ -48,7 +49,7 @@ contract RankUpgradeable is Initializable {
         }
 
         rank[locate - 1] = idx;
-        minScoreInRank = rank[RANK_LENGTH - 1];
+        minScoreInRank = scores[rank[RANK_LENGTH - 1]];
 
         _setRank(abi.encode(rank));
 
