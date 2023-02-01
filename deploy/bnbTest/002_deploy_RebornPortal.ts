@@ -5,7 +5,7 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get } = deployments;
+  const { deploy, get, execute } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
@@ -23,12 +23,22 @@ const func: DeployFunction = async function ({
             parseEther("0.1"),
             "0x00000000000004200000000000064210",
             owner,
+            "",
+            "",
           ],
         },
       },
     },
     log: true,
   });
+
+  await execute(
+    "RebornPortal",
+    { from: owner },
+    "updateSigners",
+    ["0x803470638940Ec595B40397cbAa597439DE55907"],
+    []
+  );
 };
 func.tags = ["RBT"];
 
