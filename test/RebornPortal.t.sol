@@ -46,8 +46,8 @@ contract TokenTest is Test, IRebornDefination {
             0.1 * 1 ether,
             0x00000000004020000000000000504030000000604020100000000231e19140f,
             owner,
-            "",
-            ""
+            "Degen Tombstone",
+            "RIP"
         );
     }
 
@@ -171,7 +171,6 @@ contract TokenTest is Test, IRebornDefination {
 
         vm.prank(signer);
         portal.engrave(seed, user, reward, score, age, l);
-
 
         // assertEq(portal.details[], b);
     }

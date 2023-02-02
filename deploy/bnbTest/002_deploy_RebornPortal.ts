@@ -40,6 +40,6 @@ const func: DeployFunction = async function ({
     []
   );
 };
-func.tags = ["RBT"];
+func.tags = ["Portal"];
 
 export default func;
