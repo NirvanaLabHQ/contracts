@@ -33,7 +33,8 @@ interface IRebornDefination {
         uint256 indexed talentPoint,
         uint256 indexed PropertyPoint,
         TALANT talent,
-        PROPERTIES properties
+        PROPERTIES properties,
+        uint256 indulgences
     );
 
     event Engrave(

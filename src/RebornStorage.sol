@@ -13,7 +13,7 @@ import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 
 contract RebornStorage is IRebornDefination {
     /** you need buy a soup before reborn */
-    uint256 public soupPrice = 0.1 * 1 ether;
+    uint256 public soupPrice = 0.01 * 1 ether;
 
     /**
      * @dev talent and property price in compact mode

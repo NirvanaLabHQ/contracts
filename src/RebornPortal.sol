@@ -177,7 +177,8 @@ contract RebornPortal is
             talentPoint(innate.talent),
             propertyPoint(innate.properties),
             innate.talent,
-            innate.properties
+            innate.properties,
+            rbtAmount
         );
     }
 

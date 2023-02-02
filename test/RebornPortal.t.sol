@@ -135,7 +135,8 @@ contract TokenTest is Test, IRebornDefination {
             5,
             35,
             IRebornDefination.TALANT.Genius,
-            IRebornDefination.PROPERTIES.S
+            IRebornDefination.PROPERTIES.S,
+            10 ether
         );
 
         hoax(user);
