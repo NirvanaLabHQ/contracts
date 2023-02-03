@@ -10,7 +10,7 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/se
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
-import {RankUpgradeable} from "src/RankUpgradeable.sol";
+import {RebornRank} from "src/RebornRank.sol";
 import {RebornStorage} from "src/RebornStorage.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 
@@ -21,7 +21,7 @@ contract RebornPortal is
     RebornStorage,
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
-    RankUpgradeable
+    RebornRank
 {
     using SafeERC20Upgradeable for IRebornToken;
 

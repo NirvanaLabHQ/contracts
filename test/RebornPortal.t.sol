@@ -39,9 +39,9 @@ contract TokenTest is Test, IRebornDefination {
         portal.updateSigners(toAdd, toRemove);
     }
 
-    function deployPortal() public returns (RebornPortal portal) {
-        portal = new RebornPortal();
-        portal.initialize(
+    function deployPortal() public returns (RebornPortal portal_) {
+        portal_ = new RebornPortal();
+        portal_.initialize(
             rbt,
             0.1 * 1 ether,
             0x00000000004020000000000000504030000000604020100000000231e19140f,
@@ -57,13 +57,13 @@ contract TokenTest is Test, IRebornDefination {
     }
 
     function mintRBT(
-        RBT rbt,
-        address owner,
+        RBT rbt_,
+        address owner_,
         address account,
         uint256 amount
     ) public {
-        vm.prank(owner);
-        rbt.mint(account, amount);
+        vm.prank(owner_);
+        rbt_.mint(account, amount);
     }
 
     function testTalantPrice() public {
