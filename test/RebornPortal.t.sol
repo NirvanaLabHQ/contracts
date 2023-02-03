@@ -67,15 +67,15 @@ contract TokenTest is Test, IRebornDefination {
     }
 
     function testTalantPrice() public {
-        assertEq(portal.talentPrice(TALANT.Degen), 0);
-        assertEq(portal.talentPrice(TALANT.Gifted), 2 ether);
-        assertEq(portal.talentPrice(TALANT.Genius), 4 ether);
+        assertEq(portal.talentPrice(TALENT.Degen), 0);
+        assertEq(portal.talentPrice(TALENT.Gifted), 2 ether);
+        assertEq(portal.talentPrice(TALENT.Genius), 4 ether);
     }
 
     function testTalantPoint() public {
-        assertEq(portal.talentPoint(TALANT.Degen), 3);
-        assertEq(portal.talentPoint(TALANT.Gifted), 4);
-        assertEq(portal.talentPoint(TALANT.Genius), 5);
+        assertEq(portal.talentPoint(TALENT.Degen), 3);
+        assertEq(portal.talentPoint(TALENT.Gifted), 4);
+        assertEq(portal.talentPoint(TALENT.Genius), 5);
     }
 
     function testPropertiesPrice() public {
@@ -134,7 +134,7 @@ contract TokenTest is Test, IRebornDefination {
             user,
             5,
             35,
-            IRebornDefination.TALANT.Genius,
+            IRebornDefination.TALENT.Genius,
             IRebornDefination.PROPERTIES.S,
             10 ether
         );
@@ -144,7 +144,7 @@ contract TokenTest is Test, IRebornDefination {
         bytes memory callData = abi.encodeWithSignature(
             "incarnate((uint8,uint8),uint256,uint256,bytes32,bytes32,uint8)",
             Innate(
-                IRebornDefination.TALANT.Genius,
+                IRebornDefination.TALENT.Genius,
                 IRebornDefination.PROPERTIES.S
             ),
             MAX_INT,

@@ -185,7 +185,7 @@ contract RebornPortal is
     /**
      * @dev calculate talent price in $REBORN for each talent
      */
-    function talentPrice(TALANT talent) public view returns (uint256) {
+    function talentPrice(TALENT talent) public view returns (uint256) {
         return
             (((_priceAndPoint >> 192) >> (uint8(talent) * 8)) & 0xff) * 1 ether;
     }
@@ -193,7 +193,7 @@ contract RebornPortal is
     /**
      * @dev calculate talent point for each talent
      */
-    function talentPoint(TALANT talent) public view returns (uint256) {
+    function talentPoint(TALENT talent) public view returns (uint256) {
         return ((_priceAndPoint >> 128) >> (uint8(talent) * 8)) & 0xff;
     }
 

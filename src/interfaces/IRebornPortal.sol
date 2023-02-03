@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 interface IRebornDefination {
-    enum TALANT {
+    enum TALENT {
         Degen,
         Gifted,
         Genius
@@ -17,7 +17,7 @@ interface IRebornDefination {
     }
 
     struct Innate {
-        TALANT talent;
+        TALENT talent;
         PROPERTIES properties;
     }
 
@@ -32,7 +32,7 @@ interface IRebornDefination {
         address indexed user,
         uint256 indexed talentPoint,
         uint256 indexed PropertyPoint,
-        TALANT talent,
+        TALENT talent,
         PROPERTIES properties,
         uint256 indulgences
     );
