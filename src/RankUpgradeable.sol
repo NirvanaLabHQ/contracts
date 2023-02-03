@@ -22,36 +22,36 @@ contract RankUpgradeable is Initializable {
     // rank from small to larger locate start from 1
     function _enter(uint256 value, uint256 locate) internal returns (uint256) {
         scores[++idx] = value;
-        // 0 means no rank and check it is smaller than min in rank
-        if (locate == 0 && value <= minScoreInRank) {
-            return idx;
-        }
+        // // 0 means no rank and check it is smaller than min in rank
+        // if (locate == 0 && value <= minScoreInRank) {
+        //     return idx;
+        // }
 
-        // decode rank
-        uint24[RANK_LENGTH] memory rank = abi.decode(ranks, (uint24[100]));
+        // // decode rank
+        // uint24[RANK_LENGTH] memory rank = abi.decode(ranks, (uint24[100]));
 
-        if (locate <= RANK_LENGTH) {
-            require(
-                value > scores[rank[locate - 1]],
-                "Large than current not match"
-            );
-        }
+        // if (locate <= RANK_LENGTH) {
+        //     require(
+        //         value > scores[rank[locate - 1]],
+        //         "Large than current not match"
+        //     );
+        // }
 
-        if (locate > 1) {
-            require(
-                value <= scores[rank[locate - 2]],
-                "Smaller than last not match"
-            );
-        }
+        // if (locate > 1) {
+        //     require(
+        //         value <= scores[rank[locate - 2]],
+        //         "Smaller than last not match"
+        //     );
+        // }
 
-        for (uint256 i = RANK_LENGTH; i > locate; i--) {
-            rank[i - 1] = rank[i - 2];
-        }
+        // for (uint256 i = RANK_LENGTH; i > locate; i--) {
+        //     rank[i - 1] = rank[i - 2];
+        // }
 
-        rank[locate - 1] = idx;
-        minScoreInRank = scores[rank[RANK_LENGTH - 1]];
+        // rank[locate - 1] = idx;
+        // minScoreInRank = scores[rank[RANK_LENGTH - 1]];
 
-        _setRank(abi.encode(rank));
+        // _setRank(abi.encode(rank));
 
         return idx;
     }
