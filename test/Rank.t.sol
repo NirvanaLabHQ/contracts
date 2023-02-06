@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
-import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 
 import "src/mock/RankMock.sol";
 
