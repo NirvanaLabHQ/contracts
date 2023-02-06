@@ -83,10 +83,10 @@
         font-weight="400" font-size="168" lengthAdjust="spacing" fill="#FF8A01">74</text>
 
 
-    <text dx="671" dy="385" dominant-baseline="central" text-anchor="middle" font-family="VT323" font-weight="100"
+    <text dx="570" dy="385" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="100"
         font-size="72" lengthAdjust="spacing" fill="#65E250">Re:9999</text>
 
-    <text dx="903" dy="385" dominant-baseline="central" text-anchor="middle" font-family="VT323" font-weight="400"
+    <text dx="803" dy="385" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="400"
         font-size="72" lengthAdjust="spacing" fill="#65E250">Age:101</text>
 
     <text dx="327" dy="384" dominant-baseline="central" text-anchor="middle" font-family="VT323" textLength="315"
@@ -96,12 +96,11 @@
         font-family="Black Ops One" font-size="48" fill="#FF8A01">Degen</text>
     <text dx="908" dy="85" dominant-baseline="central" text-anchor="middle" style="height:100px"
         font-family="Black Ops One" font-size="48" fill="#FF8A01">Reborn</text>
-
-    <text dx="731" dy="169" dominant-baseline="central" text-anchor="middle" font-family="VT323" font-weight="500"
+    <text dx="755" dy="169" dominant-baseline="central" text-anchor="end" font-family="VT323" font-weight="500"
         font-size="80" lengthAdjust="spacing" fill="#FF4040">-256</text>
 
-    <text dx="860" dy="169" dominant-baseline="central" text-anchor="middle" font-family="VT323" font-weight="500"
-        font-size="80" lengthAdjust="spacing" fill="#65E250">+48</text>
+    <text dx="765" dy="169" dominant-baseline="central" text-anchor="start" font-family="VT323" font-weight="500"
+        font-size="80" lengthAdjust="spacing" fill="#65E250">+466</text>
 
     <rect x="949" y="148" width="5" height="5" transform="rotate(90 949 148)" fill="#FFD058" />
     <rect x="969" y="148" width="5" height="5" transform="rotate(90 969 148)" fill="#E86609" />
