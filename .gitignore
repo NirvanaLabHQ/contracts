@@ -13,3 +13,4 @@ artifacts/
 typechain-types/
 .env
 solcInputs
+1.svg
