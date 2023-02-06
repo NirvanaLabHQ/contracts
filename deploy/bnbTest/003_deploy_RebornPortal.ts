@@ -9,6 +9,7 @@ const func: DeployFunction = async function ({
   const { deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
+  const render = await get("RenderEngine");
 
   await deploy("RebornPortal", {
     from: deployer,
@@ -20,15 +21,16 @@ const func: DeployFunction = async function ({
           methodName: "initialize",
           args: [
             rbt.address,
-            parseEther("0.1"),
+            parseEther("0.01"),
             "0x00000000000004200000000000064210",
             owner,
-            "",
-            "",
+            "Degen Tombstone",
+            "RIP",
           ],
         },
       },
     },
+    libraries: { RenderEngine: render.address },
     log: true,
   });
 
