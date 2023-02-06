@@ -6,13 +6,14 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-
+import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
 import {RebornRank} from "src/RebornRank.sol";
 import {RebornStorage} from "src/RebornStorage.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
+import {RenderEngine} from "src/lib/RenderEngine.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -80,7 +81,16 @@ contract RebornPortal is
         // enter the rank list
         uint256 tokenId = _enter(score, locate);
 
-        details[tokenId] = LifeDetail(seed, user, ++rounds[user], uint16(age));
+        details[tokenId] = LifeDetail(
+            seed,
+            user,
+            ++rounds[user],
+            uint16(age),
+            0,
+            // set cost to 0 temporary, should implement later
+            uint128(0 / 10**18),
+            uint128(reward / 10**18)
+        );
         //
         _safeMint(user, tokenId);
 
@@ -133,6 +143,47 @@ contract RebornPortal is
             delete signers[toRemove[i]];
             emit SignerUpdate(toRemove[i], true);
         }
+    }
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        _requireMinted(tokenId);
+
+        return
+            Base64.encode(
+                bytes(
+                    string.concat(
+                        '{"name": "',
+                        name(),
+                        '","description":"',
+                        "",
+                        '","image":"',
+                        "data:image/svg+xml;base64,",
+                        Base64.encode(
+                            bytes(
+                                RenderEngine.render(
+                                    "seed",
+                                    scores[tokenId],
+                                    details[tokenId].round,
+                                    details[tokenId].age,
+                                    details[tokenId].creator,
+                                    details[tokenId].cost,
+                                    details[tokenId].reward
+                                )
+                            )
+                        ),
+                        '"}'
+                    )
+                )
+            );
     }
 
     /**

@@ -163,6 +163,7 @@ contract TokenTest is Test, IRebornDefination {
         uint16 age
     ) public {
         vm.assume(reward < rbt.cap() - 100 ether);
+        vm.assume(reward > 1 ether);
         mintRBT(rbt, owner, address(portal), reward);
 
         uint16 l = uint16(portal.findLocation(score));
@@ -174,5 +175,16 @@ contract TokenTest is Test, IRebornDefination {
         portal.engrave(seed, user, reward, score, age, l);
 
         // assertEq(portal.details[], b);
+    }
+
+    function testTokenUri(
+        bytes32 seed,
+        uint208 reward,
+        uint16 score,
+        uint16 age
+    ) public {
+       testEngrave(seed,reward,score,age);
+       string memory metadata = portal.tokenURI(1);
+       console.log(metadata);
     }
 }
