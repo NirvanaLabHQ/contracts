@@ -16,7 +16,7 @@ contract RankUpgradeable is Initializable {
 
     uint256[46] private _gap;
 
-    uint256 constant RANK_LENGTH = 100;
+    uint256 constant RANK_LENGTH = 1000;
 
     function __Rank_init() internal onlyInitializing {
         ranks = ranks.initialize(RANK_LENGTH);
