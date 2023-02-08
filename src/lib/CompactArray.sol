@@ -5,66 +5,85 @@ import "forge-std/console.sol";
 
 library CompactArray {
     struct Array {
-        bytes _data;
+        uint256[] _data;
         uint256 length;
     }
 
     function initialize(Array storage array, uint256 length) internal {
         array.length = length;
-        array._data = encodeUint24Array(new uint24[](length));
+        array._data = new uint256[](13);
     }
 
-    function encodeUint24Array(uint24[] memory values)
-        public
-        returns (bytes memory bs)
-    {
-        for (uint256 i = 0; i < values.length; i++) {
-            bs = abi.encodePacked(bs, values[i]);
-        }
-    }
+    // function encodeUint32Array(uint32[] memory values)
+    //     public
+    //     pure
+    //     returns (uint256[] memory bs)
+    // {
+    //     bs = new uint256[](13);
+    //     for (uint256 i = 0; i < values.length; i++) {
+    //         bs[i / 8] = uint256(abi.encodePacked(bs[i / 8], values[i]));
+    //     }
+    // }
 
-    function write(Array storage array, uint24[] memory values) internal {
-        require(values.length == array.length, "length not match");
-        array._data = encodeUint24Array(values);
-    }
+    // function write(Array storage array, uint32[] memory values) internal {
+    //     require(values.length == array.length, "length not match");
+    //     array._data = encodeUint32Array(values);
+    // }
 
     function readAll(Array memory array)
         internal
-        returns (uint24[] memory values)
+        pure
+        returns (uint32[] memory values)
     {
-        values = new uint24[](array.length);
+        values = new uint32[](array.length);
         for (uint32 i = 0; i < array.length; i++) {
             values[i] = read(array, i);
         }
     }
 
-    function readData(Array memory array) internal pure returns (bytes memory) {
+    function readData(Array memory array)
+        internal
+        pure
+        returns (uint256[] memory)
+    {
         return array._data;
     }
 
     function read(Array memory array, uint256 index)
         internal
-        returns (uint24 x)
+        pure
+        returns (uint32 x)
     {
-        bytes memory bs = abi.encodePacked(
-            array._data[index * 3],
-            array._data[index * 3 + 1],
-            array._data[index * 3 + 2]
-        );
-        assembly {
-            x := mload(add(bs, 0x3))
-        }
+        uint256 bucket = index >> 3;
+        uint256 offset = (7 - (index % 8)) * 32;
+        uint256 mask = 0xffffffff << offset;
+        return uint32((array._data[bucket] & mask) >> offset);
+
+        // bytes memory bs = abi.encodePacked(
+        //     array._data[index * 3],
+        //     array._data[index * 3 + 1],
+        //     array._data[index * 3 + 2]
+        // );
+        // assembly {
+        //     x := mload(add(bs, 0x3))
+        // }
     }
 
     function set(
         Array storage array,
         uint256 index,
-        uint24 value
+        uint32 value
     ) internal {
-        bytes memory bs = abi.encodePacked(value);
-        array._data[index * 3] = bs[0];
-        array._data[index * 3 + 1] = bs[1];
-        array._data[index * 3 + 2] = bs[2];
+        uint256 bucket = index >> 3;
+        // uint256 mask = 1 << (index & 0xff);
+        uint256 mask = uint256(value) << ((7 - (index % 8)) * 32);
+        array._data[bucket] |= mask;
+        // array._data
+        // unchecked {
+        //     array._data[index * 3] = bs[0];
+        //     array._data[index * 3 + 1] = bs[1];
+        //     array._data[index * 3 + 2] = bs[2];
+        // }
     }
 
     /**
@@ -73,13 +92,11 @@ library CompactArray {
     function sliceUint(bytes memory bs, uint256 start)
         internal
         pure
-        returns (uint256)
+        returns (uint256 x)
     {
         require(bs.length >= start + 32, "slicing out of range");
-        uint256 x;
         assembly {
             x := mload(add(bs, add(0x20, start)))
         }
-        return x;
     }
 }
