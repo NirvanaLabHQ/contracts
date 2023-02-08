@@ -11,7 +11,7 @@ contract RankUpgradeable is Initializable {
     CompactArray.Array public ranks;
     using CompactArray for CompactArray.Array;
 
-    uint32 idx;
+    uint24 idx;
     uint256 public minScoreInRank;
 
     uint256[46] private _gap;
@@ -35,7 +35,7 @@ contract RankUpgradeable is Initializable {
         }
 
         // decode rank
-        // uint32[] memory rank = ranks.readAll();
+        // uint24[] memory rank = ranks.readAll();
 
         if (locate <= RANK_LENGTH) {
             require(
@@ -66,16 +66,16 @@ contract RankUpgradeable is Initializable {
         return idx;
     }
 
-    // function _setRank(uint32[] memory b) internal {
-    //     ranks.write(b);
-    // }
+    function _setRank(uint24[] memory b) internal {
+        ranks.write(b);
+    }
 
     /**
      * @dev find the location in rank given a value
      * @dev usually executed off-chain
      */
     function findLocation(uint256 value) public returns (uint256) {
-        uint32[] memory rank = ranks.readAll();
+        uint24[] memory rank = ranks.readAll();
         for (uint256 i = 0; i < RANK_LENGTH; i++) {
             // console.log(value);
             // console.log(scores[rank[i]]);
@@ -87,7 +87,7 @@ contract RankUpgradeable is Initializable {
         return 0;
     }
 
-    function readRank() public returns (uint32[] memory rank) {
+    function readRank() public returns (uint24[] memory rank) {
         rank = ranks.readAll();
     }
 }

@@ -32,15 +32,10 @@ contract RankMockTest is Test {
     function testFindLocation() public {
         rank.enter(4, 1);
 
-        console.log(rank.readRank()[0]);
-        console.log(rank.readRank()[1]);
         uint256 l = rank.findLocation(10);
 
         assertEq(l, 1);
         rank.enter(10, 1);
-        console.log(rank.readRank()[0]);
-        console.log(rank.readRank()[1]);
-        // console.logBytes(abi.encodePacked(rank.readRank()));
 
         uint256 l2 = rank.findLocation(1);
         assertEq(l2, 3);
@@ -55,12 +50,12 @@ contract RankMockTest is Test {
         }
         vm.stopPrank();
 
-        uint32[100] memory constRank;
+        uint24[100] memory constRank;
         for (uint256 i = 0; i < n; i++) {
-            constRank[i] = uint32(i + 1);
+            constRank[i] = uint24(i + 1);
         }
 
-        uint32[] memory ranks = new uint32[](100);
+        uint24[] memory ranks = new uint24[](100);
         ranks = rank.readRank();
 
         assertEq(abi.encodePacked(ranks), abi.encodePacked(constRank));
@@ -75,7 +70,7 @@ contract RankMockTest is Test {
     }
 
     function testRandomRankMany(uint256[] memory values) public {
-        vm.assume(values.length < type(uint32).max);
+        vm.assume(values.length < type(uint24).max);
         for (uint256 i = 0; i < values.length; i++) {
             uint256 value = values[i];
             uint256 l = rank.findLocation(value);
