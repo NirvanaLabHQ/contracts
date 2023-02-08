@@ -49,5 +49,5 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          forge test --gas-report
         id: forge-test
