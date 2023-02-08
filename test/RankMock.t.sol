@@ -42,7 +42,7 @@ contract RankMockTest is Test {
     }
 
     function testEnterMany(uint256 n) public {
-        vm.assume(n <= 1000);
+        vm.assume(n <= 100);
         vm.assume(n >= 10);
         vm.startPrank(user);
         for (uint256 i = 0; i < n; i++) {
@@ -50,12 +50,12 @@ contract RankMockTest is Test {
         }
         vm.stopPrank();
 
-        uint24[1000] memory constRank;
+        uint24[100] memory constRank;
         for (uint256 i = 0; i < n; i++) {
             constRank[i] = uint24(i + 1);
         }
 
-        uint24[] memory ranks = new uint24[](1000);
+        uint24[] memory ranks = new uint24[](100);
         ranks = rank.readRank();
 
         assertEq(abi.encodePacked(ranks), abi.encodePacked(constRank));

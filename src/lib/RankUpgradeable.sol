@@ -16,10 +16,10 @@ contract RankUpgradeable is Initializable {
 
     uint256[46] private _gap;
 
-    uint256 constant RANK_LENGTH = 1000;
+    uint256 constant RANK_LENGTH = 100;
 
     function __Rank_init() internal onlyInitializing {
-        ranks = ranks.initialize(RANK_LENGTH);
+        ranks.initialize(RANK_LENGTH);
     }
 
     // rank from small to larger locate start from 1
@@ -35,7 +35,7 @@ contract RankUpgradeable is Initializable {
         }
 
         // decode rank
-        uint24[] memory rank = ranks.readAll();
+        // uint24[] memory rank = ranks.readAll();
 
         if (locate <= RANK_LENGTH) {
             require(
@@ -52,20 +52,22 @@ contract RankUpgradeable is Initializable {
         }
 
         for (uint256 i = RANK_LENGTH; i > locate; i--) {
-            rank[i - 1] = rank[i - 2];
+            ranks.set(i - 1, ranks.read(i - 2));
+            // rank[i - 1] = rank[i - 2];
         }
 
-        rank[locate - 1] = idx;
-        minScoreInRank = scores[rank[RANK_LENGTH - 1]];
+        ranks.set(locate - 1, idx);
+        // rank[locate - 1] = idx;
+        minScoreInRank = scores[ranks.read(RANK_LENGTH - 1)];
 
         // console.log("log rank before send rank");
-        _setRank(rank);
+        // _setRank(rank);
 
         return idx;
     }
 
     function _setRank(uint24[] memory b) internal {
-        ranks = ranks.write(b);
+        ranks.write(b);
     }
 
     /**
