@@ -6,7 +6,7 @@ import "forge-std/Vm.sol";
 
 import "src/mock/RankMock.sol";
 
-contract RankTest is Test {
+contract RankMockTest is Test {
     RankMock rank;
     address owner = address(2);
     address user = address(20);
@@ -25,6 +25,8 @@ contract RankTest is Test {
     function testEnterOne() public {
         rank.enter(1, 1);
         assertEq(rank.minScoreInRank(), 0);
+        // console.log(abi.encodePacked(rank.readRank()).length);
+        // console.logBytes(abi.encodePacked(rank.readRank()));
     }
 
     function testFindLocation() public {
@@ -47,14 +49,16 @@ contract RankTest is Test {
             rank.enter(1, i + 1);
         }
         vm.stopPrank();
-        uint24[100] memory ranks = rank.readRank();
 
         uint24[100] memory constRank;
         for (uint256 i = 0; i < n; i++) {
             constRank[i] = uint24(i + 1);
         }
 
-        assertEq(abi.encode(ranks), abi.encode(constRank));
+        uint24[] memory ranks = new uint24[](100);
+        ranks = rank.readRank();
+
+        assertEq(abi.encodePacked(ranks), abi.encodePacked(constRank));
     }
 
     function testRandomRank(uint256 value) public {

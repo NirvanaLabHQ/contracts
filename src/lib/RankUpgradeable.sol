@@ -2,10 +2,14 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {CompactArray} from "src/lib/CompactArray.sol";
+
+import "forge-std/console.sol";
 
 contract RankUpgradeable is Initializable {
     mapping(uint256 => uint256) scores;
-    bytes public ranks;
+    CompactArray.Array public ranks;
+    using CompactArray for CompactArray.Array;
 
     uint24 idx;
     uint256 public minScoreInRank;
@@ -15,8 +19,7 @@ contract RankUpgradeable is Initializable {
     uint256 constant RANK_LENGTH = 100;
 
     function __Rank_init() internal onlyInitializing {
-        uint24[RANK_LENGTH] memory rank;
-        ranks = abi.encode(rank);
+        ranks = ranks.initialize(RANK_LENGTH);
     }
 
     // rank from small to larger locate start from 1
@@ -32,18 +35,18 @@ contract RankUpgradeable is Initializable {
         }
 
         // decode rank
-        uint24[RANK_LENGTH] memory rank = abi.decode(ranks, (uint24[100]));
+        uint24[] memory rank = ranks.readAll();
 
         if (locate <= RANK_LENGTH) {
             require(
-                value > scores[rank[locate - 1]],
+                value > scores[ranks.read(locate - 1)],
                 "Large than current not match"
             );
         }
 
         if (locate > 1) {
             require(
-                value <= scores[rank[locate - 2]],
+                value <= scores[ranks.read(locate - 2)],
                 "Smaller than last not match"
             );
         }
@@ -55,22 +58,25 @@ contract RankUpgradeable is Initializable {
         rank[locate - 1] = idx;
         minScoreInRank = scores[rank[RANK_LENGTH - 1]];
 
-        _setRank(abi.encode(rank));
+        // console.log("log rank before send rank");
+        _setRank(rank);
 
         return idx;
     }
 
-    function _setRank(bytes memory b) internal {
-        ranks = b;
+    function _setRank(uint24[] memory b) internal {
+        ranks = ranks.write(b);
     }
 
     /**
      * @dev find the location in rank given a value
      * @dev usually executed off-chain
      */
-    function findLocation(uint256 value) public view returns (uint256) {
-        uint24[RANK_LENGTH] memory rank = abi.decode(ranks, (uint24[100]));
+    function findLocation(uint256 value) public returns (uint256) {
+        uint24[] memory rank = ranks.readAll();
         for (uint256 i = 0; i < RANK_LENGTH; i++) {
+            // console.log(value);
+            // console.log(scores[rank[i]]);
             if (scores[rank[i]] < value) {
                 return i + 1;
             }
@@ -79,7 +85,7 @@ contract RankUpgradeable is Initializable {
         return 0;
     }
 
-    function readRank() public view returns (uint24[RANK_LENGTH] memory rank) {
-        rank = abi.decode(ranks, (uint24[100]));
+    function readRank() public returns (uint24[] memory rank) {
+        rank = ranks.readAll();
     }
 }
