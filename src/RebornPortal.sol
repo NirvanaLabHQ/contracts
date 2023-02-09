@@ -100,6 +100,39 @@ contract RebornPortal is
     }
 
     /**
+     * @dev degen infuse $REBORN to tombstone
+     * @dev expect for bliss
+     */
+    function infuse(uint256 tokenId, uint256 amount) external override {
+        _requireMinted(tokenId);
+
+        rebornToken.transferFrom(msg.sender, address(this), amount);
+
+        Pool storage pool = pools[tokenId];
+        pool.totalAmount += amount;
+
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        portfolio.accumulativeAmount += amount;
+
+        emit Infuse(msg.sender, tokenId, amount);
+    }
+
+    /**
+     * @dev degen get $REBORN back
+     */
+    function dry(uint256 tokenId, uint256 amount) external override {
+        Pool storage pool = pools[tokenId];
+        pool.totalAmount -= amount;
+
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        portfolio.accumulativeAmount -= amount;
+
+        rebornToken.transfer(msg.sender, amount);
+
+        emit Dry(msg.sender, tokenId, amount);
+    }
+
+    /**
      * @dev set soup price
      */
     function setSoupPrice(uint256 price) external override onlyOwner {
@@ -273,8 +306,11 @@ contract RebornPortal is
     }
 
     /**
-     * @dev calculate properties born in $REBORN for each properties
+     * @dev read pool attribute
      */
+    function getPool(uint256 tokenId) public view returns (Pool memory) {
+	    return pools[tokenId];
+    }
 
     /**
      * @dev only allow signer address can do something

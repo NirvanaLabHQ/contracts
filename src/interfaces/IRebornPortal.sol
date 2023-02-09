@@ -31,6 +31,14 @@ interface IRebornDefination {
         uint128 reward;
     }
 
+    struct Pool {
+        uint256 totalAmount;
+    }
+
+    struct Portfolio {
+        uint256 accumulativeAmount;
+    }
+
     event Incarnate(
         address indexed user,
         uint256 indexed talentPoint,
@@ -46,6 +54,10 @@ interface IRebornDefination {
         uint256 indexed score,
         uint256 reward
     );
+
+    event Infuse(address user, uint256 tokenId, uint256 amount);
+
+    event Dry(address user, uint256 tokenId, uint256 amount);
 
     event NewSoupPrice(uint256 price);
 
@@ -80,6 +92,12 @@ interface IRebornPortal is IRebornDefination {
         uint256 age,
         uint256 locate
     ) external;
+
+    /// @dev stake $REBORN on this tombstone
+    function infuse(uint256 tokenId, uint256 amount) external;
+
+    /// @dev unstake $REBORN on this tombstone
+    function dry(uint256 tokenId, uint256 amount) external;
 
     /** set soup price */
     function setSoupPrice(uint256 price) external;

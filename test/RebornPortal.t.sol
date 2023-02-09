@@ -7,14 +7,15 @@ import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 import "src/RebornPortal.sol";
 import {RBT} from "src/RBT.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
+import {EventDefination} from "src/test/EventDefination.sol";
 
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
-contract TokenTest is Test, IRebornDefination {
+contract TokenTest is Test, IRebornDefination, EventDefination {
     RebornPortal portal;
     RBT rbt;
     address owner = vm.addr(2);
-    address user = vm.addr(10);
+    address _user = vm.addr(10);
     address signer = vm.addr(11);
     // solhint-disable-next-line var-name-mixedcase
     bytes32 private constant _PERMIT_TYPEHASH =
@@ -28,7 +29,7 @@ contract TokenTest is Test, IRebornDefination {
 
     function setUp() public {
         rbt = deployRBT();
-        mintRBT(rbt, owner, user, 100 ether);
+        mintRBT(rbt, owner, _user, 100 ether);
 
         // deploy portal
         portal = deployPortal();
@@ -95,7 +96,7 @@ contract TokenTest is Test, IRebornDefination {
     }
 
     /**
-     * @dev core process of incarnate
+     * @dev process of incarnate
      */
     function testIncarnateWithPermit() public {
         uint256 MAX_INT = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
@@ -103,7 +104,7 @@ contract TokenTest is Test, IRebornDefination {
         bytes32 structHash = keccak256(
             abi.encode(
                 _PERMIT_TYPEHASH,
-                user,
+                _user,
                 address(portal),
                 MAX_INT,
                 0,
@@ -131,7 +132,7 @@ contract TokenTest is Test, IRebornDefination {
 
         vm.expectEmit(true, true, true, true);
         emit Incarnate(
-            user,
+            _user,
             5,
             35,
             IRebornDefination.TALENT.Genius,
@@ -139,8 +140,8 @@ contract TokenTest is Test, IRebornDefination {
             10 ether
         );
 
-        hoax(user);
-        // rbt.permit(user, address(portal), MAX_INT, deadline, v, r, s);
+        hoax(_user);
+        // rbt.permit(_user, address(portal), MAX_INT, deadline, v, r, s);
         bytes memory callData = abi.encodeWithSignature(
             "incarnate((uint8,uint8),uint256,uint256,bytes32,bytes32,uint8)",
             Innate(
@@ -165,15 +166,56 @@ contract TokenTest is Test, IRebornDefination {
         vm.assume(reward < rbt.cap() - 100 ether);
         mintRBT(rbt, owner, address(portal), reward);
 
-        uint16 l = uint16(portal.findLocation(score));
-
         vm.expectEmit(true, true, true, true);
-        emit Engrave(seed, user, score, reward);
+        emit Engrave(seed, _user, score, reward);
 
         vm.prank(signer);
-        portal.engrave(seed, user, reward, score, age, l);
+        portal.engrave(seed, _user, reward, score, age, 0);
 
         // assertEq(portal.details[], b);
+    }
+
+    function testInfuseNumericalValue(uint256 amount) public {
+        vm.assume(amount < rbt.cap() - 100 ether);
+        testEngrave(bytes32(new bytes(32)), 10, 10, 10);
+
+        mintRBT(rbt, owner, _user, amount);
+
+        vm.expectEmit(true, true, true, true);
+        emit Infuse(_user, 1, amount);
+        emit Transfer(_user, address(portal), amount);
+
+        mockInfuse(_user, 1, amount);
+
+        assertEq(portal.pools(1), amount);
+        assertEq(portal.portfolios(_user, 1), amount);
+    }
+
+    function mockInfuse(
+        address user,
+        uint256 tokenId,
+        uint256 amount
+    ) public {
+        vm.startPrank(user);
+        rbt.approve(address(portal), amount);
+        portal.infuse(tokenId, amount);
+        vm.stopPrank();
+    }
+
+    function testDryNumericalValue(uint256 amount) public {
+        vm.assume(amount < rbt.cap() - 100 ether);
+        mintRBT(rbt, owner, _user, amount);
+
+        testEngrave(bytes32(new bytes(32)), 0, 10, 10);
+        mockInfuse(_user, 1, amount);
+
+        console.log(rbt.balanceOf(address(portal)));
+        vm.expectEmit(true, true, true, true);
+        emit Dry(_user, 1, amount);
+        emit Transfer(address(portal), _user, amount);
+
+        vm.prank(_user);
+        portal.dry(1, amount);
     }
 
     function testTokenUri(
@@ -184,6 +226,6 @@ contract TokenTest is Test, IRebornDefination {
     ) public {
         testEngrave(seed, reward, score, age);
         string memory metadata = portal.tokenURI(1);
-        console.log(metadata);
+        // console.log(metadata);
     }
 }
