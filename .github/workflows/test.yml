@@ -10,7 +10,7 @@ env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  foundry:
+  foundry-test:
     strategy:
       fail-fast: true
 
@@ -51,3 +51,24 @@ jobs:
         run: |
           forge test --gas-report
         id: forge-test
+  check_storage_layout:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: onbjerg/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Check storage layout
+        uses: Rubilmax/foundry-storage-check@v3.2
+        with:
+          contract: src/RebornPortal.sol:RebornPortal
+          # settings below are optional, but allows to check whether the added storage slots are empty on the deployed contract
+          rpcUrl: wss://bsc-testnet.nodereal.io/ws/v1/9385b24e71384bfcbb737c3c774b49bc # the RPC url to use to query the deployed contract's storage slots
+          address: 0xfEbdf06AC0A49Cd7f2F5126656C7067D6713616a # the address at which the contract check is deployed
+          failOnRemoval: true # fail the CI when removing storage slots (default: false)
