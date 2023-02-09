@@ -94,7 +94,7 @@ contract RebornPortal is
         //
         _safeMint(user, tokenId);
 
-        rebornToken.transfer(user, reward);
+        rebornToken.mint(user, reward);
 
         emit Engrave(seed, user, score, reward);
     }
@@ -170,12 +170,19 @@ contract RebornPortal is
     ) public onlyOwner {
         for (uint256 i = 0; i < toAdd.length; i++) {
             signers[toAdd[i]] = true;
-            emit SignerUpdate(toAdd[i], false);
+            emit SignerUpdate(toAdd[i], true);
         }
         for (uint256 i = 0; i < toRemove.length; i++) {
             delete signers[toRemove[i]];
-            emit SignerUpdate(toRemove[i], true);
+            emit SignerUpdate(toRemove[i], false);
         }
+    }
+
+    /**
+     * @dev withdraw all $REBORN, only called during development
+     */
+    function withdrawAll() external onlyOwner {
+        rebornToken.transfer(msg.sender, rebornToken.balanceOf(address(this)));
     }
 
     /**
@@ -309,7 +316,7 @@ contract RebornPortal is
      * @dev read pool attribute
      */
     function getPool(uint256 tokenId) public view returns (Pool memory) {
-	    return pools[tokenId];
+        return pools[tokenId];
     }
 
     /**

@@ -8,10 +8,10 @@ import "src/RebornPortal.sol";
 import {RBT} from "src/RBT.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {EventDefination} from "src/test/EventDefination.sol";
-
+import {Utils} from "test/Utils.sol";
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
-contract TokenTest is Test, IRebornDefination, EventDefination {
+contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     RebornPortal portal;
     RBT rbt;
     address owner = vm.addr(2);
@@ -28,7 +28,7 @@ contract TokenTest is Test, IRebornDefination, EventDefination {
         );
 
     function setUp() public {
-        rbt = deployRBT();
+        rbt = Utils.deployRBT(owner);
         mintRBT(rbt, owner, _user, 100 ether);
 
         // deploy portal
@@ -38,23 +38,25 @@ contract TokenTest is Test, IRebornDefination, EventDefination {
         toAdd[0] = signer;
         address[] memory toRemove;
         portal.updateSigners(toAdd, toRemove);
+
+        // add portal as minter
+        vm.prank(owner);
+        address[] memory minterToAdd = new address[](1);
+        minterToAdd[0] = address(portal);
+        address[] memory minterToRemove;
+        rbt.updateMinter(minterToAdd, minterToRemove);
     }
 
     function deployPortal() public returns (RebornPortal portal_) {
         portal_ = new RebornPortal();
         portal_.initialize(
             rbt,
-            0.1 * 1 ether,
+            0.01 * 1 ether,
             0x00000000004020000000000000504030000000604020100000000231e19140f,
             owner,
             "Degen Tombstone",
             "RIP"
         );
-    }
-
-    function deployRBT() public returns (RBT token) {
-        token = new RBT();
-        token.initialize("REBORN", "RBT", 10**10 * 1 ether, owner);
     }
 
     function mintRBT(
@@ -154,7 +156,7 @@ contract TokenTest is Test, IRebornDefination, EventDefination {
             s,
             v
         );
-        payable(address(portal)).call{value: 0.1 * 1 ether}(callData);
+        payable(address(portal)).call{value: 0.01 * 1 ether}(callData);
     }
 
     function testEngrave(
@@ -164,7 +166,6 @@ contract TokenTest is Test, IRebornDefination, EventDefination {
         uint256 age
     ) public {
         vm.assume(reward < rbt.cap() - 100 ether);
-        mintRBT(rbt, owner, address(portal), reward);
 
         vm.expectEmit(true, true, true, true);
         emit Engrave(seed, _user, score, reward);
@@ -204,9 +205,8 @@ contract TokenTest is Test, IRebornDefination, EventDefination {
 
     function testDryNumericalValue(uint256 amount) public {
         vm.assume(amount < rbt.cap() - 100 ether);
-        mintRBT(rbt, owner, _user, amount);
 
-        testEngrave(bytes32(new bytes(32)), 0, 10, 10);
+        testEngrave(bytes32(new bytes(32)), amount, 10, 10);
         mockInfuse(_user, 1, amount);
 
         console.log(rbt.balanceOf(address(portal)));

@@ -3,41 +3,37 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
+import {Utils} from "test/Utils.sol";
 import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 
 import "src/RBT.sol";
+import {IRebornTokenDef} from "src/interfaces/IRebornToken.sol";
 
-contract TokenTest is Test {
+contract RBTTest is Test, IRebornTokenDef {
     RBT token;
     DeployProxy internal _deployProxy;
     address owner = address(2);
     address user = address(20);
+    address minter = address(30);
 
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     function setUp() public {
-        /// @dev deploy deployProxy tool
-        _deployProxy = new DeployProxy();
-        RBT tokenImpl = new RBT();
-        bytes memory initData = abi.encodeWithSelector(
-            RBT.initialize.selector,
-            "REBORN",
-            "RBT",
-            10**10 * 1 ether,
-            owner
-        );
-        token = RBT(
-            _deployProxy.deployErc1967Proxy(address(tokenImpl), initData)
-        );
+        token = Utils.deployRBT(owner);
+        vm.prank(owner);
+        address[] memory minterToAdd = new address[](1);
+        minterToAdd[0] = minter;
+        address[] memory minterToRemove;
+        token.updateMinter(minterToAdd, minterToRemove);
     }
 
-    /** owner can mint token if it's not enough */
-    function testOwnerCanMint(uint256 amount) public {
+    /** minter can mint token if it's not enough */
+    function testMinterCanMint(uint256 amount) public {
         vm.assume(amount <= token.cap());
         vm.expectEmit(true, true, true, true);
         emit Transfer(address(0), user, amount);
 
-        vm.prank(owner);
+        vm.prank(minter);
         token.mint(user, amount);
     }
 
@@ -46,7 +42,7 @@ contract TokenTest is Test {
      */
     function testNotOwnerCannotMint(address caller, uint256 amount) public {
         vm.assume(caller != owner);
-        vm.expectRevert("SafeOwnable: caller not owner");
+        vm.expectRevert(NotMinter.selector);
         vm.prank(caller);
         token.mint(caller, amount);
     }

@@ -7,13 +7,15 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {ERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
 
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
+import {RBTStorage} from "src/RBTStorage.sol";
 
 contract RBT is
     ERC20PermitUpgradeable,
     ERC20CappedUpgradeable,
     SafeOwnableUpgradeable,
     UUPSUpgradeable,
-    IRebornToken
+    IRebornToken,
+    RBTStorage
 {
     function initialize(
         string memory name_,
@@ -35,10 +37,27 @@ contract RBT is
     {}
 
     /**
-     * @dev in test, it can be mint infinitely
+     * @dev allow minter to mint it
      */
-    function mint(address to, uint256 amount) external onlyOwner {
+    function mint(address to, uint256 amount) external override onlyMinter {
         _mint(to, amount);
+    }
+
+    /**
+     * @dev update minters
+     */
+    function updateMinter(
+        address[] calldata toAdd,
+        address[] calldata toRemove
+    ) external onlyOwner {
+        for (uint256 i = 0; i < toAdd.length; i++) {
+            minters[toAdd[i]] = true;
+            emit MinterUpdate(toAdd[i], true);
+        }
+        for (uint256 i = 0; i < toRemove.length; i++) {
+            delete minters[toRemove[i]];
+            emit MinterUpdate(toRemove[i], false);
+        }
     }
 
     /**
@@ -54,5 +73,12 @@ contract RBT is
             "ERC20Capped: cap exceeded"
         );
         ERC20Upgradeable._mint(account, amount);
+    }
+
+    modifier onlyMinter() {
+        if (!minters[msg.sender]) {
+            revert NotMinter();
+        }
+        _;
     }
 }
