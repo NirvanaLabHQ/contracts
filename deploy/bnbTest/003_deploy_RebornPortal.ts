@@ -41,6 +41,10 @@ const func: DeployFunction = async function ({
     ["0x803470638940Ec595B40397cbAa597439DE55907"],
     []
   );
+
+  // set portal as minter
+  const portal = await get("RebornPortal");
+  await execute("RBT", { from: owner }, "updateMinter", [portal.address], []);
 };
 func.tags = ["Portal"];
 
