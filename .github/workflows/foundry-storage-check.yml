@@ -54,7 +54,7 @@ jobs:
       - name: Check storage layout
         uses: Rubilmax/foundry-storage-check@v3.2
         with:
-          contract: src/RBT.sol:RebornPortal
+          contract: src/RBT.sol:RBT
           # settings below are optional, but allows to check whether the added storage slots are empty on the deployed contract
           rpcUrl: https://bsc-testnet.nodereal.io/v1/9385b24e71384bfcbb737c3c774b49bc # the RPC url to use to query the deployed contract's storage slots
           address: "0xfEbdf06AC0A49Cd7f2F5126656C7067D6713616a" # the address at which the contract check is deployed
