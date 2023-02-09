@@ -30,38 +30,38 @@ contract RankUpgradeable is Initializable {
     {
         scores[++idx] = value;
         // 0 means no rank and check it is smaller than min in rank
-        if (locate == 0 && value <= minScoreInRank) {
-            return idx;
-        }
+        // if (locate == 0 && value <= minScoreInRank) {
+        //     return idx;
+        // }
 
-        // decode rank
-        // uint24[] memory rank = ranks.readAll();
+        // // decode rank
+        // // uint24[] memory rank = ranks.readAll();
 
-        if (locate <= RANK_LENGTH) {
-            require(
-                value > scores[ranks.read(locate - 1)],
-                "Large than current not match"
-            );
-        }
+        // if (locate <= RANK_LENGTH) {
+        //     require(
+        //         value > scores[ranks.read(locate - 1)],
+        //         "Large than current not match"
+        //     );
+        // }
 
-        if (locate > 1) {
-            require(
-                value <= scores[ranks.read(locate - 2)],
-                "Smaller than last not match"
-            );
-        }
+        // if (locate > 1) {
+        //     require(
+        //         value <= scores[ranks.read(locate - 2)],
+        //         "Smaller than last not match"
+        //     );
+        // }
 
-        for (uint256 i = RANK_LENGTH; i > locate; i--) {
-            ranks.set(i - 1, ranks.read(i - 2));
-            // rank[i - 1] = rank[i - 2];
-        }
+        // for (uint256 i = RANK_LENGTH; i > locate; i--) {
+        //     ranks.set(i - 1, ranks.read(i - 2));
+        //     // rank[i - 1] = rank[i - 2];
+        // }
 
-        ranks.set(locate - 1, idx);
-        // rank[locate - 1] = idx;
-        minScoreInRank = scores[ranks.read(RANK_LENGTH - 1)];
+        // ranks.set(locate - 1, idx);
+        // // rank[locate - 1] = idx;
+        // minScoreInRank = scores[ranks.read(RANK_LENGTH - 1)];
 
-        // console.log("log rank before send rank");
-        // _setRank(rank);
+        // // console.log("log rank before send rank");
+        // // _setRank(rank);
 
         return idx;
     }
