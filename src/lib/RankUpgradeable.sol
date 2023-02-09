@@ -5,14 +5,16 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {CompactArray} from "src/lib/CompactArray.sol";
 
 contract RankUpgradeable is Initializable {
-    mapping(uint256 => uint256) scores;
-    CompactArray.Array public ranks;
+    mapping(uint256 => uint256) public scores;
+    uint256 placeholder;
     using CompactArray for CompactArray.Array;
 
     uint24 public idx;
     uint256 public minScoreInRank;
 
-    uint256[46] private _gap;
+    CompactArray.Array public ranks;
+
+    uint256[44] private _gap;
 
     uint256 constant RANK_LENGTH = 100;
 
