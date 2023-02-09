@@ -1,10 +1,8 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {CompactArray} from "src/lib/CompactArray.sol";
-
-import "forge-std/console.sol";
 
 contract RankUpgradeable is Initializable {
     mapping(uint256 => uint256) scores;
