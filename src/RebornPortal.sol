@@ -94,6 +94,7 @@ contract RebornPortal is
         //
         _safeMint(user, tokenId);
 
+        rewardPool -= reward;
         rebornToken.transfer(user, reward);
 
         emit Engrave(seed, user, score, reward);
@@ -130,6 +131,23 @@ contract RebornPortal is
         rebornToken.transfer(msg.sender, amount);
 
         emit Dry(msg.sender, tokenId, amount);
+    }
+
+    /**
+     * @dev volunteer some token to the pool
+     */
+    function sacrifice(uint256 amount) external override {
+        rebornToken.transferFrom(msg.sender, address(this), amount);
+        rewardPool += amount;
+        emit Sacrifice(msg.sender, amount);
+    }
+
+    /**
+     * @dev adjust reward pool 
+     * @dev only called once during development
+     */
+    function adjustRewardPool() external {
+        rewardPool = rebornToken.balanceOf(address(this));
     }
 
     /**
@@ -309,7 +327,7 @@ contract RebornPortal is
      * @dev read pool attribute
      */
     function getPool(uint256 tokenId) public view returns (Pool memory) {
-	    return pools[tokenId];
+        return pools[tokenId];
     }
 
     /**

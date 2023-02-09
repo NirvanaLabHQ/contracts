@@ -59,6 +59,8 @@ interface IRebornDefination {
 
     event Dry(address user, uint256 tokenId, uint256 amount);
 
+    event Sacrifice(address user, uint256 amount);
+
     event NewSoupPrice(uint256 price);
 
     event NewPricePoint(uint256 price);
@@ -98,6 +100,9 @@ interface IRebornPortal is IRebornDefination {
 
     /// @dev unstake $REBORN on this tombstone
     function dry(uint256 tokenId, uint256 amount) external;
+
+    /// @dev sacrifice some $REBORN token 
+    function sacrifice(uint256 amount) external;
 
     /** set soup price */
     function setSoupPrice(uint256 price) external;
