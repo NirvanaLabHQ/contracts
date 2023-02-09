@@ -1,0 +1,50 @@
+name: Check storage layout
+
+on:
+  pull_request:
+    # Optionally configure to run only for changes in specific files. For example:
+    # paths:
+    # - src/**
+    # - test/**
+    # - foundry.toml
+    # - remappings.txt
+    # - .github/workflows/foundry-storage-check.yml
+
+jobs:
+  check_storage_layout:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: pnpm/action-setup@v2.2.4
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Foundry
+        uses: onbjerg/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Check storage layout
+        uses: Rubilmax/foundry-storage-check@v3.2
+        with:
+          contract: src/RebornPortal.sol:RebornPortal
+          # settings below are optional, but allows to check whether the added storage slots are empty on the deployed contract
+          rpcUrl: https://bsc-testnet.nodereal.io/v1/9385b24e71384bfcbb737c3c774b49bc # the RPC url to use to query the deployed contract's storage slots
+          address: "0xfEbdf06AC0A49Cd7f2F5126656C7067D6713616a" # the address at which the contract check is deployed
+          failOnRemoval: true # fail the CI when removing storage slots (default: false)
+
