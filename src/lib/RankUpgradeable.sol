@@ -9,7 +9,7 @@ contract RankUpgradeable is Initializable {
     CompactArray.Array public ranks;
     using CompactArray for CompactArray.Array;
 
-    uint24 idx;
+    uint24 public idx;
     uint256 public minScoreInRank;
 
     uint256[46] private _gap;
