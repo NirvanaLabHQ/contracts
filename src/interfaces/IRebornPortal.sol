@@ -45,7 +45,8 @@ interface IRebornDefination {
         uint256 indexed PropertyPoint,
         TALENT talent,
         PROPERTIES properties,
-        uint256 indulgences
+        uint256 indulgences,
+        uint256 tokenId
     );
 
     event Engrave(
@@ -67,6 +68,7 @@ interface IRebornDefination {
 
     error InsufficientAmount();
     error NotSigner();
+    error AlreadEngraved();
 }
 
 interface IRebornPortal is IRebornDefination {

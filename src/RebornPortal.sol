@@ -10,7 +10,7 @@ import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
-import {RebornRank} from "src/RebornRank.sol";
+import {RebornRankReplacer} from "src/RebornRankReplacer.sol";
 import {RebornStorage} from "src/RebornStorage.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 import {RenderEngine} from "src/lib/RenderEngine.sol";
@@ -22,7 +22,7 @@ contract RebornPortal is
     RebornStorage,
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
-    RebornRank
+    RebornRankReplacer
 {
     using SafeERC20Upgradeable for IRebornToken;
 
@@ -76,10 +76,15 @@ contract RebornPortal is
         uint256 reward,
         uint256 score,
         uint256 age,
-        uint256 locate
+        uint256 tokenId
     ) external override onlySigner {
+        _requireMinted(tokenId);
+
+        if (uint256(details[tokenId].seed) != 0) {
+            revert AlreadEngraved();
+        }
         // enter the rank list
-        uint256 tokenId = _enter(score, locate);
+        _enter(tokenId, score);
 
         details[tokenId] = LifeDetail(
             seed,
@@ -92,8 +97,6 @@ contract RebornPortal is
             uint128(reward / 10**18)
         );
         //
-        _safeMint(user, tokenId);
-
         rebornToken.mint(user, reward);
 
         emit Engrave(seed, user, score, reward);
@@ -263,13 +266,17 @@ contract RebornPortal is
 
         rebornToken.transferFrom(msg.sender, address(this), rbtAmount);
 
+        /// @dev mint er721, a pass card
+        _safeMint(msg.sender, ++idx);
+
         emit Incarnate(
             msg.sender,
             talentPoint(innate.talent),
             propertyPoint(innate.properties),
             innate.talent,
             innate.properties,
-            rbtAmount
+            rbtAmount,
+            idx
         );
     }
 

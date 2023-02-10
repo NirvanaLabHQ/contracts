@@ -5,6 +5,7 @@ import {ERC20CappedUpgradeable, ERC20Upgradeable} from "@openzeppelin/contracts-
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
+import {ERC20BurnableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
 
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 import {RBTStorage} from "src/RBTStorage.sol";
@@ -15,7 +16,8 @@ contract RBT is
     SafeOwnableUpgradeable,
     UUPSUpgradeable,
     IRebornToken,
-    RBTStorage
+    RBTStorage,
+    ERC20BurnableUpgradeable
 {
     function initialize(
         string memory name_,
@@ -46,10 +48,10 @@ contract RBT is
     /**
      * @dev update minters
      */
-    function updateMinter(
-        address[] calldata toAdd,
-        address[] calldata toRemove
-    ) external onlyOwner {
+    function updateMinter(address[] calldata toAdd, address[] calldata toRemove)
+        external
+        onlyOwner
+    {
         for (uint256 i = 0; i < toAdd.length; i++) {
             minters[toAdd[i]] = true;
             emit MinterUpdate(toAdd[i], true);
