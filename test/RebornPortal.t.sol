@@ -142,6 +142,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
             10 ether,
             1
         );
+        emit Transfer(_user, address(0), 10 ether);
 
         hoax(_user);
         // rbt.permit(_user, address(portal), MAX_INT, deadline, v, r, s);

@@ -14,6 +14,7 @@ import {RebornRankReplacer} from "src/RebornRankReplacer.sol";
 import {RebornStorage} from "src/RebornStorage.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 import {RenderEngine} from "src/lib/RenderEngine.sol";
+import {RBT} from "src/RBT.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -27,7 +28,7 @@ contract RebornPortal is
     using SafeERC20Upgradeable for IRebornToken;
 
     function initialize(
-        IRebornToken rebornToken_,
+        RBT rebornToken_,
         uint256 soupPrice_,
         uint256 priceAndPoint_,
         address owner_,
@@ -264,7 +265,8 @@ contract RebornPortal is
         uint256 rbtAmount = talentPrice(innate.talent) +
             propertyPrice(innate.properties);
 
-        rebornToken.transferFrom(msg.sender, address(this), rbtAmount);
+        /// burn token directly
+        rebornToken.burnFrom(msg.sender, rbtAmount);
 
         /// @dev mint er721, a pass card
         _safeMint(msg.sender, ++idx);

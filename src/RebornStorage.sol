@@ -11,6 +11,8 @@ import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOw
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 
+import {RBT} from "src/RBT.sol";
+
 contract RebornStorage is IRebornDefination {
     /** you need buy a soup before reborn */
     uint256 public soupPrice = 0.01 * 1 ether;
@@ -25,7 +27,7 @@ contract RebornStorage is IRebornDefination {
     uint256 internal _priceAndPoint =
         0x00000000004020000000000000504030000000604020100000000231e19140f;
 
-    IRebornToken public rebornToken;
+    RBT public rebornToken;
 
     mapping(address => bool) public signers;
 
