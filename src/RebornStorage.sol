@@ -39,6 +39,8 @@ contract RebornStorage is IRebornDefination {
 
     mapping(address => mapping(uint256 => Portfolio)) public portfolios;
 
+    mapping(address => address) public referrals;
+
     /// @dev gap for potential vairable
-    uint256[42] private _gap;
+    uint256[41] private _gap;
 }

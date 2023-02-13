@@ -66,6 +66,8 @@ interface IRebornDefination {
 
     event SignerUpdate(address signer, bool valid);
 
+    event Refer(address referee, address referrer);
+
     error InsufficientAmount();
     error NotSigner();
     error AlreadEngraved();
@@ -75,11 +77,24 @@ interface IRebornPortal is IRebornDefination {
     /** init enter and buy */
     function incarnate(Innate memory innate) external payable;
 
+    /** init enter and buy */
+    function incarnate(Innate memory innate, address referrer) external payable;
+
     /** init enter and buy with permit signature */
     function incarnate(
         Innate memory innate,
         uint256 amount,
         uint256 deadline,
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) external payable;
+
+    function incarnate(
+        Innate memory innate,
+        uint256 amount,
+        uint256 deadline,
+        address referrer,
         bytes32 r,
         bytes32 s,
         uint8 v

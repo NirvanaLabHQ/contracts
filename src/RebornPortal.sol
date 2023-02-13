@@ -51,10 +51,25 @@ contract RebornPortal is
         onlyOwner
     {}
 
+    /**
+     * @dev keep it for backwards compatibility
+     */
     function incarnate(Innate memory innate) external payable override {
         _incarnate(innate);
     }
 
+    function incarnate(Innate memory innate, address referrer)
+        external
+        payable
+        override
+    {
+        _incarnate(innate);
+        _refer(referrer);
+    }
+
+    /**
+     * @dev keep it for backwards compatibility
+     */
     function incarnate(
         Innate memory innate,
         uint256 amount,
@@ -65,6 +80,23 @@ contract RebornPortal is
     ) external payable override {
         _permit(amount, deadline, r, s, v);
         _incarnate(innate);
+    }
+
+    /**
+     * @dev incarnate
+     */
+    function incarnate(
+        Innate memory innate,
+        uint256 amount,
+        uint256 deadline,
+        address referrer,
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) external payable override {
+        _permit(amount, deadline, r, s, v);
+        _incarnate(innate);
+        _refer(referrer);
     }
 
     /**
@@ -97,6 +129,11 @@ contract RebornPortal is
         _safeMint(user, tokenId);
         // mint $REBORN reward
         rebornToken.mint(user, reward);
+
+        // mint to referrer, ratio is temporary 0.2
+        if (score >= 100) {
+            _rewardReferrer(msg.sender, reward / 5);
+        }
 
         emit Engrave(seed, user, tokenId, score, reward);
     }
@@ -274,6 +311,25 @@ contract RebornPortal is
             innate.properties,
             rbtAmount
         );
+    }
+
+    /**
+     * @dev record referrer relationship, only one layer
+     */
+    function _refer(address referrer) internal {
+        if (referrals[msg.sender] == address(0)) {
+            referrals[msg.sender] = referrer;
+            emit Refer(msg.sender, referrer);
+        }
+    }
+
+    /**
+     * @dev mint reward to referee's referrer
+     */
+    function _rewardReferrer(address referee, uint256 amount) internal {
+        if (referrals[referee] != address(0)) {
+            rebornToken.mint(referrals[referee], amount);
+        }
     }
 
     /**
