@@ -139,8 +139,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
             35,
             IRebornDefination.TALENT.Genius,
             IRebornDefination.PROPERTIES.S,
-            10 ether,
-            1
+            10 ether
         );
         emit Transfer(_user, address(0), 10 ether);
 
@@ -171,46 +170,11 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         testIncarnateWithPermit();
         vm.expectEmit(true, true, true, true);
-        emit Engrave(seed, _user, score, reward);
+        emit Engrave(seed, _user, 1, score, reward);
 
         vm.prank(signer);
         portal.engrave(seed, _user, reward, score, age, 1);
 
-        // assertEq(portal.details[], b);
-    }
-
-    function testEngraveSameTokenIdFail(
-        bytes32 seed,
-        uint256 reward,
-        uint256 score,
-        uint256 age
-    ) public {
-        vm.assume(reward < rbt.cap() - 100 ether);
-
-        testIncarnateWithPermit();
-
-        vm.startPrank(signer);
-        portal.engrave(seed, _user, reward, score, age, 1);
-
-        vm.expectRevert(AlreadEngraved.selector);
-        portal.engrave(seed, _user, reward, score, age, 1);
-        vm.stopPrank();
-        // assertEq(portal.details[], b);
-    }
-
-    function testEngraveNonexistTokenIdFail(
-        bytes32 seed,
-        uint256 reward,
-        uint256 score,
-        uint256 age
-    ) public {
-        vm.assume(reward < rbt.cap() - 100 ether);
-
-        vm.startPrank(signer);
-
-        vm.expectRevert(bytes("ERC721: invalid token ID"));
-        portal.engrave(seed, _user, reward, score, age, 1);
-        vm.stopPrank();
         // assertEq(portal.details[], b);
     }
 
@@ -247,7 +211,6 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         testEngrave(bytes32(new bytes(32)), amount, 10, 10);
         mockInfuse(_user, 1, amount);
 
-        console.log(rbt.balanceOf(address(portal)));
         vm.expectEmit(true, true, true, true);
         emit Dry(_user, 1, amount);
         emit Transfer(address(portal), _user, amount);

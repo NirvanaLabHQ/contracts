@@ -77,15 +77,11 @@ contract RebornPortal is
         uint256 reward,
         uint256 score,
         uint256 age,
-        uint256 tokenId
+        // for backward compatibility, do not delete
+        uint256 locate
     ) external override onlySigner {
-        _requireMinted(tokenId);
-
-        if (uint256(details[tokenId].seed) != 0) {
-            revert AlreadEngraved();
-        }
         // enter the rank list
-        _enter(tokenId, score);
+        uint256 tokenId = _enter(score);
 
         details[tokenId] = LifeDetail(
             seed,
@@ -97,10 +93,12 @@ contract RebornPortal is
             uint128(0 / 10**18),
             uint128(reward / 10**18)
         );
-        //
+        // mint erc721
+        _safeMint(user, tokenId);
+        // mint $REBORN reward
         rebornToken.mint(user, reward);
 
-        emit Engrave(seed, user, score, reward);
+        emit Engrave(seed, user, tokenId, score, reward);
     }
 
     /**
@@ -268,17 +266,13 @@ contract RebornPortal is
         /// burn token directly
         rebornToken.burnFrom(msg.sender, rbtAmount);
 
-        /// @dev mint er721, a pass card
-        _safeMint(msg.sender, ++idx);
-
         emit Incarnate(
             msg.sender,
             talentPoint(innate.talent),
             propertyPoint(innate.properties),
             innate.talent,
             innate.properties,
-            rbtAmount,
-            idx
+            rbtAmount
         );
     }
 

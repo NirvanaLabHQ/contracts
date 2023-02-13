@@ -45,14 +45,14 @@ interface IRebornDefination {
         uint256 indexed PropertyPoint,
         TALENT talent,
         PROPERTIES properties,
-        uint256 indulgences,
-        uint256 tokenId
+        uint256 indulgences
     );
 
     event Engrave(
         bytes32 indexed seed,
         address indexed user,
-        uint256 indexed score,
+        uint256 indexed tokenId,
+        uint256 score,
         uint256 reward
     );
 
