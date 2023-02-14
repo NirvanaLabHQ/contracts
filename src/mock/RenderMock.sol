@@ -10,10 +10,8 @@ contract RenderMock {
         uint256 round,
         uint256 age,
         address addr,
-        uint256 pay,
         uint256 reward
     ) public pure returns (string memory) {
-        return
-            RenderEngine.render(seed, lifeScore, round, age, addr, pay, reward);
+        return RenderEngine.render(seed, lifeScore, round, age, addr, reward);
     }
 }

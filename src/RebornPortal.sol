@@ -254,7 +254,6 @@ contract RebornPortal is
                                     details[tokenId].round,
                                     details[tokenId].age,
                                     details[tokenId].creator,
-                                    details[tokenId].cost,
                                     details[tokenId].reward
                                 )
                             )
