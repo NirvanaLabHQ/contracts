@@ -236,32 +236,33 @@ contract RebornPortal is
     {
         _requireMinted(tokenId);
 
-        return
-            Base64.encode(
-                bytes(
-                    string.concat(
-                        '{"name": "',
-                        name(),
-                        '","description":"',
-                        "",
-                        '","image":"',
-                        "data:image/svg+xml;base64,",
-                        Base64.encode(
-                            bytes(
-                                RenderEngine.render(
-                                    "seed",
-                                    scores[tokenId],
-                                    details[tokenId].round,
-                                    details[tokenId].age,
-                                    details[tokenId].creator,
-                                    details[tokenId].reward
-                                )
+        string memory metadata = Base64.encode(
+            bytes(
+                string.concat(
+                    '{"name": "',
+                    name(),
+                    '","description":"',
+                    "",
+                    '","image":"',
+                    "data:image/svg+xml;base64,",
+                    Base64.encode(
+                        bytes(
+                            RenderEngine.render(
+                                "seed",
+                                scores[tokenId],
+                                details[tokenId].round,
+                                details[tokenId].age,
+                                details[tokenId].creator,
+                                details[tokenId].reward
                             )
-                        ),
-                        '"}'
-                    )
+                        )
+                    ),
+                    '"}'
                 )
-            );
+            )
+        );
+
+        return string.concat("data:application/json;base64,", metadata);
     }
 
     /**
