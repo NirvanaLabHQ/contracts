@@ -56,9 +56,11 @@ interface IRebornDefination {
         uint256 reward
     );
 
-    event Infuse(address user, uint256 tokenId, uint256 amount);
+    event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
 
-    event Dry(address user, uint256 tokenId, uint256 amount);
+    event Dry(address indexed user, uint256 indexed tokenId, uint256 amount);
+
+    event Baptise(address indexed user, uint256 amount);
 
     event NewSoupPrice(uint256 price);
 
@@ -70,7 +72,8 @@ interface IRebornDefination {
 
     error InsufficientAmount();
     error NotSigner();
-    error AlreadEngraved();
+    error AlreadyEngraved();
+    error AlreadyBaptised();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -109,6 +112,9 @@ interface IRebornPortal is IRebornDefination {
         uint256 age,
         uint256 locate
     ) external;
+
+    /** @dev reward $REBORN for sharing. One address once. */
+    function baptise(address user, uint256 amount) external;
 
     /// @dev stake $REBORN on this tombstone
     function infuse(uint256 tokenId, uint256 amount) external;

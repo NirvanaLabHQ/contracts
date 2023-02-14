@@ -229,4 +229,22 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         string memory metadata = portal.tokenURI(1);
         // console.log(metadata);
     }
+
+    function testBaptise(address user, uint256 amount) public {
+        vm.assume(user != address(0));
+        vm.assume(amount < rbt.cap() - rbt.totalSupply());
+
+        vm.expectEmit(true, true, true, true);
+        emit Baptise(user, amount);
+        emit Transfer(address(0), user, amount);
+
+        vm.prank(signer);
+        portal.baptise(user, amount);
+
+        // expect baptise to the same address fail
+        vm.expectRevert(AlreadyBaptised.selector);
+
+        vm.prank(signer);
+        portal.baptise(user, amount);
+    }
 }

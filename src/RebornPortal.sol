@@ -8,6 +8,8 @@ import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC72
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
 import {RebornRankReplacer} from "src/RebornRankReplacer.sol";
@@ -26,6 +28,7 @@ contract RebornPortal is
     RebornRankReplacer
 {
     using SafeERC20Upgradeable for IRebornToken;
+    using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
     function initialize(
         RBT rebornToken_,
@@ -41,7 +44,6 @@ contract RebornPortal is
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
-        __Rank_init();
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -139,6 +141,25 @@ contract RebornPortal is
     }
 
     /**
+     * @dev baptise
+     */
+    function baptise(address user, uint256 amount)
+        external
+        override
+        onlySigner
+    {
+        if (baptism.get(uint160(user))) {
+            revert AlreadyBaptised();
+        }
+
+        baptism.set(uint160(user));
+
+        rebornToken.mint(user, amount);
+
+        emit Baptise(user, amount);
+    }
+
+    /**
      * @dev degen infuse $REBORN to tombstone
      * @dev expect for bliss
      */
@@ -197,7 +218,6 @@ contract RebornPortal is
     {
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
-        __Rank_init();
     }
 
     /**
@@ -379,12 +399,19 @@ contract RebornPortal is
     }
 
     /**
-     * @dev only allow signer address can do something
+     * @dev check signer implementation
      */
-    modifier onlySigner() {
+    function _checkSigner() internal view {
         if (!signers[msg.sender]) {
             revert NotSigner();
         }
+    }
+
+    /**
+     * @dev only allow signer address can do something
+     */
+    modifier onlySigner() {
+        _checkSigner();
         _;
     }
 }
