@@ -5,13 +5,12 @@ on:
     branches:
       - main
 
-
 jobs:
   foundry-test:
     strategy:
       fail-fast: true
 
-    name: Foundry project
+    name: Verify on scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -34,7 +33,7 @@ jobs:
         run: pnpm install
 
       - name: verify on bnbTest
-        run: pn run verify --network bnbTest
+        run: pnpm run verify --network bnbTest
         env:
           BNB_SCAN_API_KEY: ${{ secrets.BNB_SCAN_API_KEY }}
           BNB_CHAIN_TEST_URL: ${{ secrets.BNB_CHAIN_TEST_URL }}
