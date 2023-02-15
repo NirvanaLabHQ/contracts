@@ -132,10 +132,8 @@ contract RebornPortal is
         // mint $REBORN reward
         rebornToken.mint(user, reward);
 
-        // mint to referrer, ratio is temporary 0.2
-        if (score >= 100) {
-            _rewardReferrer(msg.sender, reward / 5);
-        }
+        // mint to referrer
+        _rewardReferrer(user, score, reward);
 
         emit Engrave(seed, user, tokenId, score, reward);
     }
@@ -344,11 +342,39 @@ contract RebornPortal is
     }
 
     /**
-     * @dev mint reward to referee's referrer
+     * @dev mint refer reward to referee's referrer
      */
-    function _rewardReferrer(address referee, uint256 amount) internal {
-        if (referrals[referee] != address(0)) {
-            rebornToken.mint(referrals[referee], amount);
+    function _rewardReferrer(
+        address referee,
+        uint256 score,
+        uint256 amount
+    ) internal {
+        (address referrar, uint256 referReward) = calculateReferReward(
+            referee,
+            score,
+            amount
+        );
+        if (referrar != address(0)) {
+            rebornToken.mint(referrar, referReward);
+            emit ReferReward(referrar, referReward);
+        }
+    }
+
+    /**
+     * @dev returns refereral and refer reward
+     * @param referee referee address
+     * @param score referee degen life score
+     * @param amount reward to the referee, ERC20 amount
+     */
+    function calculateReferReward(
+        address referee,
+        uint256 score,
+        uint256 amount
+    ) public view returns (address referrar, uint256 referReward) {
+        referrar = referrals[referee];
+        if (score >= 100) {
+            // refer reward ratio is temporary 0.2
+            referReward = amount / 5;
         }
     }
 

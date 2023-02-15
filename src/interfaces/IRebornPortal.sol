@@ -56,6 +56,8 @@ interface IRebornDefination {
         uint256 reward
     );
 
+    event ReferReward(address indexed user, uint256 amount);
+
     event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
 
     event Dry(address indexed user, uint256 indexed tokenId, uint256 amount);
