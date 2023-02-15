@@ -40,8 +40,8 @@ contract RBTTest is Test, IRebornTokenDef {
     /**
      * @dev not owner cannot mint token
      */
-    function testNotOwnerCannotMint(address caller, uint256 amount) public {
-        vm.assume(caller != owner);
+    function testNotMinterCannotMint(address caller, uint256 amount) public {
+        vm.assume(caller != minter && caller != owner);
         vm.assume(amount <= token.cap() - token.totalSupply());
         vm.expectRevert(NotMinter.selector);
         vm.prank(caller);
