@@ -8,7 +8,7 @@ import "src/RebornPortal.sol";
 import {RBT} from "src/RBT.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {EventDefination} from "src/test/EventDefination.sol";
-import {Utils} from "test/Utils.sol";
+import {TestUtils} from "test/TestUtils.sol";
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
 contract RebornPortalTest is Test, IRebornDefination, EventDefination {
@@ -28,7 +28,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         );
 
     function setUp() public {
-        rbt = Utils.deployRBT(owner);
+        rbt = TestUtils.deployRBT(owner);
         mintRBT(rbt, owner, _user, 100 ether);
 
         // deploy portal

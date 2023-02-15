@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
-import {Utils} from "test/Utils.sol";
+import {TestUtils} from "test/TestUtils.sol";
 import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 
 import "src/RBT.sol";
@@ -19,7 +19,7 @@ contract RBTTest is Test, IRebornTokenDef {
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     function setUp() public {
-        token = Utils.deployRBT(owner);
+        token = TestUtils.deployRBT(owner);
         vm.prank(owner);
         address[] memory minterToAdd = new address[](1);
         minterToAdd[0] = minter;

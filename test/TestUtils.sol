@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {RBT} from "src/RBT.sol";
 import "forge-std/Test.sol";
 
-library Utils {
+library TestUtils {
     Vm private constant vm =
         Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 

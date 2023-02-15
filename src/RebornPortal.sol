@@ -421,6 +421,7 @@ contract RebornPortal is
      * @dev read pool attribute
      */
     function getPool(uint256 tokenId) public view returns (Pool memory) {
+        _requireMinted(tokenId);
         return pools[tokenId];
     }
 

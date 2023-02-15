@@ -73,7 +73,7 @@ library RenderEngine {
                     P1,
                     seed,
                     P2,
-                    Strings.toString(lifeScore),
+                    _transformUint256(lifeScore),
                     P3,
                     Strings.toString(round),
                     P4,
@@ -93,9 +93,28 @@ library RenderEngine {
                     P5,
                     _shortenAddr(addr),
                     P6,
-                    Strings.toString(reward),
+                    _transformUint256(reward),
                     P7
                 )
             );
+    }
+
+    function _transformUint256(uint256 value)
+        public
+        pure
+        returns (string memory str)
+    {
+        if (value / 1000 == 0) {
+            str = string(abi.encodePacked(Strings.toString(value), str));
+        } else {
+            str = string(
+                abi.encodePacked(
+                    _transformUint256(value / 1000),
+                    ",",
+                    Strings.toString(value % 1000),
+                    str
+                )
+            );
+        }
     }
 }
