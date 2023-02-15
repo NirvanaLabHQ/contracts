@@ -292,6 +292,22 @@
     <rect x="1144" y="269.998" width="5.99988" height="5.99988" transform="rotate(90 1144 269.998)" fill="black" />
     <rect x="1132" y="269.998" width="5.99988" height="5.99988" transform="rotate(90 1132 269.998)" fill="black" />
 
+
+    <svg xmlns="http://www.w3.org/2000/svg" x="72" y="380"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="120"
+            height="120">
+            <clipPath id="clipCircle">
+                <circle cx="48" cy="48" r="48" />
+            </clipPath>
+            <circle cx="48" cy="48" r="48" fill="#C8145C" />
+            <g clip-path="url(#clipCircle)">
+                <rect x="0" y="0" width="120" height="120"
+                    transform="translate(-10.9796065256941144 20.2907132269583026) rotate(223.8 26 6)" fill="#FA6000" />
+                <rect x="0" y="0" width="120" height="120"
+                    transform="translate(6.928903506889875 20.118573833568204) rotate(175.8 26 62)" fill="#F5AF00" />
+                <rect x="0" y="0" width="120" height="120"
+                    transform="translate(10.41829088631672 -1.2103061372709765) rotate(445.3 6 6)" fill="#03585E" />
+            </g>
+        </svg></svg>
     <defs>
         <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
             <use xlink:href="#image0_539_2800" transform="translate(-0.638851 -1.76978) scale(0.0025463)" />
@@ -314,6 +330,8 @@
             <stop offset="0.503402" stop-color="#FFE7B6" />
             <stop offset="1" stop-color="#A87945" />
         </linearGradient>
+
+
     </defs>
 
     <style>
