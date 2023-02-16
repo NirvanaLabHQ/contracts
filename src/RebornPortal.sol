@@ -35,14 +35,14 @@ contract RebornPortal is
     function initialize(
         RBT rebornToken_,
         uint256 soupPrice_,
-        uint256 priceAndPoint_,
+        uint256 _talentPrice,
         address owner_,
         string memory name_,
         string memory symbol_
     ) public initializer {
         rebornToken = rebornToken_;
         soupPrice = soupPrice_;
-        _priceAndPoint = priceAndPoint_;
+        _talentPrice = _talentPrice;
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
@@ -221,9 +221,9 @@ contract RebornPortal is
     /**
      * @dev set other price
      */
-    function setPriceAndPoint(uint256 pricePoint) external override onlyOwner {
-        _priceAndPoint = pricePoint;
-        emit NewPricePoint(_priceAndPoint);
+    function setTalentPrice(uint256 talenPrice) external override onlyOwner {
+        _talentPrice = talenPrice;
+        emit NewTalentPrice(_talentPrice);
     }
 
     /**
@@ -341,14 +341,7 @@ contract RebornPortal is
         /// burn token directly
         rebornToken.burnFrom(msg.sender, rbtAmount);
 
-        emit Incarnate(
-            msg.sender,
-            talentPoint(innate.talent),
-            propertyPoint(innate.properties),
-            innate.talent,
-            innate.properties,
-            rbtAmount
-        );
+        emit Incarnate(msg.sender, innate.talent, innate.properties, rbtAmount);
     }
 
     /**
@@ -398,42 +391,36 @@ contract RebornPortal is
     }
 
     /**
-     * @dev calculate talent price in $REBORN for each talent
+     * @dev calculate talent price in $REBORN for specific talent point              0
+     * @dev example 0x00000000000000000000000000000000000000000000004b02bc21c12c0a0000
      */
-    function talentPrice(TALENT talent) public view returns (uint256) {
-        return
-            (((_priceAndPoint >> 192) >> (uint8(talent) * 8)) & 0xff) * 1 ether;
-    }
-
-    /**
-     * @dev calculate talent point for each talent
-     */
-    function talentPoint(TALENT talent) public view returns (uint256) {
-        return ((_priceAndPoint >> 128) >> (uint8(talent) * 8)) & 0xff;
+    function talentPrice(uint256 talent) public view returns (uint256) {
+        if (talent < 3 || talent > 8) {
+            revert TalentOutOfScope();
+        }
+        return ((_talentPrice >> ((talent - 3) * 12)) & 0xfff) * 1 ether;
     }
 
     /**
      * @dev calculate properties price in $REBORN for each properties
      */
-    function propertyPrice(PROPERTIES properties)
-        public
-        view
-        returns (uint256)
-    {
-        return
-            (((_priceAndPoint >> 64) >> (uint8(properties) * 8)) & 0xff) *
-            1 ether;
-    }
+    function propertyPrice(uint256 x) public pure returns (uint256) {
+        if (x < 15) {
+            revert PropertiOutOfScope();
+        }
 
-    /**
-     * @dev calculate properties point for each property
-     */
-    function propertyPoint(PROPERTIES properties)
-        public
-        view
-        returns (uint256)
-    {
-        return (_priceAndPoint >> (uint8(properties) * 8)) & 0xff;
+        if (x < 20) {
+            return (x - 15) * 5 ether;
+        }
+        x = x * 10**13;
+
+        uint256 a = 7015565233078191;
+        uint256 b = (1018938200000000 * x) / 10**13;
+        uint256 c = (38833653100000 * x**2) / 10**26;
+        uint256 d = (257904391000 * x**3) / 10**39;
+        uint256 e = (635642262 * x**4) / 10**52;
+        uint256 y = (a + c + e - b - d);
+        return _ceilUint256(y / 10**13) * 1 ether;
     }
 
     /**
@@ -442,6 +429,13 @@ contract RebornPortal is
     function getPool(uint256 tokenId) public view returns (Pool memory) {
         _requireMinted(tokenId);
         return pools[tokenId];
+    }
+
+    /**
+     * @dev ceil a uint256 to the multiple of 5
+     */
+    function _ceilUint256(uint256 value) internal pure returns (uint256) {
+        return value + (5 - (value % 5));
     }
 
     /**

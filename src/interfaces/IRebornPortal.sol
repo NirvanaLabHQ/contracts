@@ -2,23 +2,9 @@
 pragma solidity 0.8.17;
 
 interface IRebornDefination {
-    enum TALENT {
-        Degen,
-        Gifted,
-        Genius
-    }
-
-    enum PROPERTIES {
-        BASIC,
-        C,
-        B,
-        A,
-        S
-    }
-
     struct Innate {
-        TALENT talent;
-        PROPERTIES properties;
+        uint256 talent;
+        uint256 properties;
     }
 
     struct LifeDetail {
@@ -43,8 +29,6 @@ interface IRebornDefination {
         address indexed user,
         uint256 indexed talentPoint,
         uint256 indexed PropertyPoint,
-        TALENT talent,
-        PROPERTIES properties,
         uint256 indulgences
     );
 
@@ -66,7 +50,7 @@ interface IRebornDefination {
 
     event NewSoupPrice(uint256 price);
 
-    event NewPricePoint(uint256 price);
+    event NewTalentPrice(uint256 price);
 
     event SignerUpdate(address signer, bool valid);
 
@@ -76,6 +60,8 @@ interface IRebornDefination {
     error NotSigner();
     error AlreadyEngraved();
     error AlreadyBaptised();
+    error TalentOutOfScope();
+    error PropertiOutOfScope();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -128,5 +114,5 @@ interface IRebornPortal is IRebornDefination {
     function setSoupPrice(uint256 price) external;
 
     /** set price and point */
-    function setPriceAndPoint(uint256 price) external;
+    function setTalentPrice(uint256 price) external;
 }

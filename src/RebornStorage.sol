@@ -18,14 +18,10 @@ contract RebornStorage is IRebornDefination {
     uint256 public soupPrice = 0.01 * 1 ether;
 
     /**
-     * @dev talent and property price in compact mode
-     * @dev |   bytes8  |   bytes8  |   bytes8    |   bytes8    |
-     * @dev |talentPrice|talentPoint|PropertyPrice|PropertyPoint|
-     * @dev  4 2 0 for talent price   6  4  2  1  0  for property price
-     * @dev  5 4 3 for talent point   35 30 25 20 15 for property point
+     * @dev talent price in compact mode
      */
-    uint256 internal _priceAndPoint =
-        0x00000000004020000000000000504030000000604020100000000231e19140f;
+    uint256 internal _talentPrice =
+        0x00000000000000000000000000000000000000000000004b02bc21c12c0a0000;
 
     RBT public rebornToken;
 

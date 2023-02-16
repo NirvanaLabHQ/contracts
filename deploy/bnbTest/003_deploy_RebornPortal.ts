@@ -11,6 +11,9 @@ const func: DeployFunction = async function ({
   const rbt = await get("RBT");
   const render = await get("RenderEngine");
 
+  const talentPrice =
+    "0x00000000000000000000000000000000000000000000004b02bc21c12c0a0000";
+
   await deploy("RebornPortal", {
     from: deployer,
     proxy: {
@@ -22,7 +25,8 @@ const func: DeployFunction = async function ({
           args: [
             rbt.address,
             parseEther("0.01"),
-            "0x00000000000004200000000000064210",
+            //
+            talentPrice,
             owner,
             "Degen Tombstone",
             "RIP",
@@ -45,6 +49,9 @@ const func: DeployFunction = async function ({
   // set portal as minter
   const portal = await get("RebornPortal");
   await execute("RBT", { from: owner }, "updateMinter", [portal.address], []);
+
+  // set price
+  await execute("RebornPortal", { from: owner }, "setTalentPrice", talentPrice);
 };
 func.tags = ["Portal"];
 
