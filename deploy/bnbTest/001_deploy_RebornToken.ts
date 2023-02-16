@@ -17,8 +17,8 @@ const func: DeployFunction = async function ({
         init: {
           methodName: "initialize",
           args: [
+            "Degen Reborn Token",
             "$REBORN",
-            "RBT",
             parseEther(Number(10 ** 10).toString()),
             owner,
           ],
