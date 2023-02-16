@@ -13,8 +13,6 @@ on:
     # - remappings.txt
     # - .github/workflows/foundry-storage-check.yml
 
-permissions: read-all
-
 jobs:
   check_storage_layout:
     runs-on: ubuntu-latest
