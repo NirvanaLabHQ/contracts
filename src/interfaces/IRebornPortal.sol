@@ -61,7 +61,7 @@ interface IRebornDefination {
     error AlreadyEngraved();
     error AlreadyBaptised();
     error TalentOutOfScope();
-    error PropertiOutOfScope();
+    error PropertyOutOfScope();
 }
 
 interface IRebornPortal is IRebornDefination {
