@@ -64,6 +64,7 @@ contract RebornPortal is
         payable
         override
         whenNotPaused
+        nonReentrant
     {
         _incarnate(innate);
     }
@@ -73,6 +74,7 @@ contract RebornPortal is
         payable
         override
         whenNotPaused
+        nonReentrant
     {
         _incarnate(innate);
         _refer(referrer);
@@ -88,7 +90,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external payable override whenNotPaused {
+    ) external payable override whenNotPaused nonReentrant {
         _permit(amount, deadline, r, s, v);
         _incarnate(innate);
     }
@@ -104,7 +106,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external payable override whenNotPaused {
+    ) external payable override whenNotPaused nonReentrant {
         _permit(amount, deadline, r, s, v);
         _incarnate(innate);
         _refer(referrer);
