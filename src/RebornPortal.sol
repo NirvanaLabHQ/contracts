@@ -368,14 +368,13 @@ contract RebornPortal is
      */
     function calculateReferReward(
         address referee,
+        // not delete for backwards compatibility
         uint256 score,
         uint256 amount
     ) public view returns (address referrar, uint256 referReward) {
         referrar = referrals[referee];
-        if (score >= 100) {
-            // refer reward ratio is temporary 0.2
-            referReward = amount / 5;
-        }
+        // refer reward ratio is temporary 0.2
+        referReward = amount / 5;
     }
 
     /**
