@@ -6,6 +6,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
@@ -25,7 +26,8 @@ contract RebornPortal is
     RebornStorage,
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
-    RebornRankReplacer
+    RebornRankReplacer,
+    PausableUpgradeable
 {
     using SafeERC20Upgradeable for IRebornToken;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
@@ -44,6 +46,7 @@ contract RebornPortal is
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
+        __Pausable_init();
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -56,7 +59,12 @@ contract RebornPortal is
     /**
      * @dev keep it for backwards compatibility
      */
-    function incarnate(Innate memory innate) external payable override {
+    function incarnate(Innate memory innate)
+        external
+        payable
+        override
+        whenNotPaused
+    {
         _incarnate(innate);
     }
 
@@ -64,6 +72,7 @@ contract RebornPortal is
         external
         payable
         override
+        whenNotPaused
     {
         _incarnate(innate);
         _refer(referrer);
@@ -79,7 +88,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external payable override {
+    ) external payable override whenNotPaused {
         _permit(amount, deadline, r, s, v);
         _incarnate(innate);
     }
@@ -95,7 +104,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external payable override {
+    ) external payable override whenNotPaused {
         _permit(amount, deadline, r, s, v);
         _incarnate(innate);
         _refer(referrer);
@@ -113,7 +122,7 @@ contract RebornPortal is
         uint256 age,
         // for backward compatibility, do not delete
         uint256 locate
-    ) external override onlySigner {
+    ) external override onlySigner whenNotPaused {
         // enter the rank list
         uint256 tokenId = _enter(score);
 
@@ -145,6 +154,7 @@ contract RebornPortal is
         external
         override
         onlySigner
+        whenNotPaused
     {
         if (baptism.get(uint160(user))) {
             revert AlreadyBaptised();
@@ -161,7 +171,11 @@ contract RebornPortal is
      * @dev degen infuse $REBORN to tombstone
      * @dev expect for bliss
      */
-    function infuse(uint256 tokenId, uint256 amount) external override {
+    function infuse(uint256 tokenId, uint256 amount)
+        external
+        override
+        whenNotPaused
+    {
         _requireMinted(tokenId);
 
         rebornToken.transferFrom(msg.sender, address(this), amount);
@@ -178,7 +192,11 @@ contract RebornPortal is
     /**
      * @dev degen get $REBORN back
      */
-    function dry(uint256 tokenId, uint256 amount) external override {
+    function dry(uint256 tokenId, uint256 amount)
+        external
+        override
+        whenNotPaused
+    {
         Pool storage pool = pools[tokenId];
         pool.totalAmount -= amount;
 
