@@ -406,7 +406,7 @@ contract RebornPortal is
      */
     function propertyPrice(uint256 x) public pure returns (uint256) {
         if (x < 15) {
-            revert PropertiOutOfScope();
+            revert PropertyOutOfScope();
         }
 
         if (x < 20) {
