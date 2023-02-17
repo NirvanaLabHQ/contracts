@@ -97,6 +97,11 @@ contract RebornPortal is
         uint256 age,
         uint256 cost
     ) external override onlySigner whenNotPaused {
+        if (_seeds.get(uint256(seed))) {
+            revert SameSeed();
+        }
+        _seeds.set(uint256(seed));
+
         // enter the rank list
         uint256 tokenId = _enter(score);
 

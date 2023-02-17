@@ -62,6 +62,7 @@ interface IRebornDefination {
     error AlreadyBaptised();
     error TalentOutOfScope();
     error PropertyOutOfScope();
+    error SameSeed();
 }
 
 interface IRebornPortal is IRebornDefination {

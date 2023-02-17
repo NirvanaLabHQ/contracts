@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
+import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 contract RebornStorage is IRebornDefination {
     /** you need buy a soup before reborn */
@@ -31,6 +32,8 @@ contract RebornStorage is IRebornDefination {
 
     RewardVault public vault;
 
+    BitMapsUpgradeable.BitMap internal _seeds;
+
     /// @dev gap for potential vairable
-    uint256[40] private _gap;
+    uint256[39] private _gap;
 }
