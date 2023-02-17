@@ -10,7 +10,7 @@ const func: DeployFunction = async function ({
   const rbt = await get("RBT");
   const portal = await get("RebornPortal");
 
-  await deploy("RebornReward", {
+  await deploy("RewardVault", {
     from: deployer,
     args: [portal.address, rbt.address],
     log: true,
