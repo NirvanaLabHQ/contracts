@@ -94,8 +94,7 @@ contract RebornPortal is
         uint256 reward,
         uint256 score,
         uint256 age,
-        // for backward compatibility, do not delete
-        uint256 locate
+        uint256 cost
     ) external override onlySigner whenNotPaused {
         // enter the rank list
         uint256 tokenId = _enter(score);
@@ -103,11 +102,11 @@ contract RebornPortal is
         details[tokenId] = LifeDetail(
             seed,
             user,
-            ++rounds[user],
             uint16(age),
+            ++rounds[user],
             0,
             // set cost to 0 temporary, should implement later
-            uint128(0 / 10**18),
+            uint128(cost / 10**18),
             uint128(reward / 10**18)
         );
         // mint erc721
@@ -251,7 +250,7 @@ contract RebornPortal is
                                 details[tokenId].round,
                                 details[tokenId].age,
                                 details[tokenId].creator,
-                                details[tokenId].reward
+                                details[tokenId].cost
                             )
                         )
                     ),

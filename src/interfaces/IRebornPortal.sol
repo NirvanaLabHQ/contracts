@@ -11,8 +11,8 @@ interface IRebornDefination {
         bytes32 seed;
         address creator;
         uint16 age;
-        uint16 round;
-        uint64 nothing;
+        uint32 round;
+        uint48 nothing;
         uint128 cost;
         uint128 reward;
     }
