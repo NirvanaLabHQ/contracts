@@ -38,20 +38,20 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
-  await execute(
-    "RebornPortal",
-    { from: owner },
-    "updateSigners",
-    ["0x803470638940Ec595B40397cbAa597439DE55907"],
-    []
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner },
+  //   "updateSigners",
+  //   ["0x803470638940Ec595B40397cbAa597439DE55907"],
+  //   []
+  // );
 
   // set portal as minter
-  const portal = await get("RebornPortal");
-  await execute("RBT", { from: owner }, "updateMinter", [portal.address], []);
+  // const portal = await get("RebornPortal");
+  // await execute("RBT", { from: owner }, "updateMinter", [portal.address], []);
 
   // set price
-  await execute("RebornPortal", { from: owner }, "setTalentPrice", talentPrice);
+  // await execute("RebornPortal", { from: owner }, "setTalentPrice", talentPrice);
 };
 func.tags = ["Portal"];
 
