@@ -227,18 +227,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev warning: only called onece during test
-     * @dev abandoned in production
-     */
-    function initAfterUpgrade(string memory name_, string memory symbol_)
-        external
-        onlyOwner
-    {
-        __ERC721_init(name_, symbol_);
-        __ReentrancyGuard_init();
-    }
-
-    /**
      * @dev update signer
      */
     function updateSigners(
@@ -256,10 +244,10 @@ contract RebornPortal is
     }
 
     /**
-     * @dev withdraw all $REBORN, only called during development
+     * @dev withdraw native token for reward distribution
      */
-    function withdrawAll() external onlyOwner {
-        rebornToken.transfer(msg.sender, rebornToken.balanceOf(address(this)));
+    function withdrawNativeToken(uint256 amount) external onlyOwner {
+        payable(msg.sender).transfer(amount);
     }
 
     /**
@@ -448,7 +436,7 @@ contract RebornPortal is
     }
 
     /**
-     * @dev only allow signer address can do something
+     * @dev only allowed signer address can do something
      */
     modifier onlySigner() {
         _checkSigner();

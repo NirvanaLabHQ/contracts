@@ -63,17 +63,6 @@ contract RBT is
     }
 
     /**
-     * @dev warning: only called onece during test
-     * @dev abandoned in production
-     */
-    function initAfterUpgrade(string memory name_, string memory symbol_)
-        public
-        onlyOwner
-    {
-        __ERC20_init_unchained(name_, symbol_);
-    }
-
-    /**
      * @dev See {ERC20-_mint}.
      */
     function _mint(address account, uint256 amount)
