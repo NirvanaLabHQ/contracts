@@ -48,7 +48,6 @@ contract RebornPortal is
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
         __Pausable_init();
-        vault = new RewardVault(address(this), address(rebornToken_));
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -57,10 +56,6 @@ contract RebornPortal is
         override
         onlyOwner
     {}
-
-    function initAfterUpgrade() public onlyOwner {
-        vault = new RewardVault(owner(), address(rebornToken));
-    }
 
     function incarnate(Innate memory innate, address referrer)
         external
@@ -193,6 +188,20 @@ contract RebornPortal is
     function setSoupPrice(uint256 price) external override onlyOwner {
         soupPrice = price;
         emit NewSoupPrice(price);
+    }
+
+    /**
+     * @dev set vault
+     */
+    function setVault(RewardVault vault_) external onlyOwner {
+        vault = vault_;
+    }
+
+    /**
+     * @dev withdraw token from vault
+     */
+    function withdrawVault() external onlyOwner {
+        vault.withdrawEmergency(owner());
     }
 
     /**

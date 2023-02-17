@@ -6,6 +6,7 @@ import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 
 import "src/RebornPortal.sol";
 import {RBT} from "src/RBT.sol";
+import {RewardVault} from "src/RewardVault.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {EventDefination} from "src/test/EventDefination.sol";
 import {TestUtils} from "test/TestUtils.sol";
@@ -38,6 +39,11 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         toAdd[0] = signer;
         address[] memory toRemove;
         portal.updateSigners(toAdd, toRemove);
+
+        // deploy vault
+        RewardVault vault = new RewardVault(address(portal), address(rbt));
+        vm.prank(owner);
+        portal.setVault(vault);
 
         // add portal as minter
         vm.prank(owner);
