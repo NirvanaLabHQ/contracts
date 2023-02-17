@@ -18,6 +18,7 @@ import {RebornStorage} from "src/RebornStorage.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 import {RenderEngine} from "src/lib/RenderEngine.sol";
 import {RBT} from "src/RBT.sol";
+import {RewardVault} from "src/RewardVault.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -47,6 +48,7 @@ contract RebornPortal is
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
         __Pausable_init();
+        vault = new RewardVault(address(this), address(rebornToken_));
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -55,6 +57,10 @@ contract RebornPortal is
         override
         onlyOwner
     {}
+
+    function initAfterUpgrade() public onlyOwner {
+        vault = new RewardVault(owner(), address(rebornToken));
+    }
 
     function incarnate(Innate memory innate, address referrer)
         external
@@ -111,8 +117,8 @@ contract RebornPortal is
         );
         // mint erc721
         _safeMint(user, tokenId);
-        // mint $REBORN reward
-        rebornToken.mint(user, reward);
+        // send $REBORN reward
+        vault.reward(user, reward);
 
         // mint to referrer
         _rewardReferrer(user, score, reward);

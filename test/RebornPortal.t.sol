@@ -158,6 +158,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         uint256 age
     ) public {
         vm.assume(reward < rbt.cap() - 100 ether);
+        mintRBT(rbt, owner, address(portal.vault()), reward);
 
         testIncarnateWithPermit();
         vm.expectEmit(true, true, true, true);

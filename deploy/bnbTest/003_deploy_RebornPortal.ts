@@ -52,6 +52,9 @@ const func: DeployFunction = async function ({
 
   // set price
   // await execute("RebornPortal", { from: owner }, "setTalentPrice", talentPrice);
+
+  // init after upgrade
+  // await execute("RebornPortal", { from: owner }, "initAfterUpgrade");
 };
 func.tags = ["Portal"];
 

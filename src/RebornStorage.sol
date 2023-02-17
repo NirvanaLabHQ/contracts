@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {RBT} from "src/RBT.sol";
+import {RewardVault} from "src/RewardVault.sol";
 
 contract RebornStorage is IRebornDefination {
     /** you need buy a soup before reborn */
@@ -28,6 +29,8 @@ contract RebornStorage is IRebornDefination {
 
     mapping(address => address) public referrals;
 
+    RewardVault public vault;
+
     /// @dev gap for potential vairable
-    uint256[41] private _gap;
+    uint256[40] private _gap;
 }
