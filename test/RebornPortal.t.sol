@@ -138,9 +138,10 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         hoax(_user);
         // rbt.permit(_user, address(portal), MAX_INT, deadline, v, r, s);
         bytes memory callData = abi.encodeWithSignature(
-            "incarnate((uint256,uint256),uint256,uint256,bytes32,bytes32,uint8)",
+            "incarnate((uint256,uint256),address,uint256,uint256,bytes32,bytes32,uint8)",
             5,
             20,
+            address(0),
             MAX_INT,
             deadline,
             r,

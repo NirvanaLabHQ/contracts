@@ -56,19 +56,6 @@ contract RebornPortal is
         onlyOwner
     {}
 
-    /**
-     * @dev keep it for backwards compatibility
-     */
-    function incarnate(Innate memory innate)
-        external
-        payable
-        override
-        whenNotPaused
-        nonReentrant
-    {
-        _incarnate(innate);
-    }
-
     function incarnate(Innate memory innate, address referrer)
         external
         payable
@@ -81,28 +68,13 @@ contract RebornPortal is
     }
 
     /**
-     * @dev keep it for backwards compatibility
-     */
-    function incarnate(
-        Innate memory innate,
-        uint256 amount,
-        uint256 deadline,
-        bytes32 r,
-        bytes32 s,
-        uint8 v
-    ) external payable override whenNotPaused nonReentrant {
-        _permit(amount, deadline, r, s, v);
-        _incarnate(innate);
-    }
-
-    /**
      * @dev incarnate
      */
     function incarnate(
         Innate memory innate,
+        address referrer,
         uint256 amount,
         uint256 deadline,
-        address referrer,
         bytes32 r,
         bytes32 s,
         uint8 v

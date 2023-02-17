@@ -66,26 +66,13 @@ interface IRebornDefination {
 
 interface IRebornPortal is IRebornDefination {
     /** init enter and buy */
-    function incarnate(Innate memory innate) external payable;
-
-    /** init enter and buy */
     function incarnate(Innate memory innate, address referrer) external payable;
 
-    /** init enter and buy with permit signature */
     function incarnate(
         Innate memory innate,
-        uint256 amount,
-        uint256 deadline,
-        bytes32 r,
-        bytes32 s,
-        uint8 v
-    ) external payable;
-
-    function incarnate(
-        Innate memory innate,
-        uint256 amount,
-        uint256 deadline,
         address referrer,
+        uint256 amount,
+        uint256 deadline,
         bytes32 r,
         bytes32 s,
         uint8 v
