@@ -136,7 +136,7 @@ contract RebornPortal is
 
         baptism.set(uint160(user));
 
-        rebornToken.mint(user, amount);
+        vault.reward(user, amount);
 
         emit Baptise(user, amount);
     }
@@ -342,7 +342,7 @@ contract RebornPortal is
             amount
         );
         if (referrar != address(0)) {
-            rebornToken.mint(referrar, referReward);
+            vault.reward(referrar, referReward);
             emit ReferReward(referrar, referReward);
         }
     }

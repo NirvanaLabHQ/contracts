@@ -231,6 +231,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     function testBaptise(address user, uint256 amount) public {
         vm.assume(user != address(0));
         vm.assume(amount < rbt.cap() - rbt.totalSupply());
+        mintRBT(rbt, owner, address(portal.vault()), amount);
 
         vm.expectEmit(true, true, true, true);
         emit Baptise(user, amount);

@@ -5,7 +5,7 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get, execute } = deployments;
+  const { deploy, get } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
