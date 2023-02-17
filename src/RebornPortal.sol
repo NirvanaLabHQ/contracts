@@ -392,7 +392,7 @@ contract RebornPortal is
     /**
      * @dev calculate properties price in $REBORN for each properties
      */
-    function propertyPrice(uint256 x) public pure returns (uint256) {
+    function propertyPrice(uint256 x) public returns (uint256) {
         if (x < 15) {
             revert PropertyOutOfScope();
         }
@@ -408,7 +408,7 @@ contract RebornPortal is
         uint256 d = (257904391000 * x**3) / 10**39;
         uint256 e = (635642262 * x**4) / 10**52;
         uint256 y = (a + c + e - b - d);
-        return _ceilUint256(y / 10**13) * 1 ether;
+        return _ceilUint256ToMultipleOfFive(_ceilUint256(y, 13)) * 1 ether;
     }
 
     /**
@@ -420,9 +420,31 @@ contract RebornPortal is
     }
 
     /**
+     * @dev ceil a uint256 and remove decimal
+     */
+    function _ceilUint256(uint256 value, uint256 decimal)
+        internal
+        pure
+        returns (uint256)
+    {
+        if (value - (value / 10**decimal) * 10**decimal == 0) {
+            return value / 10**decimal;
+        } else {
+            return value / 10**decimal + 1;
+        }
+    }
+
+    /**
      * @dev ceil a uint256 to the multiple of 5
      */
-    function _ceilUint256(uint256 value) internal pure returns (uint256) {
+    function _ceilUint256ToMultipleOfFive(uint256 value)
+        internal
+        pure
+        returns (uint256)
+    {
+        if (value % 5 == 0) {
+            return value;
+        }
         return value + (5 - (value % 5));
     }
 
