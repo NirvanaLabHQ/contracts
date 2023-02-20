@@ -205,8 +205,8 @@ contract RebornPortal is
     /**
      * @dev withdraw token from vault
      */
-    function withdrawVault() external onlyOwner {
-        vault.withdrawEmergency(owner());
+    function withdrawVault(address to) external onlyOwner {
+        vault.withdrawEmergency(to);
     }
 
     /**
