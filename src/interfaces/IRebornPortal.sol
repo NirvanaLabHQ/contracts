@@ -15,6 +15,7 @@ interface IRebornDefination {
         uint48 nothing;
         uint128 cost;
         uint128 reward;
+        uint256 score;
     }
 
     struct Pool {

@@ -13,7 +13,6 @@ import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/stru
 
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
-import {RebornRankReplacer} from "src/RebornRankReplacer.sol";
 import {RebornStorage} from "src/RebornStorage.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 import {RenderEngine} from "src/lib/RenderEngine.sol";
@@ -27,7 +26,6 @@ contract RebornPortal is
     RebornStorage,
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
-    RebornRankReplacer,
     PausableUpgradeable
 {
     using SafeERC20Upgradeable for IRebornToken;
@@ -102,8 +100,8 @@ contract RebornPortal is
         }
         _seeds.set(uint256(seed));
 
-        // enter the rank list
-        uint256 tokenId = _enter(score);
+        // tokenId auto increment 
+        uint256 tokenId = ++idx;
 
         details[tokenId] = LifeDetail(
             seed,
@@ -113,7 +111,8 @@ contract RebornPortal is
             0,
             // set cost to 0 temporary, should implement later
             uint128(cost / 10**18),
-            uint128(reward / 10**18)
+            uint128(reward / 10**18),
+            score
         );
         // mint erc721
         _safeMint(user, tokenId);
@@ -266,7 +265,7 @@ contract RebornPortal is
                         bytes(
                             RenderEngine.render(
                                 "seed",
-                                scores[tokenId],
+                                details[tokenId].score,
                                 details[tokenId].round,
                                 details[tokenId].age,
                                 details[tokenId].creator,

@@ -34,6 +34,10 @@ contract RebornStorage is IRebornDefination {
 
     BitMapsUpgradeable.BitMap internal _seeds;
 
+    uint256 public idx;
+
+    BitMapsUpgradeable.BitMap baptism;
+
     /// @dev gap for potential vairable
-    uint256[39] private _gap;
+    uint256[37] private _gap;
 }
