@@ -58,7 +58,6 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         portal_.initialize(
             rbt,
             0.01 * 1 ether,
-            0x00000000000000000000000000000000000000000000004b02bc21c12c0a0000,
             owner,
             "Degen Tombstone",
             "RIP"
@@ -73,33 +72,6 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     ) public {
         vm.prank(owner_);
         rbt_.mint(account, amount);
-    }
-
-    function testTalantPrice() public {
-        assertEq(portal.talentPrice(3), 0);
-        assertEq(portal.talentPrice(4), 160 ether);
-        assertEq(portal.talentPrice(5), 300 ether);
-        assertEq(portal.talentPrice(6), 540 ether);
-        assertEq(portal.talentPrice(7), 700 ether);
-        assertEq(portal.talentPrice(8), 1200 ether);
-    }
-
-    function testPropertiesPrice() public {
-        assertEq(portal.propertyPrice(15), 0 ether);
-        assertEq(portal.propertyPrice(16), 5 ether);
-        assertEq(portal.propertyPrice(17), 10 ether);
-        assertEq(portal.propertyPrice(18), 15 ether);
-        assertEq(portal.propertyPrice(19), 20 ether);
-        assertEq(portal.propertyPrice(20), 25 ether);
-        assertEq(portal.propertyPrice(21), 50 ether);
-        assertEq(portal.propertyPrice(22), 80 ether);
-        assertEq(portal.propertyPrice(30), 495 ether);
-        assertEq(portal.propertyPrice(40), 1355 ether);
-        assertEq(portal.propertyPrice(50), 2490 ether);
-        assertEq(portal.propertyPrice(60), 3825 ether);
-        assertEq(portal.propertyPrice(80), 6805 ether);
-        assertEq(portal.propertyPrice(88), 8045 ether);
-        assertEq(portal.propertyPrice(100), 9915 ether);
     }
 
     /**
@@ -138,15 +110,15 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(10, hash);
 
         vm.expectEmit(true, true, true, true);
-        emit Incarnate(_user, 5, 20, 325 ether);
-        emit Transfer(_user, address(0), 325 ether);
+        emit Incarnate(_user, 5 ether, 20 ether);
+        emit Transfer(_user, address(0), 25 ether);
 
         hoax(_user);
         // rbt.permit(_user, address(portal), MAX_INT, deadline, v, r, s);
         bytes memory callData = abi.encodeWithSignature(
             "incarnate((uint256,uint256),address,uint256,uint256,bytes32,bytes32,uint8)",
-            5,
-            20,
+            5 ether,
+            20 ether,
             address(0),
             MAX_INT,
             deadline,

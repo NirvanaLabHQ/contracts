@@ -3,8 +3,8 @@ pragma solidity 0.8.17;
 
 interface IRebornDefination {
     struct Innate {
-        uint256 talent;
-        uint256 properties;
+        uint256 talentPrice;
+        uint256 propertyPrice;
     }
 
     struct LifeDetail {
@@ -28,9 +28,8 @@ interface IRebornDefination {
 
     event Incarnate(
         address indexed user,
-        uint256 indexed talentPoint,
-        uint256 indexed PropertyPoint,
-        uint256 indulgences
+        uint256 indexed talentPrice,
+        uint256 indexed PropertyPrice
     );
 
     event Engrave(
@@ -101,7 +100,4 @@ interface IRebornPortal is IRebornDefination {
 
     /** set soup price */
     function setSoupPrice(uint256 price) external;
-
-    /** set price and point */
-    function setTalentPrice(uint256 price) external;
 }

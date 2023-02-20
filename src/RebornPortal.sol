@@ -34,14 +34,12 @@ contract RebornPortal is
     function initialize(
         RBT rebornToken_,
         uint256 soupPrice_,
-        uint256 _talentPrice,
         address owner_,
         string memory name_,
         string memory symbol_
     ) public initializer {
         rebornToken = rebornToken_;
         soupPrice = soupPrice_;
-        _talentPrice = _talentPrice;
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
@@ -100,7 +98,7 @@ contract RebornPortal is
         }
         _seeds.set(uint256(seed));
 
-        // tokenId auto increment 
+        // tokenId auto increment
         uint256 tokenId = ++idx;
 
         details[tokenId] = LifeDetail(
@@ -209,14 +207,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev set other price
-     */
-    function setTalentPrice(uint256 talenPrice) external override onlyOwner {
-        _talentPrice = talenPrice;
-        emit NewTalentPrice(_talentPrice);
-    }
-
-    /**
      * @dev update signer
      */
     function updateSigners(
@@ -313,13 +303,12 @@ contract RebornPortal is
         payable(msg.sender).transfer(msg.value - soupPrice);
 
         // reborn token needed
-        uint256 rbtAmount = talentPrice(innate.talent) +
-            propertyPrice(innate.properties);
+        uint256 rbtAmount = innate.talentPrice + innate.propertyPrice;
 
         /// burn token directly
         rebornToken.burnFrom(msg.sender, rbtAmount);
 
-        emit Incarnate(msg.sender, innate.talent, innate.properties, rbtAmount);
+        emit Incarnate(msg.sender, innate.talentPrice, innate.propertyPrice);
     }
 
     /**
@@ -366,39 +355,6 @@ contract RebornPortal is
         referrar = referrals[referee];
         // refer reward ratio is temporary 0.2
         referReward = amount / 5;
-    }
-
-    /**
-     * @dev calculate talent price in $REBORN for specific talent point              0
-     * @dev example 0x00000000000000000000000000000000000000000000004b02bc21c12c0a0000
-     */
-    function talentPrice(uint256 talent) public view returns (uint256) {
-        if (talent < 3 || talent > 8) {
-            revert TalentOutOfScope();
-        }
-        return ((_talentPrice >> ((talent - 3) * 12)) & 0xfff) * 1 ether;
-    }
-
-    /**
-     * @dev calculate properties price in $REBORN for each properties
-     */
-    function propertyPrice(uint256 x) public pure returns (uint256) {
-        if (x < 15) {
-            revert PropertyOutOfScope();
-        }
-
-        if (x < 20) {
-            return (x - 15) * 5 ether;
-        }
-        x = x * 10**13;
-
-        uint256 a = 7015565233078191;
-        uint256 b = (1018938200000000 * x) / 10**13;
-        uint256 c = (38833653100000 * x**2) / 10**26;
-        uint256 d = (257904391000 * x**3) / 10**39;
-        uint256 e = (635642262 * x**4) / 10**52;
-        uint256 y = (a + c + e - b - d);
-        return _ceilUint256ToMultipleOfFive(_ceilUint256(y, 13)) * 1 ether;
     }
 
     /**

@@ -10,12 +10,6 @@ contract RebornStorage is IRebornDefination {
     /** you need buy a soup before reborn */
     uint256 public soupPrice = 0.01 * 1 ether;
 
-    /**
-     * @dev talent price in compact mode
-     */
-    uint256 internal _talentPrice =
-        0x00000000000000000000000000000000000000000000004b02bc21c12c0a0000;
-
     RBT public rebornToken;
 
     mapping(address => bool) public signers;
@@ -39,5 +33,5 @@ contract RebornStorage is IRebornDefination {
     BitMapsUpgradeable.BitMap baptism;
 
     /// @dev gap for potential vairable
-    uint256[37] private _gap;
+    uint256[38] private _gap;
 }
