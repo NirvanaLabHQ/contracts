@@ -118,7 +118,7 @@ contract RebornPortal is
         vault.reward(user, reward);
 
         // mint to referrer
-        _rewardReferrer(user, score, reward);
+        _rewardReferrer(user, reward);
 
         emit Engrave(seed, user, tokenId, score, reward);
     }
@@ -324,14 +324,9 @@ contract RebornPortal is
     /**
      * @dev mint refer reward to referee's referrer
      */
-    function _rewardReferrer(
-        address referee,
-        uint256 score,
-        uint256 amount
-    ) internal {
+    function _rewardReferrer(address referee, uint256 amount) internal {
         (address referrar, uint256 referReward) = calculateReferReward(
             referee,
-            score,
             amount
         );
         if (referrar != address(0)) {
@@ -343,15 +338,13 @@ contract RebornPortal is
     /**
      * @dev returns refereral and refer reward
      * @param referee referee address
-     * @param score referee degen life score
      * @param amount reward to the referee, ERC20 amount
      */
-    function calculateReferReward(
-        address referee,
-        // not delete for backwards compatibility
-        uint256 score,
-        uint256 amount
-    ) public view returns (address referrar, uint256 referReward) {
+    function calculateReferReward(address referee, uint256 amount)
+        public
+        view
+        returns (address referrar, uint256 referReward)
+    {
         referrar = referrals[referee];
         // refer reward ratio is temporary 0.2
         referReward = amount / 5;

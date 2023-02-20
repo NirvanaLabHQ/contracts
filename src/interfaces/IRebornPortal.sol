@@ -86,7 +86,7 @@ interface IRebornPortal is IRebornDefination {
         uint256 reward,
         uint256 score,
         uint256 age,
-        uint256 locate
+        uint256 cost
     ) external;
 
     /** @dev reward $REBORN for sharing. One address once. */
