@@ -383,7 +383,7 @@ contract RebornPortal is
     /**
      * @dev calculate properties price in $REBORN for each properties
      */
-    function propertyPrice(uint256 x) public returns (uint256) {
+    function propertyPrice(uint256 x) public pure returns (uint256) {
         if (x < 15) {
             revert PropertyOutOfScope();
         }
