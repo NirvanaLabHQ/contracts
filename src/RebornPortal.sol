@@ -326,6 +326,8 @@ contract RebornPortal is
         if (referrals[msg.sender] == address(0)) {
             referrals[msg.sender] = referrer;
             emit Refer(msg.sender, referrer);
+        } else {
+            revert RefererAlreadyExist();
         }
     }
 
