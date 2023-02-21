@@ -15,7 +15,7 @@ contract RenderEngineTest is Test {
             9999,
             101,
             0x1E18EEEEeeeeEeEeEEEeEEEeEEeeEeeeeEeed8e5,
-            222222
+            222222 * 10**18
         );
         assertEq(abi.encodePacked(minSvg), abi.encodePacked(svg));
     }
@@ -103,8 +103,8 @@ contract RenderEngineTest is Test {
             9999,
             101,
             0x1E18EEEEeeeeEeEeEEEeEEEeEEeeEeeeeEeed8e5,
-            222222,
-            222222
+            222222 * 10**18,
+            222222 * 10**18
         );
         assertEq(
             abi.encodePacked(traits),

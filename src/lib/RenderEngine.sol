@@ -59,7 +59,7 @@ library RenderEngine {
         uint256 reward
     ) public pure returns (string memory) {
         string memory Part1 = _renderSvgPart1(seed, lifeScore, round, age);
-        string memory Part2 = _renderSvgPart2(addr, reward);
+        string memory Part2 = _renderSvgPart2(addr, reward / 10**18);
         return string(abi.encodePacked(Part1, Part2));
     }
 
@@ -76,7 +76,7 @@ library RenderEngine {
             string(
                 abi.encodePacked(
                     _renderTraitPart1(seed, lifeScore, round, age),
-                    _renderTraitPart2(creator, reward, cost)
+                    _renderTraitPart2(creator, reward / 10**18, cost / 10**18)
                 )
             );
     }

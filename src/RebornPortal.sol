@@ -106,8 +106,8 @@ contract RebornPortal is
             ++rounds[user],
             0,
             // set cost to 0 temporary, should implement later
-            uint128(cost / 10**18),
-            uint128(reward / 10**18),
+            uint128(cost),
+            uint128(reward),
             score
         );
         // mint erc721
