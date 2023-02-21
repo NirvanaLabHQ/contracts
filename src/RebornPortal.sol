@@ -253,7 +253,7 @@ contract RebornPortal is
                     "data:image/svg+xml;base64,",
                     Base64.encode(
                         bytes(
-                            RenderEngine.render(
+                            RenderEngine.renderSvg(
                                 details[tokenId].seed,
                                 details[tokenId].score,
                                 details[tokenId].round,
@@ -263,7 +263,17 @@ contract RebornPortal is
                             )
                         )
                     ),
-                    '"}'
+                    '","attributes": ',
+                    RenderEngine.renderTrait(
+                        details[tokenId].seed,
+                        details[tokenId].score,
+                        details[tokenId].round,
+                        details[tokenId].age,
+                        details[tokenId].creator,
+                        details[tokenId].reward,
+                        details[tokenId].cost
+                    ),
+                    "}"
                 )
             )
         );

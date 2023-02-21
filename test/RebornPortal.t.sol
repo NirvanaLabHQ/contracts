@@ -197,7 +197,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     ) public {
         testEngrave(seed, reward, score, age);
         string memory metadata = portal.tokenURI(1);
-        // console.log(metadata);
+        console.log(metadata);
     }
 
     function testBaptise(address user, uint256 amount) public {

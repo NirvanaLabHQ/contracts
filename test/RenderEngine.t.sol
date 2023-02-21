@@ -9,7 +9,7 @@ import "src/lib/RenderEngine.sol";
 contract RenderEngineTest is Test {
     function testRenderOne() public {
         string memory minSvg = vm.readFile("resources/RIP.new.min.svg");
-        string memory svg = RenderEngine.render(
+        string memory svg = RenderEngine.renderSvg(
             hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641",
             2222222,
             9999,
@@ -92,6 +92,24 @@ contract RenderEngineTest is Test {
                 RenderEngine._transformBytes32Seed(
                     hex"0000000000000000000000000000000000000000000000000000000000001e62"
                 )
+            )
+        );
+    }
+
+    function testRenderTrait() public {
+        string memory traits = RenderEngine.renderTrait(
+            hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641",
+            2222222,
+            9999,
+            101,
+            0x1E18EEEEeeeeEeEeEEEeEEEeEEeeEeeeeEeed8e5,
+            222222,
+            222222
+        );
+        assertEq(
+            abi.encodePacked(traits),
+            abi.encodePacked(
+                '[{"trait_type": "Seed", "value": "0x965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641"},{"trait_type": "Life Score", "value": 2222222},{"trait_type": "Round", "value": 9999},{"trait_type": "Age", "value": 101},{"trait_type": "Creator", "value": "0x1e18eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeed8e5"},{"trait_type": "Reward", "value": 222222},{"trait_type": "Cost", "value": 222222}]'
             )
         );
     }
