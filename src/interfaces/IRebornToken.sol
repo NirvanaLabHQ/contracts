@@ -5,9 +5,9 @@ import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20
 import {IERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol";
 
 interface IRebornTokenDef {
-    /// @dev caller not minter
+    /// @dev revert when the caller is not minter 
     error NotMinter();
-    /// @dev minter update event
+    /// @dev emit when minter is updated
     event MinterUpdate(address minter, bool valid);
 }
 

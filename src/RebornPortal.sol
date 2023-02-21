@@ -46,19 +46,14 @@ contract RebornPortal is
     }
 
     // solhint-disable-next-line no-empty-blocks
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyOwner
-    {}
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
-    function incarnate(Innate memory innate, address referrer)
-        external
-        payable
-        override
-        whenNotPaused
-        nonReentrant
-    {
+    function incarnate(
+        Innate memory innate,
+        address referrer
+    ) external payable override whenNotPaused nonReentrant {
         _incarnate(innate);
         _refer(referrer);
     }
@@ -81,8 +76,7 @@ contract RebornPortal is
     }
 
     /**
-     * @dev engrave the result on chain and reward
-     * @param seed uuid seed string without "-"  in bytes32
+     * @inheritdoc IRebornPortal
      */
     function engrave(
         bytes32 seed,
@@ -123,14 +117,12 @@ contract RebornPortal is
     }
 
     /**
-     * @dev baptise
+     * @inheritdoc IRebornPortal
      */
-    function baptise(address user, uint256 amount)
-        external
-        override
-        onlySigner
-        whenNotPaused
-    {
+    function baptise(
+        address user,
+        uint256 amount
+    ) external override onlySigner whenNotPaused {
         if (baptism.get(uint160(user))) {
             revert AlreadyBaptised();
         }
@@ -143,14 +135,12 @@ contract RebornPortal is
     }
 
     /**
-     * @dev degen infuse $REBORN to tombstone
-     * @dev expect for bliss
+     * @inheritdoc IRebornPortal
      */
-    function infuse(uint256 tokenId, uint256 amount)
-        external
-        override
-        whenNotPaused
-    {
+    function infuse(
+        uint256 tokenId,
+        uint256 amount
+    ) external override whenNotPaused {
         _requireMinted(tokenId);
 
         rebornToken.transferFrom(msg.sender, address(this), amount);
@@ -165,13 +155,12 @@ contract RebornPortal is
     }
 
     /**
-     * @dev degen get $REBORN back
+     * @inheritdoc IRebornPortal
      */
-    function dry(uint256 tokenId, uint256 amount)
-        external
-        override
-        whenNotPaused
-    {
+    function dry(
+        uint256 tokenId,
+        uint256 amount
+    ) external override whenNotPaused {
         Pool storage pool = pools[tokenId];
         pool.totalAmount -= amount;
 
@@ -184,7 +173,7 @@ contract RebornPortal is
     }
 
     /**
-     * @dev set soup price
+     * @inheritdoc IRebornPortal
      */
     function setSoupPrice(uint256 price) external override onlyOwner {
         soupPrice = price;
@@ -193,6 +182,7 @@ contract RebornPortal is
 
     /**
      * @dev set vault
+     * @param vault_ new vault address
      */
     function setVault(RewardVault vault_) external onlyOwner {
         vault = vault_;
@@ -200,13 +190,16 @@ contract RebornPortal is
 
     /**
      * @dev withdraw token from vault
+     * @param to the address which owner withdraw token to
      */
     function withdrawVault(address to) external onlyOwner {
         vault.withdrawEmergency(to);
     }
 
     /**
-     * @dev update signer
+     * @dev update signers
+     * @param toAdd list of to be added signer
+     * @param toRemove list of to be removed signer
      */
     function updateSigners(
         address[] calldata toAdd,
@@ -224,6 +217,7 @@ contract RebornPortal is
 
     /**
      * @dev withdraw native token for reward distribution
+     * @dev amount how much to withdraw
      */
     function withdrawNativeToken(uint256 amount) external onlyOwner {
         payable(msg.sender).transfer(amount);
@@ -232,13 +226,9 @@ contract RebornPortal is
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
         _requireMinted(tokenId);
 
         string memory metadata = Base64.encode(
@@ -349,11 +339,10 @@ contract RebornPortal is
      * @param referee referee address
      * @param amount reward to the referee, ERC20 amount
      */
-    function calculateReferReward(address referee, uint256 amount)
-        public
-        view
-        returns (address referrar, uint256 referReward)
-    {
+    function calculateReferReward(
+        address referee,
+        uint256 amount
+    ) public view returns (address referrar, uint256 referReward) {
         referrar = referrals[referee];
         // refer reward ratio is temporary 0.2
         referReward = amount / 5;

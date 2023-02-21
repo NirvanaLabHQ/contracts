@@ -50,26 +50,38 @@ interface IRebornDefination {
 
     event NewSoupPrice(uint256 price);
 
-    event NewTalentPrice(uint256 price);
-
     event SignerUpdate(address signer, bool valid);
 
     event Refer(address referee, address referrer);
 
+    /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
+    /// @dev revert when to caller is not signer
     error NotSigner();
-    error AlreadyEngraved();
+    /// @dev revert when the user has been rewarded for share game
     error AlreadyBaptised();
-    error TalentOutOfScope();
-    error PropertyOutOfScope();
+    /// @dev revert when the random seed is duplicated
     error SameSeed();
-    error RefererAlreadyExist();
 }
 
 interface IRebornPortal is IRebornDefination {
-    /** init enter and buy */
+    /**
+     * @dev user buy the innate for the life
+     * @param innate talent and property choice
+     * @param referrer the referrer address
+     */
     function incarnate(Innate memory innate, address referrer) external payable;
 
+    /**
+     * @dev user buy the innate for the life with ERC-20 permit execute
+     * @param innate talent and property choice
+     * @param referrer the referrer address
+     * @param amount amount of token apporve
+     * @param deadline deadline of signature
+     * @param r r of signature
+     * @param s s of the signature
+     * @param v v of the signature
+     */
     function incarnate(
         Innate memory innate,
         address referrer,
@@ -80,7 +92,14 @@ interface IRebornPortal is IRebornDefination {
         uint8 v
     ) external payable;
 
-    /** save data on chain and get reward */
+    /**
+     * @dev engrave the result on chain and reward
+     * @param seed random seed in bytes32
+     * @param user user address
+     * @param reward $REBORN user earns, decimal 10^18
+     * @param score life score
+     * @param cost user cost for this life
+     */
     function engrave(
         bytes32 seed,
         address user,
@@ -90,15 +109,30 @@ interface IRebornPortal is IRebornDefination {
         uint256 cost
     ) external;
 
-    /** @dev reward $REBORN for sharing. One address once. */
+    /**
+     * @dev reward for share the game
+     * @param user user address
+     * @param amount amount for reward
+     */
     function baptise(address user, uint256 amount) external;
 
-    /// @dev stake $REBORN on this tombstone
+    /**
+     * @dev stake $REBORN on this tombstone
+     * @param tokenId tokenId of the life to stake
+     * @param amount stake amount, decimal 10^18
+     */
     function infuse(uint256 tokenId, uint256 amount) external;
 
-    /// @dev unstake $REBORN on this tombstone
+    /**
+     * @dev unstake $REBORN on this tombstone
+     * @param tokenId tokenId tokenId of the life to stake
+     * @param amount amount stake amount, decimal 10^18
+     */
     function dry(uint256 tokenId, uint256 amount) external;
 
-    /** set soup price */
+    /**
+     * @dev a bottle of soup is needed to play the game, only owner can set the price
+     * @param price the price of soup, decimal 10^18
+     */
     function setSoupPrice(uint256 price) external;
 }
