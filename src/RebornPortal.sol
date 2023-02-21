@@ -324,11 +324,9 @@ contract RebornPortal is
      * @dev record referrer relationship, only one layer
      */
     function _refer(address referrer) internal {
-        if (referrals[msg.sender] == address(0)) {
+        if (referrals[msg.sender] == address(0) && referrer != address(0)) {
             referrals[msg.sender] = referrer;
             emit Refer(msg.sender, referrer);
-        } else {
-            revert RefererAlreadyExist();
         }
     }
 
