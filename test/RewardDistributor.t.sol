@@ -17,16 +17,17 @@ contract RenderEngineTest is Test, IRewardDistributorDef {
 
     function testSetZeroRootFail() public {
         vm.expectRevert(ZeroRootSet.selector);
+        vm.prank(_owner);
         rd.setMerkleRoot(bytes32(0));
     }
 
     function testSetRootTwiceFail(bytes32 root) public {
         vm.assume(root != bytes32(0));
-        vm.startPrank(_owner);
+        vm.prank(_owner);
         rd.setMerkleRoot(root);
 
         vm.expectRevert(RootSetTwice.selector);
-
+        vm.prank(_owner);
         rd.setMerkleRoot(root);
     }
 
