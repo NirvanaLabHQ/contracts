@@ -6,10 +6,10 @@ const func: DeployFunction = async function ({
   getNamedAccounts,
 }) {
   const { deploy } = deployments;
-  const { deployer, owner } = await getNamedAccounts();
+  const { degen_deployer } = await getNamedAccounts();
 
   await deploy("RBT", {
-    from: deployer,
+    from: degen_deployer,
     proxy: {
       proxyContract: "ERC1967Proxy",
       proxyArgs: ["{implementation}", "{data}"],
@@ -20,7 +20,7 @@ const func: DeployFunction = async function ({
             "Degen Reborn Token",
             "$REBORN",
             parseEther(Number(10 ** 9).toString()),
-            owner,
+            "0xa23a69CB8aE1259937F1e6b51e76a53F3DEaA988",
           ],
         },
       },

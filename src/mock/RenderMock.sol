@@ -5,13 +5,13 @@ import "src/lib/RenderEngine.sol";
 
 contract RenderMock {
     function render(
-        string calldata seed,
+        bytes32 seed,
         uint256 lifeScore,
         uint256 round,
         uint256 age,
         address addr,
         uint256 reward
     ) public pure returns (string memory) {
-        return RenderEngine.render(seed, lifeScore, round, age, addr, reward);
+        return RenderEngine.renderSvg(seed, lifeScore, round, age, addr, reward);
     }
 }

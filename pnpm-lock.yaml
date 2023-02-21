@@ -5,7 +5,7 @@ specifiers:
   '@ethersproject/bytes': ^5.0.0
   '@ethersproject/providers': ^5.0.0
   '@nomiclabs/hardhat-ethers': npm:hardhat-deploy-ethers@0.3.0-beta.13
-  '@nomiclabs/hardhat-etherscan': ^3.1.5
+  '@nomiclabs/hardhat-etherscan': ^3.1.6
   '@nomiclabs/hardhat-waffle': ^2.0.3
   '@openzeppelin/contracts': ^4.8.1
   '@openzeppelin/contracts-upgradeable': ^4.8.1
@@ -43,7 +43,7 @@ devDependencies:
   '@ethersproject/bytes': 5.7.0
   '@ethersproject/providers': 5.7.2
   '@nomiclabs/hardhat-ethers': /hardhat-deploy-ethers/0.3.0-beta.13_ethers@5.7.2+hardhat@2.9.9
-  '@nomiclabs/hardhat-etherscan': 3.1.5_hardhat@2.9.9
+  '@nomiclabs/hardhat-etherscan': 3.1.6_hardhat@2.9.9
   '@nomiclabs/hardhat-waffle': 2.0.3_budvjk2tjo5ifjp5ue4xowdpeu
   '@typechain/ethers-v5': 10.2.0_uvzrz6if4akbrktgtw2vfdalai
   '@typechain/hardhat': 6.1.5_b3b6m6desyvo4euzzqudhsd57y
@@ -573,6 +573,8 @@ packages:
       uuid: 7.0.3
     dev: true
 
+  /@nomiclabs/hardhat-etherscan/3.1.6_hardhat@2.9.9:
+    resolution: {integrity: sha512-5WFIZeLLgWPiCJqm/4ie7UNXn7FXfzYmqnKwOKU2MLETGolzY1cueSYUTww/P8f+Zc9xfJLmzqSYcGLW/3j/IQ==}
   /@noble/hashes/1.2.0:
     resolution: {integrity: sha512-FZfhjEDbT5GRswV3C6uvLPHMiVD6lQBmpoX5+eSiPaMTXte/IKqI5dykDxzZB/WBeK/CDuQRBWarPdi3FNY2zQ==}
     dev: false

@@ -1,31 +1,31 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
-
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
-import {RebornRankReplacer} from "src/RebornRankReplacer.sol";
-import {RebornStorage} from "src/RebornStorage.sol";
+import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
+
+import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RenderEngine} from "src/lib/RenderEngine.sol";
 import {RBT} from "src/RBT.sol";
+import {RewardVault} from "src/RewardVault.sol";
 
 contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,
     UUPSUpgradeable,
-    RebornStorage,
+    RebornPortalStorage,
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
-    RebornRankReplacer
+    PausableUpgradeable
 {
     using SafeERC20Upgradeable for IRebornToken;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
@@ -33,55 +33,29 @@ contract RebornPortal is
     function initialize(
         RBT rebornToken_,
         uint256 soupPrice_,
-        uint256 priceAndPoint_,
         address owner_,
         string memory name_,
         string memory symbol_
     ) public initializer {
         rebornToken = rebornToken_;
         soupPrice = soupPrice_;
-        _priceAndPoint = priceAndPoint_;
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
+        __Pausable_init();
     }
 
     // solhint-disable-next-line no-empty-blocks
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyOwner
-    {}
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
-    /**
-     * @dev keep it for backwards compatibility
-     */
-    function incarnate(Innate memory innate) external payable override {
-        _incarnate(innate);
-    }
-
-    function incarnate(Innate memory innate, address referrer)
-        external
-        payable
-        override
-    {
-        _incarnate(innate);
-        _refer(referrer);
-    }
-
-    /**
-     * @dev keep it for backwards compatibility
-     */
     function incarnate(
         Innate memory innate,
-        uint256 amount,
-        uint256 deadline,
-        bytes32 r,
-        bytes32 s,
-        uint8 v
-    ) external payable override {
-        _permit(amount, deadline, r, s, v);
+        address referrer
+    ) external payable override whenNotPaused nonReentrant {
         _incarnate(innate);
+        _refer(referrer);
     }
 
     /**
@@ -89,21 +63,20 @@ contract RebornPortal is
      */
     function incarnate(
         Innate memory innate,
+        address referrer,
         uint256 amount,
         uint256 deadline,
-        address referrer,
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external payable override {
+    ) external payable override whenNotPaused nonReentrant {
         _permit(amount, deadline, r, s, v);
         _incarnate(innate);
         _refer(referrer);
     }
 
     /**
-     * @dev engrave the result on chain and reward
-     * @param seed uuid seed string without "-"  in bytes32
+     * @inheritdoc IRebornPortal
      */
     function engrave(
         bytes32 seed,
@@ -111,57 +84,63 @@ contract RebornPortal is
         uint256 reward,
         uint256 score,
         uint256 age,
-        // for backward compatibility, do not delete
-        uint256 locate
-    ) external override onlySigner {
-        // enter the rank list
-        uint256 tokenId = _enter(score);
+        uint256 cost
+    ) external override onlySigner whenNotPaused {
+        if (_seeds.get(uint256(seed))) {
+            revert SameSeed();
+        }
+        _seeds.set(uint256(seed));
+
+        // tokenId auto increment
+        uint256 tokenId = ++idx;
 
         details[tokenId] = LifeDetail(
             seed,
             user,
-            ++rounds[user],
             uint16(age),
+            ++rounds[user],
             0,
             // set cost to 0 temporary, should implement later
-            uint128(0 / 10**18),
-            uint128(reward / 10**18)
+            uint128(cost),
+            uint128(reward),
+            score
         );
         // mint erc721
         _safeMint(user, tokenId);
-        // mint $REBORN reward
-        rebornToken.mint(user, reward);
+        // send $REBORN reward
+        vault.reward(user, reward);
 
         // mint to referrer
-        _rewardReferrer(user, score, reward);
+        _rewardReferrer(user, reward);
 
         emit Engrave(seed, user, tokenId, score, reward);
     }
 
     /**
-     * @dev baptise
+     * @inheritdoc IRebornPortal
      */
-    function baptise(address user, uint256 amount)
-        external
-        override
-        onlySigner
-    {
+    function baptise(
+        address user,
+        uint256 amount
+    ) external override onlySigner whenNotPaused {
         if (baptism.get(uint160(user))) {
             revert AlreadyBaptised();
         }
 
         baptism.set(uint160(user));
 
-        rebornToken.mint(user, amount);
+        vault.reward(user, amount);
 
         emit Baptise(user, amount);
     }
 
     /**
-     * @dev degen infuse $REBORN to tombstone
-     * @dev expect for bliss
+     * @inheritdoc IRebornPortal
      */
-    function infuse(uint256 tokenId, uint256 amount) external override {
+    function infuse(
+        uint256 tokenId,
+        uint256 amount
+    ) external override whenNotPaused {
         _requireMinted(tokenId);
 
         rebornToken.transferFrom(msg.sender, address(this), amount);
@@ -176,9 +155,12 @@ contract RebornPortal is
     }
 
     /**
-     * @dev degen get $REBORN back
+     * @inheritdoc IRebornPortal
      */
-    function dry(uint256 tokenId, uint256 amount) external override {
+    function dry(
+        uint256 tokenId,
+        uint256 amount
+    ) external override whenNotPaused {
         Pool storage pool = pools[tokenId];
         pool.totalAmount -= amount;
 
@@ -191,7 +173,7 @@ contract RebornPortal is
     }
 
     /**
-     * @dev set soup price
+     * @inheritdoc IRebornPortal
      */
     function setSoupPrice(uint256 price) external override onlyOwner {
         soupPrice = price;
@@ -199,32 +181,30 @@ contract RebornPortal is
     }
 
     /**
-     * @dev set other price
+     * @dev set vault
+     * @param vault_ new vault address
      */
-    function setPriceAndPoint(uint256 pricePoint) external override onlyOwner {
-        _priceAndPoint = pricePoint;
-        emit NewPricePoint(_priceAndPoint);
+    function setVault(RewardVault vault_) external onlyOwner {
+        vault = vault_;
     }
 
     /**
-     * @dev warning: only called onece during test
-     * @dev abandoned in production
+     * @dev withdraw token from vault
+     * @param to the address which owner withdraw token to
      */
-    function initAfterUpgrade(string memory name_, string memory symbol_)
-        external
-        onlyOwner
-    {
-        __ERC721_init(name_, symbol_);
-        __ReentrancyGuard_init();
+    function withdrawVault(address to) external onlyOwner {
+        vault.withdrawEmergency(to);
     }
 
     /**
-     * @dev update signer
+     * @dev update signers
+     * @param toAdd list of to be added signer
+     * @param toRemove list of to be removed signer
      */
     function updateSigners(
         address[] calldata toAdd,
         address[] calldata toRemove
-    ) public onlyOwner {
+    ) external onlyOwner {
         for (uint256 i = 0; i < toAdd.length; i++) {
             signers[toAdd[i]] = true;
             emit SignerUpdate(toAdd[i], true);
@@ -236,22 +216,19 @@ contract RebornPortal is
     }
 
     /**
-     * @dev withdraw all $REBORN, only called during development
+     * @dev withdraw native token for reward distribution
+     * @dev amount how much to withdraw
      */
-    function withdrawAll() external onlyOwner {
-        rebornToken.transfer(msg.sender, rebornToken.balanceOf(address(this)));
+    function withdrawNativeToken(uint256 amount) external onlyOwner {
+        payable(msg.sender).transfer(amount);
     }
 
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
         _requireMinted(tokenId);
 
         string memory metadata = Base64.encode(
@@ -265,17 +242,27 @@ contract RebornPortal is
                     "data:image/svg+xml;base64,",
                     Base64.encode(
                         bytes(
-                            RenderEngine.render(
-                                "seed",
-                                scores[tokenId],
+                            RenderEngine.renderSvg(
+                                details[tokenId].seed,
+                                details[tokenId].score,
                                 details[tokenId].round,
                                 details[tokenId].age,
                                 details[tokenId].creator,
-                                details[tokenId].reward
+                                details[tokenId].cost
                             )
                         )
                     ),
-                    '"}'
+                    '","attributes": ',
+                    RenderEngine.renderTrait(
+                        details[tokenId].seed,
+                        details[tokenId].score,
+                        details[tokenId].round,
+                        details[tokenId].age,
+                        details[tokenId].creator,
+                        details[tokenId].reward,
+                        details[tokenId].cost
+                    ),
+                    "}"
                 )
             )
         );
@@ -315,27 +302,19 @@ contract RebornPortal is
         payable(msg.sender).transfer(msg.value - soupPrice);
 
         // reborn token needed
-        uint256 rbtAmount = talentPrice(innate.talent) +
-            propertyPrice(innate.properties);
+        uint256 rbtAmount = innate.talentPrice + innate.propertyPrice;
 
         /// burn token directly
         rebornToken.burnFrom(msg.sender, rbtAmount);
 
-        emit Incarnate(
-            msg.sender,
-            talentPoint(innate.talent),
-            propertyPoint(innate.properties),
-            innate.talent,
-            innate.properties,
-            rbtAmount
-        );
+        emit Incarnate(msg.sender, innate.talentPrice, innate.propertyPrice);
     }
 
     /**
      * @dev record referrer relationship, only one layer
      */
     function _refer(address referrer) internal {
-        if (referrals[msg.sender] == address(0)) {
+        if (referrals[msg.sender] == address(0) && referrer != address(0)) {
             referrals[msg.sender] = referrer;
             emit Refer(msg.sender, referrer);
         }
@@ -344,18 +323,13 @@ contract RebornPortal is
     /**
      * @dev mint refer reward to referee's referrer
      */
-    function _rewardReferrer(
-        address referee,
-        uint256 score,
-        uint256 amount
-    ) internal {
+    function _rewardReferrer(address referee, uint256 amount) internal {
         (address referrar, uint256 referReward) = calculateReferReward(
             referee,
-            score,
             amount
         );
         if (referrar != address(0)) {
-            rebornToken.mint(referrar, referReward);
+            vault.reward(referrar, referReward);
             emit ReferReward(referrar, referReward);
         }
     }
@@ -363,58 +337,15 @@ contract RebornPortal is
     /**
      * @dev returns refereral and refer reward
      * @param referee referee address
-     * @param score referee degen life score
      * @param amount reward to the referee, ERC20 amount
      */
     function calculateReferReward(
         address referee,
-        uint256 score,
         uint256 amount
     ) public view returns (address referrar, uint256 referReward) {
         referrar = referrals[referee];
-        if (score >= 100) {
-            // refer reward ratio is temporary 0.2
-            referReward = amount / 5;
-        }
-    }
-
-    /**
-     * @dev calculate talent price in $REBORN for each talent
-     */
-    function talentPrice(TALENT talent) public view returns (uint256) {
-        return
-            (((_priceAndPoint >> 192) >> (uint8(talent) * 8)) & 0xff) * 1 ether;
-    }
-
-    /**
-     * @dev calculate talent point for each talent
-     */
-    function talentPoint(TALENT talent) public view returns (uint256) {
-        return ((_priceAndPoint >> 128) >> (uint8(talent) * 8)) & 0xff;
-    }
-
-    /**
-     * @dev calculate properties price in $REBORN for each properties
-     */
-    function propertyPrice(PROPERTIES properties)
-        public
-        view
-        returns (uint256)
-    {
-        return
-            (((_priceAndPoint >> 64) >> (uint8(properties) * 8)) & 0xff) *
-            1 ether;
-    }
-
-    /**
-     * @dev calculate properties point for each property
-     */
-    function propertyPoint(PROPERTIES properties)
-        public
-        view
-        returns (uint256)
-    {
-        return (_priceAndPoint >> (uint8(properties) * 8)) & 0xff;
+        // refer reward ratio is temporary 0.2
+        referReward = amount / 5;
     }
 
     /**
@@ -435,7 +366,7 @@ contract RebornPortal is
     }
 
     /**
-     * @dev only allow signer address can do something
+     * @dev only allowed signer address can do something
      */
     modifier onlySigner() {
         _checkSigner();

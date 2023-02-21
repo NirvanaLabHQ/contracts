@@ -25,6 +25,8 @@ dotenv.config();
 const deployer =
   process.env.DEPLOYER || "0x0000000000000000000000000000000000000000";
 const owner = process.env.OWNER || "0x0000000000000000000000000000000000000000";
+const degen_deployer =
+  process.env.DEGEN_DEPLOYER || "0x0000000000000000000000000000000000000000";
 const accounts = process.env.ACCOUNTS ? process.env.ACCOUNTS.split(",") : [];
 
 task("example", "Example task").setAction(example);
@@ -77,6 +79,9 @@ const config: HardhatUserConfig = {
       bnbTest: owner,
       bnbTestStaging: owner,
       bnbMain: owner,
+    },
+    degen_deployer: {
+      bnbMain: degen_deployer,
     },
   },
   paths: {

@@ -79,7 +79,7 @@
     <path d="M1244 12V0H96L0 94V112L102 12H1244Z" fill="#F98701" />
 
     <text dx="76" dy="605" dominant-baseline="central" text-anchor="left" style="height:100px" font-family="VT323"
-        textLength="1075" font-size="60" fill="#FF8A01">Seed: 7095f280-afa0-49c1-989a-3c9e8edd997b</text>
+        textLength="1075" font-size="60" fill="#FF8A01">Seed: 0x965f12d657ee…33e46c81af970d72b6641</text>
 
     <text dx="76" dy="116" dominant-baseline="central" text-anchor="left" font-family="Black Ops One" textLength="300"
         font-weight="400" font-size="60" lengthAdjust="spacing" fill="#FF8A01">LifeScore</text>

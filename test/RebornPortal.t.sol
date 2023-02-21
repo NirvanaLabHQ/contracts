@@ -6,6 +6,7 @@ import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 
 import "src/RebornPortal.sol";
 import {RBT} from "src/RBT.sol";
+import {RewardVault} from "src/RewardVault.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {EventDefination} from "src/test/EventDefination.sol";
 import {TestUtils} from "test/TestUtils.sol";
@@ -29,7 +30,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
     function setUp() public {
         rbt = TestUtils.deployRBT(owner);
-        mintRBT(rbt, owner, _user, 100 ether);
+        mintRBT(rbt, owner, _user, 100000 ether);
 
         // deploy portal
         portal = deployPortal();
@@ -38,6 +39,11 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         toAdd[0] = signer;
         address[] memory toRemove;
         portal.updateSigners(toAdd, toRemove);
+
+        // deploy vault
+        RewardVault vault = new RewardVault(address(portal), address(rbt));
+        vm.prank(owner);
+        portal.setVault(vault);
 
         // add portal as minter
         vm.prank(owner);
@@ -52,7 +58,6 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         portal_.initialize(
             rbt,
             0.01 * 1 ether,
-            0x00000000004020000000000000504030000000604020100000000231e19140f,
             owner,
             "Degen Tombstone",
             "RIP"
@@ -67,34 +72,6 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     ) public {
         vm.prank(owner_);
         rbt_.mint(account, amount);
-    }
-
-    function testTalantPrice() public {
-        assertEq(portal.talentPrice(TALENT.Degen), 0);
-        assertEq(portal.talentPrice(TALENT.Gifted), 2 ether);
-        assertEq(portal.talentPrice(TALENT.Genius), 4 ether);
-    }
-
-    function testTalantPoint() public {
-        assertEq(portal.talentPoint(TALENT.Degen), 3);
-        assertEq(portal.talentPoint(TALENT.Gifted), 4);
-        assertEq(portal.talentPoint(TALENT.Genius), 5);
-    }
-
-    function testPropertiesPrice() public {
-        assertEq(portal.propertyPrice(PROPERTIES.BASIC), 0);
-        assertEq(portal.propertyPrice(PROPERTIES.C), 1 ether);
-        assertEq(portal.propertyPrice(PROPERTIES.B), 2 ether);
-        assertEq(portal.propertyPrice(PROPERTIES.A), 4 ether);
-        assertEq(portal.propertyPrice(PROPERTIES.S), 6 ether);
-    }
-
-    function testPropertiesPoint() public {
-        assertEq(portal.propertyPoint(PROPERTIES.BASIC), 15);
-        assertEq(portal.propertyPoint(PROPERTIES.C), 20);
-        assertEq(portal.propertyPoint(PROPERTIES.B), 25);
-        assertEq(portal.propertyPoint(PROPERTIES.A), 30);
-        assertEq(portal.propertyPoint(PROPERTIES.S), 35);
     }
 
     /**
@@ -133,24 +110,16 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(10, hash);
 
         vm.expectEmit(true, true, true, true);
-        emit Incarnate(
-            _user,
-            5,
-            35,
-            IRebornDefination.TALENT.Genius,
-            IRebornDefination.PROPERTIES.S,
-            10 ether
-        );
-        emit Transfer(_user, address(0), 10 ether);
+        emit Incarnate(_user, 5 ether, 20 ether);
+        emit Transfer(_user, address(0), 25 ether);
 
         hoax(_user);
         // rbt.permit(_user, address(portal), MAX_INT, deadline, v, r, s);
         bytes memory callData = abi.encodeWithSignature(
-            "incarnate((uint8,uint8),uint256,uint256,bytes32,bytes32,uint8)",
-            Innate(
-                IRebornDefination.TALENT.Genius,
-                IRebornDefination.PROPERTIES.S
-            ),
+            "incarnate((uint256,uint256),address,uint256,uint256,bytes32,bytes32,uint8)",
+            5 ether,
+            20 ether,
+            address(0),
             MAX_INT,
             deadline,
             r,
@@ -167,6 +136,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         uint256 age
     ) public {
         vm.assume(reward < rbt.cap() - 100 ether);
+        mintRBT(rbt, owner, address(portal.vault()), reward);
 
         testIncarnateWithPermit();
         vm.expectEmit(true, true, true, true);
@@ -227,12 +197,13 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     ) public {
         testEngrave(seed, reward, score, age);
         string memory metadata = portal.tokenURI(1);
-        // console.log(metadata);
+        console.log(metadata);
     }
 
     function testBaptise(address user, uint256 amount) public {
         vm.assume(user != address(0));
         vm.assume(amount < rbt.cap() - rbt.totalSupply());
+        mintRBT(rbt, owner, address(portal.vault()), amount);
 
         vm.expectEmit(true, true, true, true);
         emit Baptise(user, amount);
