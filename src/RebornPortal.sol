@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
@@ -11,8 +10,10 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
-import {RebornStorage} from "src/RebornStorage.sol";
+import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
+
+import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RenderEngine} from "src/lib/RenderEngine.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
@@ -21,7 +22,7 @@ contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,
     UUPSUpgradeable,
-    RebornStorage,
+    RebornPortalStorage,
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
     PausableUpgradeable
@@ -210,7 +211,7 @@ contract RebornPortal is
     function updateSigners(
         address[] calldata toAdd,
         address[] calldata toRemove
-    ) public onlyOwner {
+    ) external onlyOwner {
         for (uint256 i = 0; i < toAdd.length; i++) {
             signers[toAdd[i]] = true;
             emit SignerUpdate(toAdd[i], true);
@@ -366,35 +367,6 @@ contract RebornPortal is
     function getPool(uint256 tokenId) public view returns (Pool memory) {
         _requireMinted(tokenId);
         return pools[tokenId];
-    }
-
-    /**
-     * @dev ceil a uint256 and remove decimal
-     */
-    function _ceilUint256(uint256 value, uint256 decimal)
-        internal
-        pure
-        returns (uint256)
-    {
-        if (value - (value / 10**decimal) * 10**decimal == 0) {
-            return value / 10**decimal;
-        } else {
-            return value / 10**decimal + 1;
-        }
-    }
-
-    /**
-     * @dev ceil a uint256 to the multiple of 5
-     */
-    function _ceilUint256ToMultipleOfFive(uint256 value)
-        internal
-        pure
-        returns (uint256)
-    {
-        if (value % 5 == 0) {
-            return value;
-        }
-        return value + (5 - (value % 5));
     }
 
     /**

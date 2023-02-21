@@ -6,7 +6,7 @@ import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
-contract RebornStorage is IRebornDefination {
+contract RebornPortalStorage is IRebornDefination {
     /** you need buy a soup before reborn */
     uint256 public soupPrice = 0.01 * 1 ether;
 
