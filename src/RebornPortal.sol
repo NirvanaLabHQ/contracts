@@ -254,7 +254,7 @@ contract RebornPortal is
                     Base64.encode(
                         bytes(
                             RenderEngine.render(
-                                "seed",
+                                details[tokenId].seed,
                                 details[tokenId].score,
                                 details[tokenId].round,
                                 details[tokenId].age,

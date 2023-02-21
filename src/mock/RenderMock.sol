@@ -5,7 +5,7 @@ import "src/lib/RenderEngine.sol";
 
 contract RenderMock {
     function render(
-        string calldata seed,
+        bytes32 seed,
         uint256 lifeScore,
         uint256 round,
         uint256 age,

@@ -10,7 +10,7 @@ contract RenderEngineTest is Test {
     function testRenderOne() public {
         string memory minSvg = vm.readFile("resources/RIP.new.min.svg");
         string memory svg = RenderEngine.render(
-            "7095f280-afa0-49c1-989a-3c9e8edd997b",
+            hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641",
             2222222,
             9999,
             101,
@@ -36,6 +36,33 @@ contract RenderEngineTest is Test {
         assertEq(
             abi.encodePacked("2,222,222"),
             abi.encodePacked(RenderEngine._transformUint256(2222222))
+        );
+    }
+
+    function testTransformBytes32Seed() public {
+        assertEq(
+            abi.encodePacked(
+                "0x965f12d657ee",
+                unicode"…",
+                "33e46c81af970d72b6641"
+            ),
+            abi.encodePacked(
+                RenderEngine._transformBytes32Seed(
+                    hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641"
+                )
+            )
+        );
+        assertEq(
+            abi.encodePacked(
+                "0x000000000000",
+                unicode"…",
+                "000000000000000001e62"
+            ),
+            abi.encodePacked(
+                RenderEngine._transformBytes32Seed(
+                    hex"0000000000000000000000000000000000000000000000000000000000001e62"
+                )
+            )
         );
     }
 }
