@@ -37,6 +37,36 @@ contract RenderEngineTest is Test {
             abi.encodePacked("2,222,222"),
             abi.encodePacked(RenderEngine._transformUint256(2222222))
         );
+        assertEq(
+            abi.encodePacked("22M"),
+            abi.encodePacked(RenderEngine._transformUint256(22222222))
+        );
+        assertEq(
+            abi.encodePacked("222M"),
+            abi.encodePacked(RenderEngine._transformUint256(222222222))
+        );
+        assertEq(
+            abi.encodePacked("2,222M"),
+            abi.encodePacked(RenderEngine._transformUint256(2222222222))
+        );
+        assertEq(
+            abi.encodePacked("22,222M"),
+            abi.encodePacked(RenderEngine._transformUint256(22222222222))
+        );
+        assertEq(
+            abi.encodePacked("222B"),
+            abi.encodePacked(RenderEngine._transformUint256(222222222222))
+        );
+        assertEq(
+            abi.encodePacked("2,222B"),
+            abi.encodePacked(RenderEngine._transformUint256(2222222222222))
+        );
+        assertEq(
+            abi.encodePacked("22,222B"),
+            abi.encodePacked(RenderEngine._transformUint256(22222222222222))
+        );
+        vm.expectRevert();
+        RenderEngine._transformUint256(222222222222222);
     }
 
     function testTransformBytes32Seed() public {

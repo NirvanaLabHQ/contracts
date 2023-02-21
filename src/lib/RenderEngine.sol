@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "forge-std/console.sol";
 
 library RenderEngine {
+    error ValueOutOfRange();
+
     function _shortenAddr(address addr) private pure returns (string memory) {
         uint256 value = uint160(addr);
         bytes memory allBytes = bytes(Strings.toHexString(value, 20));
@@ -105,12 +107,34 @@ library RenderEngine {
         pure
         returns (string memory str)
     {
+        if (value < 10**7) {
+            return _recursiveAddComma(value);
+        } else if (value < 10**11) {
+            return
+                string(
+                    abi.encodePacked(_recursiveAddComma(value / 10**6), "M")
+                );
+        } else if (value < 10**14) {
+            return
+                string(
+                    abi.encodePacked(_recursiveAddComma(value / 10**9), "B")
+                );
+        } else {
+            revert ValueOutOfRange();
+        }
+    }
+
+    function _recursiveAddComma(uint256 value)
+        internal
+        pure
+        returns (string memory str)
+    {
         if (value / 1000 == 0) {
             str = string(abi.encodePacked(Strings.toString(value), str));
         } else {
             str = string(
                 abi.encodePacked(
-                    _transformUint256(value / 1000),
+                    _recursiveAddComma(value / 1000),
                     ",",
                     Strings.toString(value % 1000),
                     str
