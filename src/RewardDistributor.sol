@@ -23,9 +23,10 @@ contract RewardDistributor is IRewardDistributor, Ownable {
      * @param amount The amount of the claim being made.
      * @param merkleProof A merkle proof proving the claim is valid.
      */
-    function claimTokens(uint256 amount, bytes32[] calldata merkleProof)
-        external
-    {
+    function claimTokens(
+        uint256 amount,
+        bytes32[] calldata merkleProof
+    ) external {
         if (block.timestamp >= claimPeriodEnds) {
             revert ClaimPeriodNotStartOrEnd();
         }
@@ -34,7 +35,10 @@ contract RewardDistributor is IRewardDistributor, Ownable {
             revert AmountExceedBalance();
         }
 
-        bytes32 leaf = keccak256(abi.encodePacked(msg.sender, amount));
+        // bytes32 leaf = keccak256(abi.encodePacked(msg.sender, amount));
+        bytes32 leaf = keccak256(
+            bytes.concat(keccak256(abi.encode(msg.sender, amount)))
+        );
         bool valid = MerkleProof.verify(merkleProof, merkleRoot, leaf);
 
         if (!valid) {
@@ -77,6 +81,9 @@ contract RewardDistributor is IRewardDistributor, Ownable {
      * @param claimPeriodEnds_ The merkle root to set.
      */
     function setClaimPeriodEnds(uint256 claimPeriodEnds_) external onlyOwner {
+        if (claimPeriodEnds_ <= block.timestamp) {
+            revert InvalidTimestap();
+        }
         claimPeriodEnds = claimPeriodEnds_;
         emit ClaimPeriodEndsChanged(claimPeriodEnds);
     }

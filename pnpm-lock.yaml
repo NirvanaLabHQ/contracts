@@ -9,6 +9,7 @@ specifiers:
   '@nomiclabs/hardhat-waffle': ^2.0.3
   '@openzeppelin/contracts': ^4.8.1
   '@openzeppelin/contracts-upgradeable': ^4.8.1
+  '@openzeppelin/merkle-tree': ^1.0.2
   '@openzeppelin/upgrades-core': ^1.21.0
   '@p12/contracts-lib': ^0.0.5
   '@typechain/ethers-v5': ^10.0.0
@@ -32,6 +33,7 @@ specifiers:
 dependencies:
   '@openzeppelin/contracts': 4.8.1
   '@openzeppelin/contracts-upgradeable': 4.8.1
+  '@openzeppelin/merkle-tree': 1.0.2
   '@openzeppelin/upgrades-core': 1.21.0
   '@p12/contracts-lib': 0.0.5
   hardhat-deploy: 0.11.22
@@ -571,6 +573,14 @@ packages:
       uuid: 7.0.3
     dev: true
 
+  /@noble/hashes/1.2.0:
+    resolution: {integrity: sha512-FZfhjEDbT5GRswV3C6uvLPHMiVD6lQBmpoX5+eSiPaMTXte/IKqI5dykDxzZB/WBeK/CDuQRBWarPdi3FNY2zQ==}
+    dev: false
+
+  /@noble/secp256k1/1.7.1:
+    resolution: {integrity: sha512-hOUk6AyBFmqVrv7k5WAw/LpszxVbj9gGN4JRkIX52fdFAj1UA61KXmZDvqVEm+pOyec3+fIeZB02LYa/pWOArw==}
+    dev: false
+
   /@nomiclabs/hardhat-etherscan/3.1.5_hardhat@2.9.9:
     resolution: {integrity: sha512-PxPX28AGBAlxgXLU27NB3oiMsklxbNhM75SDC4v1QPCyPeAxGm4xV0WpYbR10W7sxY2WF3Ek7u7GhjbQWa2Fcg==}
     peerDependencies:
@@ -613,6 +623,13 @@ packages:
 
   /@openzeppelin/contracts/4.8.1:
     resolution: {integrity: sha512-xQ6eUZl+RDyb/FiZe1h+U7qr/f4p/SrTSQcTPH2bjur3C5DbuW/zFgCU/b1P/xcIaEqJep+9ju4xDRi3rmChdQ==}
+    dev: false
+
+  /@openzeppelin/merkle-tree/1.0.2:
+    resolution: {integrity: sha512-qD+HmLTTEy9Nwgh0Amr6Rzhfq6yMC5rV43aMnxKtFh6PhZUUiiZRXFjpausNc6sxqrCi82/mGlz5xi5M1WfUrQ==}
+    dependencies:
+      '@ethersproject/abi': 5.7.0
+      ethereum-cryptography: 1.2.0
     dev: false
 
   /@openzeppelin/upgrades-core/1.21.0:
@@ -676,6 +693,25 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /@scure/base/1.1.1:
+    resolution: {integrity: sha512-ZxOhsSyxYwLJj3pLZCefNitxsj093tb2vq90mp2txoYeBqbcjDjqFhyM8eUjq/uFm6zJ+mUuqxlS2FkuSY1MTA==}
+    dev: false
+
+  /@scure/bip32/1.1.5:
+    resolution: {integrity: sha512-XyNh1rB0SkEqd3tXcXMi+Xe1fvg+kUIcoRIEujP1Jgv7DqW2r9lg3Ah0NkFaCs9sTkQAQA8kw7xiRXzENi9Rtw==}
+    dependencies:
+      '@noble/hashes': 1.2.0
+      '@noble/secp256k1': 1.7.1
+      '@scure/base': 1.1.1
+    dev: false
+
+  /@scure/bip39/1.1.1:
+    resolution: {integrity: sha512-t+wDck2rVkh65Hmv280fYdVdY25J9YeEUIgn2LG1WM6gxFkGzcksoDiUkWVpVp3Oex9xGC68JU2dSbUfwZ2jPg==}
+    dependencies:
+      '@noble/hashes': 1.2.0
+      '@scure/base': 1.1.1
+    dev: false
 
   /@sentry/core/5.30.0:
     resolution: {integrity: sha512-TmfrII8w1PQZSZgPpUESqjB+jC6MvZJZdLtE/0hZ+SrnKhW3x5WlYLvTXZpcWePYBku7rl2wn1RZu6uT0qCTeg==}
@@ -3241,6 +3277,15 @@ packages:
       scrypt-js: 3.0.1
       secp256k1: 4.0.3
       setimmediate: 1.0.5
+
+  /ethereum-cryptography/1.2.0:
+    resolution: {integrity: sha512-6yFQC9b5ug6/17CQpCyE3k9eKBMdhyVjzUy1WkiuY/E4vj/SXDBbCw8QEIaXqf0Mf2SnY6RmpDcwlUmBSS0EJw==}
+    dependencies:
+      '@noble/hashes': 1.2.0
+      '@noble/secp256k1': 1.7.1
+      '@scure/bip32': 1.1.5
+      '@scure/bip39': 1.1.1
+    dev: false
 
   /ethereum-waffle/3.4.4_typescript@4.9.4:
     resolution: {integrity: sha512-PA9+jCjw4WC3Oc5ocSMBj5sXvueWQeAbvCA+hUlb6oFgwwKyq5ka3bWQ7QZcjzIX+TdFkxP4IbFmoY2D8Dkj9Q==}
@@ -8405,7 +8450,7 @@ packages:
     dev: false
 
   github.com/ethereumjs/ethereumjs-abi/ee3994657fa7a427238e6ba92a84d0b529bbcde0:
-    resolution: {tarball: https://codeload.github.com/ethereumjs/ethereumjs-abi/tar.gz/ee3994657fa7a427238e6ba92a84d0b529bbcde0}
+    resolution: {commit: ee3994657fa7a427238e6ba92a84d0b529bbcde0, repo: git+ssh://git@github.com/ethereumjs/ethereumjs-abi.git, type: git}
     name: ethereumjs-abi
     version: 0.6.8
     dependencies:

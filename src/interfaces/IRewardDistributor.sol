@@ -8,6 +8,7 @@ interface IRewardDistributorDef {
     error AlreadyClaimed();
     error RootSetTwice();
     error ZeroRootSet();
+    error InvalidTimestap();
 
     event Claim(address indexed claimant, uint256 amount);
     event MerkleRootChanged(bytes32 merkleRoot);
