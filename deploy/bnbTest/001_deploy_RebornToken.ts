@@ -5,7 +5,7 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy } = deployments;
+  const { deploy, execute } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
   await deploy("RBT", {
@@ -27,6 +27,8 @@ const func: DeployFunction = async function ({
     },
     log: true,
   });
+
+  // await execute("RBT", { from: owner }, "initAfterUpgrade");
 };
 func.tags = ["RBT"];
 
