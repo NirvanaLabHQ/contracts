@@ -7,7 +7,7 @@ import "forge-std/Vm.sol";
 import "src/RewardDistributor.sol";
 import {IRewardDistributorDef} from "src/interfaces/IRewardDistributor.sol";
 
-contract RenderEngineTest is Test, IRewardDistributorDef {
+contract RewardDistributorTest is Test, IRewardDistributorDef {
     RewardDistributor rd;
     address _owner = address(2);
 

@@ -15,19 +15,31 @@ contract RenderEngineTest is Test {
             9999,
             101,
             0x1E18EEEEeeeeEeEeEEEeEEEeEEeeEeeeeEeed8e5,
-            222222 * 10**18
+            222222 * 10 ** 18
         );
         assertEq(abi.encodePacked(minSvg), abi.encodePacked(svg));
     }
 
-    function testTransformUint256() public {
+    function testTransformUint() public {
+        assertEq(
+            abi.encodePacked("22"),
+            abi.encodePacked(RenderEngine._transformUint256(22))
+        );
         assertEq(
             abi.encodePacked("222"),
             abi.encodePacked(RenderEngine._transformUint256(222))
         );
         assertEq(
+            abi.encodePacked("1,026"),
+            abi.encodePacked(RenderEngine._transformUint256(1026))
+        );
+        assertEq(
             abi.encodePacked("2,222"),
             abi.encodePacked(RenderEngine._transformUint256(2222))
+        );
+        assertEq(
+            abi.encodePacked("10,006"),
+            abi.encodePacked(RenderEngine._transformUint256(10006))
         );
         assertEq(
             abi.encodePacked("222,222"),
@@ -36,6 +48,10 @@ contract RenderEngineTest is Test {
         assertEq(
             abi.encodePacked("2,222,222"),
             abi.encodePacked(RenderEngine._transformUint256(2222222))
+        );
+        assertEq(
+            abi.encodePacked("2,002,002"),
+            abi.encodePacked(RenderEngine._transformUint256(2002002))
         );
         assertEq(
             abi.encodePacked("22M"),
@@ -52,6 +68,10 @@ contract RenderEngineTest is Test {
         assertEq(
             abi.encodePacked("22,222M"),
             abi.encodePacked(RenderEngine._transformUint256(22222222222))
+        );
+        assertEq(
+            abi.encodePacked("20,002M"),
+            abi.encodePacked(RenderEngine._transformUint256(20002222222))
         );
         assertEq(
             abi.encodePacked("222B"),
@@ -103,8 +123,8 @@ contract RenderEngineTest is Test {
             9999,
             101,
             0x1E18EEEEeeeeEeEeEEEeEEEeEEeeEeeeeEeed8e5,
-            222222 * 10**18,
-            222222 * 10**18
+            222222 * 10 ** 18,
+            222222 * 10 ** 18
         );
         assertEq(
             abi.encodePacked(traits),

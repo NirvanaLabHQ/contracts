@@ -59,7 +59,7 @@ library RenderEngine {
         uint256 reward
     ) public pure returns (string memory) {
         string memory Part1 = _renderSvgPart1(seed, lifeScore, round, age);
-        string memory Part2 = _renderSvgPart2(addr, reward / 10**18);
+        string memory Part2 = _renderSvgPart2(addr, reward / 10 ** 18);
         return string(abi.encodePacked(Part1, Part2));
     }
 
@@ -76,7 +76,11 @@ library RenderEngine {
             string(
                 abi.encodePacked(
                     _renderTraitPart1(seed, lifeScore, round, age),
-                    _renderTraitPart2(creator, reward / 10**18, cost / 10**18)
+                    _renderTraitPart2(
+                        creator,
+                        reward / 10 ** 18,
+                        cost / 10 ** 18
+                    )
                 )
             );
     }
@@ -142,11 +146,10 @@ library RenderEngine {
             );
     }
 
-    function _renderSvgPart2(address addr, uint256 reward)
-        internal
-        pure
-        returns (string memory)
-    {
+    function _renderSvgPart2(
+        address addr,
+        uint256 reward
+    ) internal pure returns (string memory) {
         return
             string(
                 abi.encodePacked(
@@ -159,33 +162,29 @@ library RenderEngine {
             );
     }
 
-    function _transformUint256(uint256 value)
-        public
-        pure
-        returns (string memory str)
-    {
-        if (value < 10**7) {
+    function _transformUint256(
+        uint256 value
+    ) public pure returns (string memory str) {
+        if (value < 10 ** 7) {
             return _recursiveAddComma(value);
-        } else if (value < 10**11) {
+        } else if (value < 10 ** 11) {
             return
                 string(
-                    abi.encodePacked(_recursiveAddComma(value / 10**6), "M")
+                    abi.encodePacked(_recursiveAddComma(value / 10 ** 6), "M")
                 );
-        } else if (value < 10**14) {
+        } else if (value < 10 ** 14) {
             return
                 string(
-                    abi.encodePacked(_recursiveAddComma(value / 10**9), "B")
+                    abi.encodePacked(_recursiveAddComma(value / 10 ** 9), "B")
                 );
         } else {
             revert ValueOutOfRange();
         }
     }
 
-    function _recursiveAddComma(uint256 value)
-        internal
-        pure
-        returns (string memory str)
-    {
+    function _recursiveAddComma(
+        uint256 value
+    ) internal pure returns (string memory str) {
         if (value / 1000 == 0) {
             str = string(abi.encodePacked(Strings.toString(value), str));
         } else {
@@ -193,20 +192,17 @@ library RenderEngine {
                 abi.encodePacked(
                     _recursiveAddComma(value / 1000),
                     ",",
-                    Strings.toString(value % 1000),
+                    _numberStringToLengthThree(Strings.toString(value % 1000)),
                     str
                 )
             );
         }
     }
 
-    function _transformBytes32Seed(bytes32 b)
-        public
-        pure
-        returns (string memory)
-    {
+    function _transformBytes32Seed(
+        bytes32 b
+    ) public pure returns (string memory) {
         string memory str = Strings.toHexString(uint256(b), 32);
-
         return
             string(
                 abi.encodePacked(
@@ -215,5 +211,17 @@ library RenderEngine {
                     _substring(str, 45, 66)
                 )
             );
+    }
+
+    function _numberStringToLengthThree(
+        string memory number
+    ) internal pure returns (string memory) {
+        if (bytes(number).length == 1) {
+            return string(abi.encodePacked("00", number));
+        } else if (bytes(number).length == 2) {
+            return string(abi.encodePacked("0", number));
+        } else {
+            return number;
+        }
     }
 }
