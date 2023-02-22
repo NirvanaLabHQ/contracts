@@ -5,10 +5,10 @@ const func: DeployFunction = async function ({
   getNamedAccounts,
 }) {
   const { deploy } = deployments;
-  const { deployer } = await getNamedAccounts();
+  const { degen_deployer } = await getNamedAccounts();
 
   await deploy("RenderEngine", {
-    from: deployer,
+    from: degen_deployer,
     log: true,
   });
 };
