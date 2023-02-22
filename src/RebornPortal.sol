@@ -123,12 +123,6 @@ contract RebornPortal is
         address user,
         uint256 amount
     ) external override onlySigner whenNotPaused {
-        if (baptism.get(uint160(user))) {
-            revert AlreadyBaptised();
-        }
-
-        baptism.set(uint160(user));
-
         vault.reward(user, amount);
 
         emit Baptise(user, amount);

@@ -164,11 +164,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         assertEq(portal.portfolios(_user, 1), amount);
     }
 
-    function mockInfuse(
-        address user,
-        uint256 tokenId,
-        uint256 amount
-    ) public {
+    function mockInfuse(address user, uint256 tokenId, uint256 amount) public {
         vm.startPrank(user);
         rbt.approve(address(portal), amount);
         portal.infuse(tokenId, amount);
@@ -208,12 +204,6 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         vm.expectEmit(true, true, true, true);
         emit Baptise(user, amount);
         emit Transfer(address(0), user, amount);
-
-        vm.prank(signer);
-        portal.baptise(user, amount);
-
-        // expect baptise to the same address fail
-        vm.expectRevert(AlreadyBaptised.selector);
 
         vm.prank(signer);
         portal.baptise(user, amount);

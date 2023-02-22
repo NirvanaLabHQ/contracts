@@ -30,7 +30,9 @@ contract RebornPortalStorage is IRebornDefination {
 
     uint256 public idx;
 
-    BitMapsUpgradeable.BitMap baptism;
+    // WARN: data residual exists
+    // BitMapsUpgradeable.BitMap baptism;
+    uint256 private _placeholder;
 
     /// @dev gap for potential vairable
     uint256[38] private _gap;
