@@ -78,20 +78,20 @@
     <path d="M4.00039 629.349H1240V631.695H4.00039V629.349Z" fill="url(#p2)" />
     <path d="M1244 12V0H96L0 94V112L102 12H1244Z" fill="#F98701" />
 
-    <text dx="76" dy="605" dominant-baseline="central" text-anchor="left" style="height:100px" font-family="VT323"
-        textLength="1075" font-size="60" fill="#FF8A01">Seed: 0x965f12d657ee…33e46c81af970d72b6641</text>
+    <text dx="76" dy="605" dominant-baseline="central" style="height:100px" font-family="VT323" textLength="1075"
+        font-size="60" fill="#FF8A01">Seed: 0x965f12d657ee…33e46c81af970d72b6641</text>
 
-    <text dx="76" dy="116" dominant-baseline="central" text-anchor="left" font-family="Black Ops One" textLength="300"
-        font-weight="400" font-size="60" lengthAdjust="spacing" fill="#FF8A01">LifeScore</text>
+    <text dx="76" dy="116" dominant-baseline="central" font-family="Black Ops One" textLength="300" font-weight="400"
+        font-size="60" lengthAdjust="spacing" fill="#FF8A01">LifeScore</text>
 
-    <text dx="76" dy="230" dominant-baseline="central" text-anchor="left" font-family="Black Ops One" font-weight="400"
-        font-size="120" lengthAdjust="spacing" fill="#FF8A01">2,222,222</text>
+    <text dx="76" dy="230" dominant-baseline="central" font-family="Black Ops One" font-weight="400" font-size="120"
+        lengthAdjust="spacing" fill="#FF8A01">2,222,222</text>
 
-    <text dx="697" dy="425" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="100"
-        font-size="79" lengthAdjust="spacing" fill="#65E250">Re:9999</text>
+    <text dx="697" dy="425" dominant-baseline="central" font-family="VT323" font-weight="100" font-size="79"
+        lengthAdjust="spacing" fill="#FFFFFF">Re:9999</text>
 
-    <text dx="955" dy="425" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="400"
-        font-size="78" lengthAdjust="spacing" fill="#65E250">Age:101</text>
+    <text dx="955" dy="425" dominant-baseline="central" font-family="VT323" font-weight="400" font-size="78"
+        lengthAdjust="spacing" fill="#FFFFFF">Age:101</text>
 
     <text dx="382" dy="425" dominant-baseline="central" text-anchor="middle" font-family="VT323" textLength="350"
         font-weight="400" font-size="78" lengthAdjust="spacing" fill="#FFFFFF">0x1e18…d8e5</text>
@@ -99,9 +99,8 @@
     <text dx="975" dy="116" dominant-baseline="central" text-anchor="middle" style="height:100px"
         font-family="Black Ops One" font-size="56" fill="#FF8A01">DegenReborn</text>
 
-    <text dx="800" dy="230" dominant-baseline="central" text-anchor="right" font-family="VT323" font-weight="400"
+    <text dx="1070" dy="230" dominant-baseline="central" text-anchor="end" font-family="VT323" font-weight="400"
         font-size="96" lengthAdjust="spacing" fill="url(#p75)">222,222</text>
-
 
     <rect x="1114" y="204" width="5.99988" height="5.99988" transform="rotate(90 1114 204)" fill="#FFD058" />
     <rect x="1138" y="204" width="5.99988" height="5.99988" transform="rotate(90 1138 204)" fill="#E86609" />
