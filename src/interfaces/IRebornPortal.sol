@@ -58,8 +58,7 @@ interface IRebornDefination {
     error InsufficientAmount();
     /// @dev revert when to caller is not signer
     error NotSigner();
-    /// @dev revert when the user has been rewarded for share game
-    error AlreadyBaptised();
+
     /// @dev revert when the random seed is duplicated
     error SameSeed();
 }
