@@ -172,7 +172,7 @@ library RenderEngine {
                 string(
                     abi.encodePacked(_recursiveAddComma(value / 10 ** 6), "M")
                 );
-        } else if (value < 10 ** 14) {
+        } else if (value < 10 ** 15) {
             return
                 string(
                     abi.encodePacked(_recursiveAddComma(value / 10 ** 9), "B")
