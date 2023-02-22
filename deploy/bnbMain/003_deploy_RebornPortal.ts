@@ -6,16 +6,13 @@ const func: DeployFunction = async function ({
   getNamedAccounts,
 }) {
   const { deploy, get } = deployments;
-  const { deployer, owner } = await getNamedAccounts();
+  const { degen_deployer } = await getNamedAccounts();
 
   const rbt = await get("RBT");
   const render = await get("RenderEngine");
 
-  const talentPrice =
-    "0x00000000000000000000000000000000000000000000004b02bc21c12c0a0000";
-
   await deploy("RebornPortal", {
-    from: deployer,
+    from: degen_deployer,
     proxy: {
       proxyContract: "ERC1967Proxy",
       proxyArgs: ["{implementation}", "{data}"],
@@ -24,10 +21,8 @@ const func: DeployFunction = async function ({
           methodName: "initialize",
           args: [
             rbt.address,
-            parseEther("0.01"),
-            //
-            talentPrice,
-            owner,
+            parseEther("0.001"),
+            "0xa23a69CB8aE1259937F1e6b51e76a53F3DEaA988",
             "Degen Tombstone",
             "RIP",
           ],
@@ -38,6 +33,7 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
+  // TODO: manually add signer
   // await execute(
   //   "RebornPortal",
   //   { from: owner },
@@ -45,13 +41,6 @@ const func: DeployFunction = async function ({
   //   ["0x803470638940Ec595B40397cbAa597439DE55907"],
   //   []
   // );
-
-  // set portal as minter
-  // const portal = await get("RebornPortal");
-  // await execute("RBT", { from: owner }, "updateMinter", [portal.address], []);
-
-  // set price
-  // await execute("RebornPortal", { from: owner }, "setTalentPrice", talentPrice);
 };
 func.tags = ["Portal"];
 
