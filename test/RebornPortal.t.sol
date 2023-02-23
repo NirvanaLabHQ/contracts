@@ -195,8 +195,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         mintRBT(rbt, owner, address(portal.vault()), 2 * 1 ether);
 
         vm.startPrank(signer);
-        portal.engrave(bytes32(abi.encodePacked("1")), _user, 100, 10, 10, 10);
-        portal.engrave(bytes32(abi.encodePacked("2")), _user, 100, 10, 10, 10);
+        portal.engrave(bytes32("0x1"), _user, 100, 10, 10, 10);
+        portal.engrave(bytes32("0x2"), _user, 100, 10, 10, 10);
         vm.stopPrank();
 
         // infuse pool 1
