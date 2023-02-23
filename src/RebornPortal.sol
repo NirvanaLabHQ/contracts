@@ -61,19 +61,19 @@ contract RebornPortal is
     /**
      * @dev incarnate
      */
-    function incarnate(
-        Innate memory innate,
-        address referrer,
-        uint256 amount,
-        uint256 deadline,
-        bytes32 r,
-        bytes32 s,
-        uint8 v
-    ) external payable override whenNotPaused nonReentrant {
-        _permit(amount, deadline, r, s, v);
-        _incarnate(innate);
-        _refer(referrer);
-    }
+    // function incarnate(
+    //     Innate memory innate,
+    //     address referrer,
+    //     uint256 amount,
+    //     uint256 deadline,
+    //     bytes32 r,
+    //     bytes32 s,
+    //     uint8 v
+    // ) external payable override whenNotPaused nonReentrant {
+    //     _permit(amount, deadline, r, s, v);
+    //     _incarnate(innate);
+    //     _refer(referrer);
+    // }
 
     /**
      * @inheritdoc IRebornPortal
@@ -151,20 +151,35 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function dry(
-        uint256 tokenId,
+    function switchTo(
+        uint256 fromTokenId,
+        uint256 toTokenId,
         uint256 amount
     ) external override whenNotPaused {
-        Pool storage pool = pools[tokenId];
-        pool.totalAmount -= amount;
+        _requireMinted(fromTokenId);
+        _requireMinted(toTokenId);
 
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-        portfolio.accumulativeAmount -= amount;
-
-        rebornToken.transfer(msg.sender, amount);
-
-        emit Dry(msg.sender, tokenId, amount);
+        decreaseFromPool(fromTokenId, amount);
+        increaseToPool(toTokenId, amount);
     }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    // function dry(
+    //     uint256 tokenId,
+    //     uint256 amount
+    // ) external override whenNotPaused {
+    //     Pool storage pool = pools[tokenId];
+    //     pool.totalAmount -= amount;
+
+    //     Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+    //     portfolio.accumulativeAmount -= amount;
+
+    //     rebornToken.transfer(msg.sender, amount);
+
+    //     emit Dry(msg.sender, tokenId, amount);
+    // }
 
     /**
      * @inheritdoc IRebornPortal
@@ -297,17 +312,14 @@ contract RebornPortal is
      * @dev implementation of incarnate
      */
     function _incarnate(Innate memory innate) internal {
-        if (msg.value < soupPrice) {
+        uint256 totalFee = soupPrice +
+            innate.talentPrice +
+            innate.propertyPrice;
+        if (msg.value < totalFee) {
             revert InsufficientAmount();
         }
         // transfer redundant native token back
-        payable(msg.sender).transfer(msg.value - soupPrice);
-
-        // reborn token needed
-        uint256 rbtAmount = innate.talentPrice + innate.propertyPrice;
-
-        /// burn token directly
-        rebornToken.burnFrom(msg.sender, rbtAmount);
+        payable(msg.sender).transfer(msg.value - totalFee);
 
         emit Incarnate(msg.sender, innate.talentPrice, innate.propertyPrice);
     }
@@ -334,6 +346,35 @@ contract RebornPortal is
             vault.reward(referrar, referReward);
             emit ReferReward(referrar, referReward);
         }
+    }
+
+    /**
+     * @dev decrease amount from pool of switch from
+     */
+    function decreaseFromPool(uint256 tokenId, uint256 amount) internal {
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        if (portfolio.accumulativeAmount < amount) {
+            revert SwitchAmountExceedBalance();
+        }
+        portfolio.accumulativeAmount -= amount;
+
+        Pool storage pool = pools[tokenId];
+        pool.totalAmount -= amount;
+
+        emit DecreaseFromPool(msg.sender, tokenId, amount);
+    }
+
+    /**
+     * @dev increase amount to pool of switch to
+     */
+    function increaseToPool(uint256 tokenId, uint256 amount) internal {
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        portfolio.accumulativeAmount += amount;
+
+        Pool storage pool = pools[tokenId];
+        pool.totalAmount += amount;
+
+        emit IncreaseToPool(msg.sender, tokenId, amount);
     }
 
     /**

@@ -54,6 +54,18 @@ interface IRebornDefination {
 
     event Refer(address referee, address referrer);
 
+    event DecreaseFromPool(
+        address indexed account,
+        uint256 tokenId,
+        uint256 amount
+    );
+
+    event IncreaseToPool(
+        address indexed account,
+        uint256 tokenId,
+        uint256 amount
+    );
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer
@@ -61,6 +73,8 @@ interface IRebornDefination {
 
     /// @dev revert when the random seed is duplicated
     error SameSeed();
+    /// @dev revert when swith amount from pool exceed staked balance
+    error SwitchAmountExceedBalance();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -81,15 +95,15 @@ interface IRebornPortal is IRebornDefination {
      * @param s s of the signature
      * @param v v of the signature
      */
-    function incarnate(
-        Innate memory innate,
-        address referrer,
-        uint256 amount,
-        uint256 deadline,
-        bytes32 r,
-        bytes32 s,
-        uint8 v
-    ) external payable;
+    // function incarnate(
+    //     Innate memory innate,
+    //     address referrer,
+    //     uint256 amount,
+    //     uint256 deadline,
+    //     bytes32 r,
+    //     bytes32 s,
+    //     uint8 v
+    // ) external payable;
 
     /**
      * @dev engrave the result on chain and reward
@@ -123,11 +137,23 @@ interface IRebornPortal is IRebornDefination {
     function infuse(uint256 tokenId, uint256 amount) external;
 
     /**
+     * @dev switch stake amount from poolFrom to poolTo
+     * @param fromTokenId tokenId of from pool
+     * @param toTokenId tokenId of to pool
+     * @param amount amount to switch
+     */
+    function switchTo(
+        uint256 fromTokenId,
+        uint256 toTokenId,
+        uint256 amount
+    ) external;
+
+    /**
      * @dev unstake $REBORN on this tombstone
      * @param tokenId tokenId tokenId of the life to stake
      * @param amount amount stake amount, decimal 10^18
      */
-    function dry(uint256 tokenId, uint256 amount) external;
+    // function dry(uint256 tokenId, uint256 amount) external;
 
     /**
      * @dev a bottle of soup is needed to play the game, only owner can set the price
