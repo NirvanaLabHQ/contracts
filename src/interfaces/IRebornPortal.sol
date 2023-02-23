@@ -143,7 +143,7 @@ interface IRebornPortal is IRebornDefination {
      * @param toTokenId tokenId of to pool
      * @param amount amount to switch
      */
-    function switchTo(
+    function switchPool(
         uint256 fromTokenId,
         uint256 toTokenId,
         uint256 amount

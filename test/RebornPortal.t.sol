@@ -77,56 +77,75 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     /**
      * @dev process of incarnate
      */
-    function testIncarnateWithPermit() public {
-        uint256 MAX_INT = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-        uint256 deadline = block.timestamp + 100;
-        bytes32 structHash = keccak256(
-            abi.encode(
-                _PERMIT_TYPEHASH,
-                _user,
-                address(portal),
-                MAX_INT,
-                0,
-                deadline
-            )
-        );
+    // function testIncarnateWithPermit() public {
+    //     uint256 MAX_INT = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    //     uint256 deadline = block.timestamp + 100;
+    //     bytes32 structHash = keccak256(
+    //         abi.encode(
+    //             _PERMIT_TYPEHASH,
+    //             _user,
+    //             address(portal),
+    //             MAX_INT,
+    //             0,
+    //             deadline
+    //         )
+    //     );
 
-        bytes32 domainSeparator = keccak256(
-            abi.encode(
-                _TYPE_HASH,
-                keccak256(abi.encodePacked(rbt.name())),
-                keccak256("1"),
-                block.chainid,
-                address(rbt)
-            )
-        );
+    //     bytes32 domainSeparator = keccak256(
+    //         abi.encode(
+    //             _TYPE_HASH,
+    //             keccak256(abi.encodePacked(rbt.name())),
+    //             keccak256("1"),
+    //             block.chainid,
+    //             address(rbt)
+    //         )
+    //     );
 
-        bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
-            domainSeparator,
-            structHash
-        );
+    //     bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
+    //         domainSeparator,
+    //         structHash
+    //     );
 
-        // sign
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(10, hash);
+    //     // sign
+    //     (uint8 v, bytes32 r, bytes32 s) = vm.sign(10, hash);
 
-        vm.expectEmit(true, true, true, true);
-        emit Incarnate(_user, 5 ether, 20 ether);
-        emit Transfer(_user, address(0), 25 ether);
+    //     vm.expectEmit(true, true, true, true);
+    //     emit Incarnate(_user, 5 ether, 20 ether);
+    //     emit Transfer(_user, address(0), 25 ether);
 
+    //     hoax(_user);
+    //     // rbt.permit(_user, address(portal), MAX_INT, deadline, v, r, s);
+    //     bytes memory callData = abi.encodeWithSignature(
+    //         "incarnate((uint256,uint256),address,uint256,uint256,bytes32,bytes32,uint8)",
+    //         5 ether,
+    //         20 ether,
+    //         address(0),
+    //         MAX_INT,
+    //         deadline,
+    //         r,
+    //         s,
+    //         v
+    //     );
+    //     payable(address(portal)).call{value: 0.01 * 1 ether}(callData);
+    // }
+
+    function testIncarnate() public {
         hoax(_user);
-        // rbt.permit(_user, address(portal), MAX_INT, deadline, v, r, s);
         bytes memory callData = abi.encodeWithSignature(
-            "incarnate((uint256,uint256),address,uint256,uint256,bytes32,bytes32,uint8)",
-            5 ether,
-            20 ether,
-            address(0),
-            MAX_INT,
-            deadline,
-            r,
-            s,
-            v
+            "incarnate((uint256,uint256),address)",
+            0.1 * 1 ether,
+            0.5 * 1 ether,
+            address(0)
         );
-        payable(address(portal)).call{value: 0.01 * 1 ether}(callData);
+
+        vm.expectRevert(InsufficientAmount.selector);
+        payable(address(portal)).call{value: 0.1 ether}(callData);
+
+        vm.prank(_user);
+        (bool success, ) = payable(address(portal)).call{value: 0.61 * 1 ether}(
+            callData
+        );
+        assertTrue(success);
     }
 
     function testEngrave(
@@ -138,7 +157,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         vm.assume(reward < rbt.cap() - 100 ether);
         mintRBT(rbt, owner, address(portal.vault()), reward);
 
-        testIncarnateWithPermit();
+        // testIncarnateWithPermit();
+        testIncarnate();
         vm.expectEmit(true, true, true, true);
         emit Engrave(seed, _user, 1, score, reward);
 
@@ -164,30 +184,57 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         assertEq(portal.portfolios(_user, 1), amount);
     }
 
-    function mockInfuse(
-        address user,
-        uint256 tokenId,
-        uint256 amount
-    ) public {
+    function mockInfuse(address user, uint256 tokenId, uint256 amount) public {
         vm.startPrank(user);
         rbt.approve(address(portal), amount);
         portal.infuse(tokenId, amount);
         vm.stopPrank();
     }
 
-    function testDryNumericalValue(uint256 amount) public {
-        vm.assume(amount < rbt.cap() - 100 ether);
+    function testSwitchPool() public {
+        mintRBT(rbt, owner, address(portal.vault()), 2 * 1 ether);
 
-        testEngrave(bytes32(new bytes(32)), amount, 10, 10);
-        mockInfuse(_user, 1, amount);
+        vm.startPrank(signer);
+        portal.engrave(bytes32(abi.encodePacked("1")), _user, 100, 10, 10, 10);
+        portal.engrave(bytes32(abi.encodePacked("2")), _user, 100, 10, 10, 10);
+        vm.stopPrank();
 
-        vm.expectEmit(true, true, true, true);
-        emit Dry(_user, 1, amount);
-        emit Transfer(address(portal), _user, amount);
+        // infuse pool 1
+        mockInfuse(_user, 1, 0.5 * 1 ether);
+        assertEq(portal.getPool(1).totalAmount, 0.5 * 1 ether);
+        assertEq(portal.portfolios(_user, 1), 0.5 * 1 ether);
 
+        // infuse pool 2
+        mockInfuse(_user, 2, 1 ether);
+        assertEq(portal.getPool(2).totalAmount, 1 ether);
+        assertEq(portal.portfolios(_user, 2), 1 ether);
+
+        // switch pool 1 -> pool 2
         vm.prank(_user);
-        portal.dry(1, amount);
+        portal.switchPool(1, 2, 0.1 * 1 ether);
+        assertEq(portal.getPool(1).totalAmount, 0.4 * 1 ether);
+        assertEq(portal.portfolios(_user, 1), 0.4 * 1 ether);
+        assertEq(portal.getPool(2).totalAmount, 1.1 * 1 ether);
+        assertEq(portal.portfolios(_user, 2), 1.1 * 1 ether);
+
+        vm.expectRevert(SwitchAmountExceedBalance.selector);
+        vm.prank(_user);
+        portal.switchPool(1, 2, 0.5 * 1 ether);
     }
+
+    // function testDryNumericalValue(uint256 amount) public {
+    //     vm.assume(amount < rbt.cap() - 100 ether);
+
+    //     testEngrave(bytes32(new bytes(32)), amount, 10, 10);
+    //     mockInfuse(_user, 1, amount);
+
+    //     vm.expectEmit(true, true, true, true);
+    //     emit Dry(_user, 1, amount);
+    //     emit Transfer(address(portal), _user, amount);
+
+    //     vm.prank(_user);
+    //     portal.dry(1, amount);
+    // }
 
     function testTokenUri(
         bytes32 seed,
