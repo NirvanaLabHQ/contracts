@@ -151,7 +151,7 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function switchTo(
+    function switchPool(
         uint256 fromTokenId,
         uint256 toTokenId,
         uint256 amount
