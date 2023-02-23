@@ -44,11 +44,13 @@ describe("RewardDistributorTest", function () {
     expect(await this.rd.merkleRoot(), this.tree.root);
   });
 
-  //   it("should set ZeroAddress as MerkleRoot failed", async function () {
-  //     await expect(
-  //       this.rd.connect(this.owner).setMerkleRoot("0x")
-  //     ).to.be.revertedWith("ZeroRootSet()");
-  //   });
+  it("should set ZeroAddress as MerkleRoot failed", async function () {
+    await expect(
+      this.rd
+        .connect(this.owner)
+        .setMerkleRoot(ethers.utils.formatBytes32String(""))
+    ).to.be.revertedWith("ZeroRootSet()");
+  });
 
   it("should setMerkleRoot twice failed", async function () {
     await this.rd
