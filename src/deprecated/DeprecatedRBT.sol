@@ -20,7 +20,7 @@ contract DeprecatedRBT is RBT {
                 sstore(0x37, symbolBytes32)
             }
         } else {
-            revert("Invalid Length");
+            revert InvalidShortString();
         }
     }
 
