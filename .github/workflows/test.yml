@@ -51,3 +51,5 @@ jobs:
         run: |
           forge test --gas-report
         id: forge-test
+        env:
+          BNB_CHAIN_URL: ${{ secrets.BNB_CHAIN_URL }}
