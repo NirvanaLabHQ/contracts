@@ -265,6 +265,14 @@ contract RebornPortal is
     }
 
     /**
+     * @dev check whether the seed is used on-chain
+     * @param seed random seed in bytes32
+     */
+    function seedExists(bytes32 seed) external view returns (bool) {
+        return _seeds.get(uint256(seed));
+    }
+
+    /**
      * @dev run erc20 permit to approve
      */
     function _permit(
