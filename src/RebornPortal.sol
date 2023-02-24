@@ -59,23 +59,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev incarnate
-     */
-    // function incarnate(
-    //     Innate memory innate,
-    //     address referrer,
-    //     uint256 amount,
-    //     uint256 deadline,
-    //     bytes32 r,
-    //     bytes32 s,
-    //     uint8 v
-    // ) external payable override whenNotPaused nonReentrant {
-    //     _permit(amount, deadline, r, s, v);
-    //     _incarnate(innate);
-    //     _refer(referrer);
-    // }
-
-    /**
      * @inheritdoc IRebornPortal
      */
     function engrave(
@@ -141,8 +124,6 @@ contract RebornPortal is
         uint256 tokenId,
         uint256 amount
     ) external override whenNotPaused {
-        _requireMinted(tokenId);
-
         rebornToken.transferFrom(msg.sender, address(this), amount);
 
         Pool storage pool = pools[tokenId];
@@ -162,30 +143,9 @@ contract RebornPortal is
         uint256 toTokenId,
         uint256 amount
     ) external override whenNotPaused {
-        _requireMinted(fromTokenId);
-        _requireMinted(toTokenId);
-
-        decreaseFromPool(fromTokenId, amount);
-        increaseToPool(toTokenId, amount);
+        _decreaseFromPool(fromTokenId, amount);
+        _increaseToPool(toTokenId, amount);
     }
-
-    /**
-     * @inheritdoc IRebornPortal
-     */
-    // function dry(
-    //     uint256 tokenId,
-    //     uint256 amount
-    // ) external override whenNotPaused {
-    //     Pool storage pool = pools[tokenId];
-    //     pool.totalAmount -= amount;
-
-    //     Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-    //     portfolio.accumulativeAmount -= amount;
-
-    //     rebornToken.transfer(msg.sender, amount);
-
-    //     emit Dry(msg.sender, tokenId, amount);
-    // }
 
     /**
      * @inheritdoc IRebornPortal
@@ -244,8 +204,6 @@ contract RebornPortal is
     function tokenURI(
         uint256 tokenId
     ) public view virtual override returns (string memory) {
-        _requireMinted(tokenId);
-
         string memory metadata = Base64.encode(
             bytes(
                 string.concat(
@@ -349,7 +307,7 @@ contract RebornPortal is
     /**
      * @dev decrease amount from pool of switch from
      */
-    function decreaseFromPool(uint256 tokenId, uint256 amount) internal {
+    function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
         if (portfolio.accumulativeAmount < amount) {
             revert SwitchAmountExceedBalance();
@@ -365,7 +323,7 @@ contract RebornPortal is
     /**
      * @dev increase amount to pool of switch to
      */
-    function increaseToPool(uint256 tokenId, uint256 amount) internal {
+    function _increaseToPool(uint256 tokenId, uint256 amount) internal {
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
         portfolio.accumulativeAmount += amount;
 
@@ -393,7 +351,6 @@ contract RebornPortal is
      * @dev read pool attribute
      */
     function getPool(uint256 tokenId) public view returns (Pool memory) {
-        _requireMinted(tokenId);
         return pools[tokenId];
     }
 
