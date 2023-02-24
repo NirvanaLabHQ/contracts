@@ -118,15 +118,22 @@ contract RebornPortal is
         uint256 tokenId,
         uint256 amount
     ) external override whenNotPaused {
-        rebornToken.transferFrom(msg.sender, address(this), amount);
+        _infuse(tokenId, amount);
+    }
 
-        Pool storage pool = pools[tokenId];
-        pool.totalAmount += amount;
-
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-        portfolio.accumulativeAmount += amount;
-
-        emit Infuse(msg.sender, tokenId, amount);
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function infuse(
+        uint256 tokenId,
+        uint256 amount,
+        uint256 deadline,
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) external override whenNotPaused {
+        _permit(amount, deadline, r, s, v);
+        _infuse(tokenId, amount);
     }
 
     /**
@@ -264,6 +271,19 @@ contract RebornPortal is
             r,
             s
         );
+    }
+
+    function _infuse(uint256 tokenId, uint256 amount) internal {
+        // burn reborn token from msg.sender
+        rebornToken.burnFrom(msg.sender, amount);
+
+        Pool storage pool = pools[tokenId];
+        pool.totalAmount += amount;
+
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        portfolio.accumulativeAmount += amount;
+
+        emit Infuse(msg.sender, tokenId, amount);
     }
 
     /**
