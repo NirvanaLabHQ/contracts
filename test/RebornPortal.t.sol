@@ -208,4 +208,16 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         vm.prank(signer);
         portal.baptise(user, amount);
     }
+
+    function testSeedRead(
+        bytes32 seed,
+        uint208 reward,
+        uint16 score,
+        uint16 age
+    ) public {
+        testEngrave(seed, reward, score, age);
+
+        assertEq(portal.seedExists(seed), true);
+        assertEq(portal.seedExists(bytes32(uint256(seed) - 1)), false);
+    }
 }
