@@ -126,13 +126,14 @@ contract RebornPortal is
      */
     function infuse(
         uint256 tokenId,
+        uint256 permitAmount,
         uint256 amount,
         uint256 deadline,
         bytes32 r,
         bytes32 s,
         uint8 v
     ) external override whenNotPaused {
-        _permit(amount, deadline, r, s, v);
+        _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount);
     }
 

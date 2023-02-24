@@ -74,6 +74,52 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         rbt_.mint(account, amount);
     }
 
+    function permitRBT(
+        address spender
+    )
+        public
+        view
+        returns (
+            uint256 permitAmount,
+            uint256 deadline,
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        )
+    {
+        permitAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        deadline = block.timestamp + 100;
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _PERMIT_TYPEHASH,
+                _user,
+                spender,
+                permitAmount,
+                rbt.nonces(_user),
+                deadline
+            )
+        );
+
+        bytes32 domainSeparator = keccak256(
+            abi.encode(
+                _TYPE_HASH,
+                keccak256(abi.encodePacked(rbt.name())),
+                keccak256("1"),
+                block.chainid,
+                address(rbt)
+            )
+        );
+
+        bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
+            domainSeparator,
+            structHash
+        );
+
+        // sign
+        // (uint8 v, bytes32 r, bytes32 s) = vm.sign(10, hash);
+        (v, r, s) = vm.sign(10, hash);
+    }
+
     function testIncarnate() public {
         hoax(_user);
         bytes memory callData = abi.encodeWithSignature(
@@ -134,6 +180,23 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         rbt.approve(address(portal), amount);
         portal.infuse(tokenId, amount);
         vm.stopPrank();
+    }
+
+    function testInfuseWithPermit() public {
+        uint256 amount = 1 ether;
+        testEngrave(bytes32(new bytes(32)), 10, 10, 10);
+
+        mintRBT(rbt, owner, _user, amount);
+
+        (
+            uint256 permitAmount,
+            uint256 deadline,
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        ) = permitRBT(address(portal));
+        vm.prank(_user);
+        portal.infuse(1, permitAmount, amount, deadline, r, s, v);
     }
 
     function testSwitchPool() public {
