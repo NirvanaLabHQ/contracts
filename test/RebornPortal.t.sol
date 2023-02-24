@@ -74,61 +74,6 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         rbt_.mint(account, amount);
     }
 
-    /**
-     * @dev process of incarnate
-     */
-    // function testIncarnateWithPermit() public {
-    //     uint256 MAX_INT = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-    //     uint256 deadline = block.timestamp + 100;
-    //     bytes32 structHash = keccak256(
-    //         abi.encode(
-    //             _PERMIT_TYPEHASH,
-    //             _user,
-    //             address(portal),
-    //             MAX_INT,
-    //             0,
-    //             deadline
-    //         )
-    //     );
-
-    //     bytes32 domainSeparator = keccak256(
-    //         abi.encode(
-    //             _TYPE_HASH,
-    //             keccak256(abi.encodePacked(rbt.name())),
-    //             keccak256("1"),
-    //             block.chainid,
-    //             address(rbt)
-    //         )
-    //     );
-
-    //     bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
-    //         domainSeparator,
-    //         structHash
-    //     );
-
-    //     // sign
-    //     (uint8 v, bytes32 r, bytes32 s) = vm.sign(10, hash);
-
-    //     vm.expectEmit(true, true, true, true);
-    //     emit Incarnate(_user, 5 ether, 20 ether);
-    //     emit Transfer(_user, address(0), 25 ether);
-
-    //     hoax(_user);
-    //     // rbt.permit(_user, address(portal), MAX_INT, deadline, v, r, s);
-    //     bytes memory callData = abi.encodeWithSignature(
-    //         "incarnate((uint256,uint256),address,uint256,uint256,bytes32,bytes32,uint8)",
-    //         5 ether,
-    //         20 ether,
-    //         address(0),
-    //         MAX_INT,
-    //         deadline,
-    //         r,
-    //         s,
-    //         v
-    //     );
-    //     payable(address(portal)).call{value: 0.01 * 1 ether}(callData);
-    // }
-
     function testIncarnate() public {
         hoax(_user);
         bytes memory callData = abi.encodeWithSignature(
@@ -221,20 +166,6 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         vm.prank(_user);
         portal.switchPool(1, 2, 0.5 * 1 ether);
     }
-
-    // function testDryNumericalValue(uint256 amount) public {
-    //     vm.assume(amount < rbt.cap() - 100 ether);
-
-    //     testEngrave(bytes32(new bytes(32)), amount, 10, 10);
-    //     mockInfuse(_user, 1, amount);
-
-    //     vm.expectEmit(true, true, true, true);
-    //     emit Dry(_user, 1, amount);
-    //     emit Transfer(address(portal), _user, amount);
-
-    //     vm.prank(_user);
-    //     portal.dry(1, amount);
-    // }
 
     function testTokenUri(
         bytes32 seed,
