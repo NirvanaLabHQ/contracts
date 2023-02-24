@@ -22,6 +22,7 @@ contract RebornPortalStorage is IRebornDefination {
 
     mapping(uint256 => Pool) public pools;
 
+    /// @dev user address => pool tokenId => Portfolio
     mapping(address => mapping(uint256 => Portfolio)) public portfolios;
 
     mapping(address => address) public referrals;
@@ -38,6 +39,19 @@ contract RebornPortalStorage is IRebornDefination {
 
     ReferrerRewardFees public rewardFees;
 
+
+
+
+    // airdrop config
+    uint8 internal _dropOn;               //   ---
+    uint40 internal _rebornDropInternal;  //     |
+    uint40 internal _nativeDropInternal;  //     |
+    uint40 internal _dropLastUpdate;      //     |
+    uint128 internal _rankLength;        //   ---
+
+    uint128 internal _rebornDropAmount;   //   ---
+    uint128 internal _nativeDropAmount;   //   ---
+
     /// @dev gap for potential vairable
-    uint256[37] private _gap;
+    uint256[35] private _gap;
 }

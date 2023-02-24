@@ -25,10 +25,27 @@ interface IRebornDefination {
 
     struct Pool {
         uint256 totalAmount;
+        uint256 accRebornPerShare;
+        uint256 accNativePerShare;
+        uint256 epoch;
+        uint256 lastUpdated;
     }
 
     struct Portfolio {
         uint256 accumulativeAmount;
+        uint256 rebornRewardDebt;
+        uint256 nativeRewardDebt;
+        //
+        // We do some fancy math here. Basically, any point in time, the amount
+        // entitled to a user but is pending to be distributed is:
+        //
+        //   pending reward = (Amount * pool.accPerShare) - user.rewardDebt
+        //
+        // Whenever a user infuse or switchPool. Here's what happens:
+        //   1. The pool's `accPerShare` (and `lastRewardBlock`) gets updated.
+        //   2. User receives the pending reward sent to his/her address.
+        //   3. User's `amount` gets updated.
+        //   4. User's `rewardDebt` gets updated.
     }
 
     struct ReferrerRewardFees {

@@ -170,8 +170,10 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         mockInfuse(_user, 1, amount);
 
-        assertEq(portal.pools(1), amount);
-        assertEq(portal.portfolios(_user, 1), amount);
+        (uint256 a, , , , ) = portal.pools(1);
+        assertEq(a, amount);
+        (uint256 b, , ) = portal.portfolios(_user, 1);
+        assertEq(b, amount);
     }
 
     function mockInfuse(address user, uint256 tokenId, uint256 amount) public {
@@ -209,12 +211,15 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         // infuse pool 1
         mockInfuse(_user, 1, 0.5 * 1 ether);
         assertEq(portal.getPool(1).totalAmount, 0.5 * 1 ether);
-        assertEq(portal.portfolios(_user, 1), 0.5 * 1 ether);
+        assertEq(
+            portal.getPortfolio(_user, 1).accumulativeAmount,
+            0.5 * 1 ether
+        );
 
         // infuse pool 2
         mockInfuse(_user, 2, 1 ether);
         assertEq(portal.getPool(2).totalAmount, 1 ether);
-        assertEq(portal.portfolios(_user, 2), 1 ether);
+        assertEq(portal.getPortfolio(_user, 2).accumulativeAmount, 1 ether);
 
         // switch pool 1 -> pool 2
         vm.prank(_user);

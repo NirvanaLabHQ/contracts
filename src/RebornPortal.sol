@@ -18,6 +18,8 @@ import {RenderEngine} from "src/lib/RenderEngine.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 
+import {RankUpgradeable} from "src/RankUpgradeable.sol";
+
 contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,
@@ -25,7 +27,8 @@ contract RebornPortal is
     RebornPortalStorage,
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
-    PausableUpgradeable
+    PausableUpgradeable,
+    RankUpgradeable
 {
     using SafeERC20Upgradeable for IRebornToken;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
@@ -290,6 +293,10 @@ contract RebornPortal is
 
         _increasePool(tokenId, amount);
 
+        // _rankIndexMap[
+        //     enter(portfolio.accumulativeAmount, _rankLength)
+        // ] = tokenId;
+
         emit Infuse(msg.sender, tokenId, amount);
     }
 
@@ -329,6 +336,58 @@ contract RebornPortal is
             referrals[msg.sender] = referrer;
             emit Refer(msg.sender, referrer);
         }
+    }
+
+    /**
+     * @dev update the pool reward if the pool meets
+     * @param tokenId pool's tokenId
+     */
+    function _rewardPool(uint256 tokenId) internal {
+        Pool storage pool = pools[tokenId];
+        if (block.timestamp > _dropLastUpdate + _rebornDropInternal) {
+            pool.accRebornPerShare += _rebornDropAmount / pool.totalAmount;
+        }
+        if (block.timestamp > _dropLastUpdate + _nativeDropInternal) {
+            pool.accNativePerShare += _rebornDropAmount / pool.totalAmount;
+        }
+    }
+
+    /**
+     * @dev reward pools
+     */
+    function _rewardPools() internal {}
+
+    /**
+     *
+     */
+    function _getHour(uint256 timestamp) internal view returns (uint256) {
+        return (timestamp % 86400) % 3600;
+    }
+
+    /**
+     * @dev update the pool reward if the pool meets
+     * @param tokenId pool's tokenId
+     */
+    function _rewardPool(uint256 tokenId) internal {
+        Pool storage pool = pools[tokenId];
+        if (block.timestamp > _dropLastUpdate + _rebornDropInternal) {
+            pool.accRebornPerShare += _rebornDropAmount / pool.totalAmount;
+        }
+        if (block.timestamp > _dropLastUpdate + _nativeDropInternal) {
+            pool.accNativePerShare += _rebornDropAmount / pool.totalAmount;
+        }
+    }
+
+    /**
+     * @dev reward pools
+     */
+    function _rewardPools() internal {}
+
+    /**
+     *
+     */
+    function _getHour(uint256 timestamp) internal view returns (uint256) {
+        return (timestamp % 86400) % 3600;
     }
 
     /**
@@ -473,6 +532,16 @@ contract RebornPortal is
      */
     function getPool(uint256 tokenId) public view returns (Pool memory) {
         return pools[tokenId];
+    }
+
+    /**
+     * @dev read pool attribute
+     */
+    function getPortfolio(
+        address user,
+        uint256 tokenId
+    ) public view returns (Portfolio memory) {
+        return portfolios[user][tokenId];
     }
 
     /**
