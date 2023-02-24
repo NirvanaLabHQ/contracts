@@ -87,26 +87,6 @@ interface IRebornPortal is IRebornDefination {
     function incarnate(Innate memory innate, address referrer) external payable;
 
     /**
-     * @dev user buy the innate for the life with ERC-20 permit execute
-     * @param innate talent and property choice
-     * @param referrer the referrer address
-     * @param amount amount of token apporve
-     * @param deadline deadline of signature
-     * @param r r of signature
-     * @param s s of the signature
-     * @param v v of the signature
-     */
-    // function incarnate(
-    //     Innate memory innate,
-    //     address referrer,
-    //     uint256 amount,
-    //     uint256 deadline,
-    //     bytes32 r,
-    //     bytes32 s,
-    //     uint8 v
-    // ) external payable;
-
-    /**
      * @dev engrave the result on chain and reward
      * @param seed random seed in bytes32
      * @param user user address
@@ -138,6 +118,23 @@ interface IRebornPortal is IRebornDefination {
     function infuse(uint256 tokenId, uint256 amount) external;
 
     /**
+     * @dev stake $REBORN with permit
+     * @param tokenId tokenId of the life to stake
+     * @param amount amount of $REBORN to stake
+     * @param r r of signature
+     * @param s v of signature
+     * @param v v of signature
+     */
+    function infuse(
+        uint256 tokenId,
+        uint256 amount,
+        uint256 deadline,
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) external;
+
+    /**
      * @dev switch stake amount from poolFrom to poolTo
      * @param fromTokenId tokenId of from pool
      * @param toTokenId tokenId of to pool
@@ -148,13 +145,6 @@ interface IRebornPortal is IRebornDefination {
         uint256 toTokenId,
         uint256 amount
     ) external;
-
-    /**
-     * @dev unstake $REBORN on this tombstone
-     * @param tokenId tokenId tokenId of the life to stake
-     * @param amount amount stake amount, decimal 10^18
-     */
-    // function dry(uint256 tokenId, uint256 amount) external;
 
     /**
      * @dev a bottle of soup is needed to play the game, only owner can set the price
