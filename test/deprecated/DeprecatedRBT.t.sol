@@ -21,7 +21,6 @@ contract DeprecatedRBTTest is Test {
     }
 
     function testUpgradeAndSetMetadata() public {
-        console.log(proxy.name());
         vm.startPrank(proxy.owner());
         proxy.upgradeTo(address(drbt));
         proxy.updateERC20MetaData(
