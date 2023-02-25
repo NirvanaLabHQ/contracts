@@ -132,8 +132,8 @@ contract RebornPortal is
      */
     function infuse(
         uint256 tokenId,
-        uint256 permitAmount,
         uint256 amount,
+        uint256 permitAmount,
         uint256 deadline,
         bytes32 r,
         bytes32 s,

@@ -120,16 +120,16 @@ interface IRebornPortal is IRebornDefination {
     /**
      * @dev stake $REBORN with permit
      * @param tokenId tokenId of the life to stake
-     * @param permitAmount amount of $REBORN to approve
      * @param amount amount of $REBORN to stake
+     * @param permitAmount amount of $REBORN to approve
      * @param r r of signature
      * @param s v of signature
      * @param v v of signature
      */
     function infuse(
         uint256 tokenId,
-        uint256 permitAmount,
         uint256 amount,
+        uint256 permitAmount,
         uint256 deadline,
         bytes32 r,
         bytes32 s,
