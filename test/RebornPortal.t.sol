@@ -196,7 +196,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
             uint8 v
         ) = permitRBT(address(portal));
         vm.prank(_user);
-        portal.infuse(1, permitAmount, amount, deadline, r, s, v);
+        portal.infuse(1, amount, permitAmount, deadline, r, s, v);
     }
 
     function testSwitchPool() public {
