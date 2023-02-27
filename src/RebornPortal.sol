@@ -75,7 +75,7 @@ contract RebornPortal is
         _seeds.set(uint256(seed));
 
         // tokenId auto increment
-        uint256 tokenId = ++idx;
+        uint256 tokenId = ++idx + (block.chainid * 1e18);
 
         details[tokenId] = LifeDetail(
             seed,
@@ -300,7 +300,12 @@ contract RebornPortal is
         // transfer redundant native token back
         payable(msg.sender).transfer(msg.value - totalFee);
 
-        emit Incarnate(msg.sender, innate.talentPrice, innate.propertyPrice);
+        emit Incarnate(
+            msg.sender,
+            innate.talentPrice,
+            innate.propertyPrice,
+            soupPrice
+        );
     }
 
     /**

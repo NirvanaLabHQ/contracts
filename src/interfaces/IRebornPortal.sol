@@ -29,7 +29,8 @@ interface IRebornDefination {
     event Incarnate(
         address indexed user,
         uint256 indexed talentPrice,
-        uint256 indexed PropertyPrice
+        uint256 indexed PropertyPrice,
+        uint256 soupPrice
     );
 
     event Engrave(
