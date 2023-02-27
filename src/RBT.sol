@@ -32,11 +32,9 @@ contract RBT is
     }
 
     // solhint-disable-next-line no-empty-blocks
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyOwner
-    {}
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
     /**
      * @dev allow minter to mint it
@@ -48,10 +46,10 @@ contract RBT is
     /**
      * @dev update minters
      */
-    function updateMinter(address[] calldata toAdd, address[] calldata toRemove)
-        external
-        onlyOwner
-    {
+    function updateMinter(
+        address[] calldata toAdd,
+        address[] calldata toRemove
+    ) external onlyOwner {
         for (uint256 i = 0; i < toAdd.length; i++) {
             minters[toAdd[i]] = true;
             emit MinterUpdate(toAdd[i], true);
@@ -65,11 +63,10 @@ contract RBT is
     /**
      * @dev See {ERC20-_mint}.
      */
-    function _mint(address account, uint256 amount)
-        internal
-        virtual
-        override(ERC20CappedUpgradeable, ERC20Upgradeable)
-    {
+    function _mint(
+        address account,
+        uint256 amount
+    ) internal virtual override(ERC20CappedUpgradeable, ERC20Upgradeable) {
         require(
             ERC20Upgradeable.totalSupply() + amount <= cap(),
             "ERC20Capped: cap exceeded"

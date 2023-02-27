@@ -7,11 +7,11 @@ const func: DeployFunction = async function ({
   const { deploy } = deployments;
   const { degen_deployer } = await getNamedAccounts();
 
-  await deploy("RenderEngine", {
+  await deploy("DeprecatedRBT", {
     from: degen_deployer,
     log: true,
   });
 };
-func.tags = ["RenderEngine"];
+func.tags = ["DeprecatedRBT"];
 
 export default func;

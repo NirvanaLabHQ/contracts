@@ -78,20 +78,20 @@
     <path d="M4.00039 629.349H1240V631.695H4.00039V629.349Z" fill="url(#p2)" />
     <path d="M1244 12V0H96L0 94V112L102 12H1244Z" fill="#F98701" />
 
-    <text dx="76" dy="605" dominant-baseline="central" text-anchor="left" style="height:100px" font-family="VT323"
-        textLength="1075" font-size="60" fill="#FF8A01">Seed: 0x965f12d657ee…33e46c81af970d72b6641</text>
+    <text dx="76" dy="605" dominant-baseline="central" style="height:100px" font-family="VT323" textLength="1075"
+        font-size="60" fill="#FF8A01">Seed: 0x965f12d657ee…33e46c81af970d72b6641</text>
 
-    <text dx="76" dy="116" dominant-baseline="central" text-anchor="left" font-family="Black Ops One" textLength="300"
-        font-weight="400" font-size="60" lengthAdjust="spacing" fill="#FF8A01">LifeScore</text>
+    <text dx="76" dy="116" dominant-baseline="central" font-family="Black Ops One" textLength="300" font-weight="400"
+        font-size="60" lengthAdjust="spacing" fill="#FF8A01">LifeScore</text>
 
-    <text dx="76" dy="230" dominant-baseline="central" text-anchor="left" font-family="Black Ops One" font-weight="400"
-        font-size="120" lengthAdjust="spacing" fill="#FF8A01">2,222,222</text>
+    <text dx="76" dy="230" dominant-baseline="central" font-family="Black Ops One" font-weight="400" font-size="120"
+        lengthAdjust="spacing" fill="#FF8A01">2,222,222</text>
 
-    <text dx="697" dy="425" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="100"
-        font-size="79" lengthAdjust="spacing" fill="#65E250">Re:9999</text>
+    <text dx="697" dy="425" dominant-baseline="central" font-family="VT323" font-weight="100" font-size="79"
+        lengthAdjust="spacing" fill="#FFFFFF">Re:9999</text>
 
-    <text dx="955" dy="425" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="400"
-        font-size="78" lengthAdjust="spacing" fill="#65E250">Age:101</text>
+    <text dx="955" dy="425" dominant-baseline="central" font-family="VT323" font-weight="400" font-size="78"
+        lengthAdjust="spacing" fill="#FFFFFF">Age:101</text>
 
     <text dx="382" dy="425" dominant-baseline="central" text-anchor="middle" font-family="VT323" textLength="350"
         font-weight="400" font-size="78" lengthAdjust="spacing" fill="#FFFFFF">0x1e18…d8e5</text>
@@ -99,9 +99,8 @@
     <text dx="975" dy="116" dominant-baseline="central" text-anchor="middle" style="height:100px"
         font-family="Black Ops One" font-size="56" fill="#FF8A01">DegenReborn</text>
 
-    <text dx="800" dy="230" dominant-baseline="central" text-anchor="right" font-family="VT323" font-weight="400"
+    <text dx="1070" dy="230" dominant-baseline="central" text-anchor="end" font-family="VT323" font-weight="400"
         font-size="96" lengthAdjust="spacing" fill="url(#p75)">222,222</text>
-
 
     <rect x="1114" y="204" width="5.99988" height="5.99988" transform="rotate(90 1114 204)" fill="#FFD058" />
     <rect x="1138" y="204" width="5.99988" height="5.99988" transform="rotate(90 1138 204)" fill="#E86609" />
@@ -339,7 +338,7 @@
             font-family: 'Black Ops One';
             font-style: normal;
             font-weight: 400;
-            src: url(data:application/font;base64,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) format('woff2');
+            src: url(data:application/font;base64,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) format('woff2');
             unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
         }
 
