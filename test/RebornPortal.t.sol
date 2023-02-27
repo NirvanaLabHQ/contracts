@@ -29,6 +29,9 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         );
 
     function setUp() public {
+        // ignore the effect of chainId to tokenId
+        vm.chainId(0);
+
         rbt = TestUtils.deployRBT(owner);
         mintRBT(rbt, owner, _user, 100000 ether);
 
