@@ -20,7 +20,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     address _user = vm.addr(10);
     address signer = vm.addr(11);
     // solhint-disable-next-line var-name-mixedcase
-    bytes32 private constant _PERMIT_TYPEHASH =
+    bytes32 internal constant _PERMIT_TYPEHASH =
         keccak256(
             "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
         );

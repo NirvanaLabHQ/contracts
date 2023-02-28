@@ -22,6 +22,8 @@ import {RankUpgradeable} from "src/RankUpgradeable.sol";
 
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
+import "forge-std/console.sol";
+
 contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,
@@ -163,18 +165,16 @@ contract RebornPortal is
      */
     function checkUpkeep(
         bytes calldata /* checkData */
-    )
-        external
-        view
-        override
-        returns (bool upkeepNeeded, bytes memory performData)
-    {
+    ) external view override returns (bool upkeepNeeded, bytes memory) {
+        console.log(_dropconf._dropOn);
+        console.log(block.timestamp);
+        console.log(_dropconf._dropLastUpdate);
         upkeepNeeded =
             _dropconf._dropOn == 1 &&
             (block.timestamp >
-                _dropconf._dropLastUpdate + _dropconf._rebornDropInternal ||
+                _dropconf._dropLastUpdate + _dropconf._rebornDropInterval ||
                 block.timestamp >
-                _dropconf._dropLastUpdate + _dropconf._nativeDropInternal);
+                _dropconf._dropLastUpdate + _dropconf._nativeDropInterval);
     }
 
     /**
@@ -331,6 +331,10 @@ contract RebornPortal is
     }
 
     function _infuse(uint256 tokenId, uint256 amount) internal {
+        // if amount is zero, nothing happen
+        if (amount == 0) {
+            return;
+        }
         // burn reborn token from msg.sender
         rebornToken.burnFrom(msg.sender, amount);
 
@@ -388,10 +392,14 @@ contract RebornPortal is
     function _drop() internal onlyDropOn {
         uint256[] memory tokenIds = getTopNTokenId(100);
         bool dropReborn = block.timestamp >
-            _dropconf._dropLastUpdate + _dropconf._rebornDropInternal;
+            _dropconf._dropLastUpdate + _dropconf._rebornDropInterval;
         bool dropNative = block.timestamp >
-            _dropconf._dropLastUpdate + _dropconf._nativeDropInternal;
+            _dropconf._dropLastUpdate + _dropconf._nativeDropInterval;
         for (uint256 i = 0; i < 100; i++) {
+            // if tokenId is zeor, continue
+            if (tokenIds[i] == 0) {
+                continue;
+            }
             Pool storage pool = pools[tokenIds[i]];
             if (dropReborn) {
                 pool.accRebornPerShare +=

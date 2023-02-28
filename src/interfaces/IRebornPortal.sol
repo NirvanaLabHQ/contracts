@@ -58,8 +58,8 @@ interface IRebornDefination {
 
     struct AirdropConf {
         uint8 _dropOn; //   ---
-        uint40 _rebornDropInternal; //     |
-        uint40 _nativeDropInternal; //     |
+        uint40 _rebornDropInterval; //     |
+        uint40 _nativeDropInterval; //     |
         uint40 _dropLastUpdate; //         |
         uint128 _rankLength; //         ---
         uint128 _rebornDropAmount; //   ---
