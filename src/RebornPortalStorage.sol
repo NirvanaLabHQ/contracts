@@ -10,7 +10,7 @@ contract RebornPortalStorage is IRebornDefination {
     // percentage base of refer reward fees
     uint256 public constant PERCENTAGE_BASE = 10000;
     /** Abandoned variable, for slot placeholder*/
-    uint256 private abandonedSoupPrice = 0.01 * 1 ether;
+    uint256 private abandonedSoupPrice;
 
     RBT public rebornToken;
 
