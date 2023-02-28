@@ -52,10 +52,11 @@ contract RebornPortal is
 
     function incarnate(
         Innate memory innate,
-        address referrer
+        address referrer,
+        uint256 _soupPrice
     ) external payable override whenNotPaused nonReentrant {
         _refer(referrer);
-        _incarnate(innate);
+        _incarnate(innate, _soupPrice);
     }
 
     /**
@@ -147,14 +148,6 @@ contract RebornPortal is
     ) external override whenNotPaused {
         _decreaseFromPool(fromTokenId, amount);
         _increaseToPool(toTokenId, amount);
-    }
-
-    /**
-     * @inheritdoc IRebornPortal
-     */
-    function setSoupPrice(uint256 price) external override onlyOwner {
-        soupPrice = price;
-        emit NewSoupPrice(price);
     }
 
     /**
@@ -297,11 +290,7 @@ contract RebornPortal is
         // burn reborn token from msg.sender
         rebornToken.burnFrom(msg.sender, amount);
 
-        Pool storage pool = pools[tokenId];
-        pool.totalAmount += amount;
-
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-        portfolio.accumulativeAmount += amount;
+        _increasePool(tokenId, amount);
 
         emit Infuse(msg.sender, tokenId, amount);
     }
@@ -309,8 +298,8 @@ contract RebornPortal is
     /**
      * @dev implementation of incarnate
      */
-    function _incarnate(Innate memory innate) internal {
-        uint256 totalFee = soupPrice +
+    function _incarnate(Innate memory innate, uint256 _soupPrice) internal {
+        uint256 totalFee = _soupPrice +
             innate.talentPrice +
             innate.propertyPrice;
         if (msg.value < totalFee) {
@@ -326,7 +315,7 @@ contract RebornPortal is
             msg.sender,
             innate.talentPrice,
             innate.propertyPrice,
-            soupPrice
+            _soupPrice
         );
     }
 
@@ -334,7 +323,11 @@ contract RebornPortal is
      * @dev record referrer relationship, only one layer
      */
     function _refer(address referrer) internal {
-        if (referrals[msg.sender] == address(0) && referrer != address(0)) {
+        if (
+            referrals[msg.sender] == address(0) &&
+            referrer != address(0) &&
+            referrer != msg.sender
+        ) {
             referrals[msg.sender] = referrer;
             emit Refer(msg.sender, referrer);
         }
@@ -418,13 +411,20 @@ contract RebornPortal is
      * @dev increase amount to pool of switch to
      */
     function _increaseToPool(uint256 tokenId, uint256 amount) internal {
+        uint256 burnAmount = (amount * 5) / 100;
+        uint256 restakeAmount = amount - burnAmount;
+
+        _increasePool(tokenId, restakeAmount);
+
+        emit IncreaseToPool(msg.sender, tokenId, restakeAmount);
+    }
+
+    function _increasePool(uint256 tokenId, uint256 amount) internal {
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
         portfolio.accumulativeAmount += amount;
 
         Pool storage pool = pools[tokenId];
         pool.totalAmount += amount;
-
-        emit IncreaseToPool(msg.sender, tokenId, amount);
     }
 
     /**
