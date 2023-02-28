@@ -170,8 +170,15 @@ contract RebornPortal is
     /**
      * @dev Upkeep perform of chainlink automation
      */
-    function performUpkeep(bytes calldata) external override whenNotPaused {
-        _drop();
+    function performUpkeep(
+        bytes calldata performData
+    ) external override whenNotPaused {
+        uint256 t = abi.decode(performData, (uint256));
+        if (t == 1) {
+            _dropReborn();
+        } else if (t == 2) {
+            _dropReborn();
+        }
     }
 
     /**
@@ -251,15 +258,27 @@ contract RebornPortal is
      */
     function checkUpkeep(
         bytes calldata /* checkData */
-    ) external view override returns (bool upkeepNeeded, bytes memory) {
-        upkeepNeeded =
-            _dropConf._dropOn == 1 &&
-            (block.timestamp >
-                _dropConf._rebornDropLastUpdate +
-                    _dropConf._rebornDropInterval ||
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
+        if (_dropConf._dropOn == 1) {
+            if (
                 block.timestamp >
-                _dropConf._nativeDropLastUpdate +
-                    _dropConf._nativeDropInterval);
+                _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval
+            ) {
+                upkeepNeeded = true;
+                performData = abi.encode(1);
+            } else if (
+                block.timestamp >
+                _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval
+            ) {
+                upkeepNeeded = true;
+                performData = abi.encode(2);
+            }
+        }
     }
 
     /**
@@ -357,49 +376,61 @@ contract RebornPortal is
     /**
      * @dev airdrop to top 100 tvl pool
      */
-    function _drop() internal onlyDropOn {
+    function _dropReborn() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
         bool dropReborn = block.timestamp >
             _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval;
+        if (dropReborn) {
+            for (uint256 i = 0; i < 100; i++) {
+                // if tokenId is zero, continue
+                if (tokenIds[i] == 0) {
+                    return;
+                }
+                Pool storage pool = pools[tokenIds[i]];
+
+                pool.accRebornPerShare +=
+                    (_dropConf._rebornDropEthAmount * 1 ether * PERSHARE_BASE) /
+                    pool.totalAmount;
+            }
+            // set last drop timestamp to specific hour
+            _dropConf._rebornDropLastUpdate = uint40(
+                _toLastHour(block.timestamp)
+            );
+        }
+    }
+
+    /**
+     * @dev airdrop to top 100 tvl pool
+     */
+    function _dropNative() internal onlyDropOn {
+        uint256[] memory tokenIds = _getTopNTokenId(100);
         bool dropNative = block.timestamp >
             _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval;
-        for (uint256 i = 0; i < 100; i++) {
-            // if tokenId is zero, continue
-            if (tokenIds[i] == 0) {
-                continue;
-            }
-            Pool storage pool = pools[tokenIds[i]];
-            if (dropNative) {
+        if (dropNative) {
+            for (uint256 i = 0; i < 100; i++) {
+                // if tokenId is zero, continue
+                if (tokenIds[i] == 0) {
+                    return;
+                }
+                Pool storage pool = pools[tokenIds[i]];
+
                 pool.accNativePerShare +=
                     (((_dropConf._nativeDropRatio * _jackPot * 3) / 100) *
                         PERSHARE_BASE) /
                     PERCENTAGE_BASE /
                     pool.totalAmount;
-
-                // set last drop timestamp to specific hour
-                _dropConf._nativeDropLastUpdate = uint40(
-                    _toLastHour(block.timestamp)
-                );
             }
-            if (dropReborn) {
-                pool.accRebornPerShare +=
-                    (_dropConf._rebornDropEthAmount * 1 ether * PERSHARE_BASE) /
-                    pool.totalAmount;
-
-                // set last drop timestamp to specific hour
-                _dropConf._rebornDropLastUpdate = uint40(
-                    _toLastHour(block.timestamp)
-                );
-            }
+            // set last drop timestamp to specific hour
+            _dropConf._nativeDropLastUpdate = uint40(
+                _toLastHour(block.timestamp)
+            );
         }
-
-        emit Drop(tokenIds);
     }
 
     /**
      * @dev user claim a drop from a pool
      */
-    function _claimPoolDrop(uint256 tokenId) internal {
+    function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 

@@ -54,11 +54,13 @@ contract AirdropTest is RebornPortalTest {
             bytes32(uint256(10 ether))
         );
 
-        // drop token
-        portal.performUpkeep(new bytes(0));
+        // drop reborn token
+        portal.performUpkeep(abi.encode(1));
+        // drop native token
+        portal.performUpkeep(abi.encode(2));
 
         // mint reward to reward vault
-        mintRBT(rbt, owner, address(portal.vault()), 10000 ether);
+        mintRBT(rbt, owner, address(portal.vault()), 1000000 ether);
 
         // infuse again to trigger claim
         for (uint256 i = 0; i < users.length; i++) {
