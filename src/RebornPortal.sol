@@ -94,7 +94,7 @@ contract RebornPortal is
         vault.reward(user, reward);
 
         // mint to referrer
-        _rewardReferrer(user, reward);
+        _mintRewardToRefs(user, reward);
 
         emit Engrave(seed, user, tokenId, score, reward);
     }
@@ -300,6 +300,9 @@ contract RebornPortal is
         // transfer redundant native token back
         payable(msg.sender).transfer(msg.value - totalFee);
 
+        // reward referrers
+        _sendRewardToRefs(msg.sender, totalFee);
+
         emit Incarnate(
             msg.sender,
             innate.talentPrice,
@@ -319,17 +322,61 @@ contract RebornPortal is
     }
 
     /**
-     * @dev mint refer reward to referee's referrer
+     * @dev mint $REBORN token to referrers
      */
-    function _rewardReferrer(address referee, uint256 amount) internal {
-        (address referrar, uint256 referReward) = calculateReferReward(
-            referee,
-            amount
-        );
-        if (referrar != address(0)) {
-            vault.reward(referrar, referReward);
-            emit ReferReward(referrar, referReward);
+    function _mintRewardToRefs(address account, uint256 amount) internal {
+        (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        ) = calculateReferReward(account, amount, RewardType.RebornToken);
+
+        if (ref1Reward > 0) {
+            vault.reward(ref1, ref1Reward);
         }
+
+        if (ref2Reward > 0) {
+            vault.reward(ref2, ref2Reward);
+        }
+
+        emit ReferReward(
+            account,
+            ref1,
+            ref1Reward,
+            ref2,
+            ref2Reward,
+            RewardType.RebornToken
+        );
+    }
+
+    /**
+     * @dev send NativeToken to referrers
+     */
+    function _sendRewardToRefs(address account, uint256 amount) internal {
+        (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        ) = calculateReferReward(account, amount, RewardType.NativeToken);
+
+        if (ref1Reward > 0) {
+            payable(ref1).transfer(ref1Reward);
+        }
+
+        if (ref2Reward > 0) {
+            payable(ref2).transfer(ref2Reward);
+        }
+
+        emit ReferReward(
+            account,
+            ref1,
+            ref1Reward,
+            ref2,
+            ref2Reward,
+            RewardType.NativeToken
+        );
     }
 
     /**
@@ -362,17 +409,38 @@ contract RebornPortal is
     }
 
     /**
-     * @dev returns refereral and refer reward
-     * @param referee referee address
-     * @param amount reward to the referee, ERC20 amount
+     * @dev returns referrer and referer reward
+     * @return ref1  level1 of referrer. direct referrer
+     * @return ref1Reward  level 1 referrer reward
+     * @return ref2  level2 of referrer. referrer's referrer
+     * @return ref2Reward  level 2 referrer reward
      */
     function calculateReferReward(
-        address referee,
-        uint256 amount
-    ) public view returns (address referrar, uint256 referReward) {
-        referrar = referrals[referee];
-        // refer reward ratio is temporary 0.2
-        referReward = amount / 5;
+        address account,
+        uint256 amount,
+        RewardType rewardType
+    )
+        public
+        view
+        returns (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        )
+    {
+        ref1 = referrals[account];
+        ref2 = referrals[ref1];
+
+        if (rewardType == RewardType.NativeToken) {
+            ref1Reward = ref1 == address(0) ? 0 : (amount * 8) / 100;
+            ref2Reward = ref2 == address(0) ? 0 : (amount * 2) / 100;
+        }
+
+        if (rewardType == RewardType.RebornToken) {
+            ref1Reward = ref1 == address(0) ? 0 : (amount * 18) / 100;
+            ref2Reward = ref2 == address(0) ? 0 : (amount * 2) / 100;
+        }
     }
 
     /**
@@ -380,6 +448,17 @@ contract RebornPortal is
      */
     function getPool(uint256 tokenId) public view returns (Pool memory) {
         return pools[tokenId];
+    }
+
+    /**
+     * A -> B -> C: B: level1 A: level2
+     * @dev referrer1: level1 of referrers referrer2: level2 of referrers
+     */
+    function getRerferrers(
+        address account
+    ) public view returns (address referrer1, address referrer2) {
+        referrer1 = referrals[account];
+        referrer2 = referrals[referrer1];
     }
 
     /**

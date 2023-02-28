@@ -2,6 +2,11 @@
 pragma solidity 0.8.17;
 
 interface IRebornDefination {
+    enum RewardType {
+        NativeToken,
+        RebornToken
+    }
+
     struct Innate {
         uint256 talentPrice;
         uint256 propertyPrice;
@@ -41,7 +46,14 @@ interface IRebornDefination {
         uint256 reward
     );
 
-    event ReferReward(address indexed user, uint256 amount);
+    event ReferReward(
+        address indexed user,
+        address indexed ref1,
+        uint256 amount1,
+        address indexed ref2,
+        uint256 amount2,
+        RewardType rewardType
+    );
 
     event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
 
