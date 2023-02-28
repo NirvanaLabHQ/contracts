@@ -14,13 +14,13 @@ import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 
 import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
-import {RenderEngine} from "src/lib/RenderEngine.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
 
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+import {Renderer} from "src/lib/Renderder.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -175,7 +175,7 @@ contract RebornPortal is
     /**
      * @dev
      */
-    function performUpkeep(bytes calldata performData) external override {
+    function performUpkeep(bytes calldata) external override {
         _drop();
     }
 
@@ -257,43 +257,7 @@ contract RebornPortal is
     function tokenURI(
         uint256 tokenId
     ) public view virtual override returns (string memory) {
-        string memory metadata = Base64.encode(
-            bytes(
-                string.concat(
-                    '{"name": "',
-                    name(),
-                    '","description":"',
-                    "",
-                    '","image":"',
-                    "data:image/svg+xml;base64,",
-                    Base64.encode(
-                        bytes(
-                            RenderEngine.renderSvg(
-                                details[tokenId].seed,
-                                details[tokenId].score,
-                                details[tokenId].round,
-                                details[tokenId].age,
-                                details[tokenId].creator,
-                                details[tokenId].cost
-                            )
-                        )
-                    ),
-                    '","attributes": ',
-                    RenderEngine.renderTrait(
-                        details[tokenId].seed,
-                        details[tokenId].score,
-                        details[tokenId].round,
-                        details[tokenId].age,
-                        details[tokenId].creator,
-                        details[tokenId].reward,
-                        details[tokenId].cost
-                    ),
-                    "}"
-                )
-            )
-        );
-
-        return string.concat("data:application/json;base64,", metadata);
+        return Renderer.renderByTokenId(details, tokenId);
     }
 
     /**
@@ -338,7 +302,7 @@ contract RebornPortal is
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
         portfolio.accumulativeAmount += amount;
 
-        enter(tokenId, pool.totalAmount);
+        _enter(tokenId, pool.totalAmount);
 
         emit Infuse(msg.sender, tokenId, amount);
     }
@@ -382,10 +346,10 @@ contract RebornPortal is
     }
 
     /**
-     * @dev airdrop
+     * @dev airdrop to top 100 tvl pool
      */
     function _drop() internal onlyDropOn {
-        uint256[] memory tokenIds = getTopNTokenId(100);
+        uint256[] memory tokenIds = _getTopNTokenId(100);
         bool dropReborn = block.timestamp >
             _dropConf._dropLastUpdate + _dropConf._rebornDropInterval;
         bool dropNative = block.timestamp >
@@ -435,46 +399,15 @@ contract RebornPortal is
 
         /// @dev send drop
         if (pendingNative != 0) {
-            payable(msg.sender).send(pendingNative);
+            payable(msg.sender).transfer(pendingNative);
         }
         if (pendingReborn != 0) {
             vault.reward(msg.sender, pendingReborn);
         }
     }
 
-    /**
-     *
-     */
-    function _getHour(uint256 timestamp) internal pure returns (uint256) {
-        return (timestamp % (1 days)) % (1 hours);
-    }
-
     function _toLastHour(uint256 timestamp) internal pure returns (uint256) {
-        return timestamp - ((timestamp % (1 days)) % (1 hours));
-    }
-
-    /**
-     * @dev update the pool reward if the pool meets
-     * @param tokenId pool's tokenId
-     */
-    function _rewardPool(uint256 tokenId) internal {
-        Pool storage pool = pools[tokenId];
-        if (
-            block.timestamp >
-            _dropConf._dropLastUpdate + _dropConf._rebornDropInterval
-        ) {
-            pool.accRebornPerShare +=
-                _dropConf._rebornDropAmount /
-                pool.totalAmount;
-        }
-        if (
-            block.timestamp >
-            _dropConf._dropLastUpdate + _dropConf._nativeDropInterval
-        ) {
-            pool.accNativePerShare +=
-                _dropConf._rebornDropAmount /
-                pool.totalAmount;
-        }
+        return timestamp - (timestamp % (1 hours));
     }
 
     /**
@@ -486,7 +419,7 @@ contract RebornPortal is
             uint256 ref1Reward,
             address ref2,
             uint256 ref2Reward
-        ) = calculateReferReward(account, amount, RewardType.RebornToken);
+        ) = _calculateReferReward(account, amount, RewardType.RebornToken);
 
         if (ref1Reward > 0) {
             vault.reward(ref1, ref1Reward);
@@ -515,7 +448,7 @@ contract RebornPortal is
             uint256 ref1Reward,
             address ref2,
             uint256 ref2Reward
-        ) = calculateReferReward(account, amount, RewardType.NativeToken);
+        ) = _calculateReferReward(account, amount, RewardType.NativeToken);
 
         if (ref1Reward > 0) {
             payable(ref1).transfer(ref1Reward);
@@ -548,7 +481,7 @@ contract RebornPortal is
         Pool storage pool = pools[tokenId];
         pool.totalAmount -= amount;
 
-        enter(tokenId, pool.totalAmount);
+        _enter(tokenId, pool.totalAmount);
 
         emit DecreaseFromPool(msg.sender, tokenId, amount);
     }
@@ -572,7 +505,7 @@ contract RebornPortal is
         Pool storage pool = pools[tokenId];
         pool.totalAmount += amount;
 
-        enter(tokenId, pool.totalAmount);
+        _enter(tokenId, pool.totalAmount);
 
         emit IncreaseToPool(msg.sender, tokenId, amount);
     }
@@ -584,12 +517,12 @@ contract RebornPortal is
      * @return ref2  level2 of referrer. referrer's referrer
      * @return ref2Reward  level 2 referrer reward
      */
-    function calculateReferReward(
+    function _calculateReferReward(
         address account,
         uint256 amount,
         RewardType rewardType
     )
-        public
+        internal
         view
         returns (
             address ref1,
@@ -658,15 +591,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev revert if _dropOn is false
-     */
-    function _checkDropOn() internal view {
-        if (_dropConf._dropOn == 0) {
-            revert DropOff();
-        }
-    }
-
-    /**
      * @dev only allowed signer address can do something
      */
     modifier onlySigner() {
@@ -678,7 +602,9 @@ contract RebornPortal is
      * @dev only allowed when drop is on
      */
     modifier onlyDropOn() {
-        _checkDropOn();
+        if (_dropConf._dropOn == 0) {
+            revert DropOff();
+        }
         _;
     }
 }

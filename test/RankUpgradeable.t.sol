@@ -4,13 +4,13 @@ pragma solidity 0.8.17;
 import "forge-std/console.sol";
 import "forge-std/Test.sol";
 
-import "src/RankUpgradeable.sol";
+import "src/mock/RankMock.sol";
 
 contract RankUpgradeableTest is Test {
-    RankUpgradeable rank;
+    RankMock rank;
 
     function setUp() public {
-        rank = new RankUpgradeable();
+        rank = new RankMock();
     }
 
     function testEnterOne() public {
