@@ -80,7 +80,6 @@ contract RebornPortal is
             uint16(age),
             ++rounds[user],
             0,
-            // set cost to 0 temporary, should implement later
             uint128(cost),
             uint128(reward),
             score
@@ -291,9 +290,6 @@ contract RebornPortal is
 
         _increasePool(tokenId, amount);
 
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-        portfolio.accumulativeAmount += amount;
-
         emit Infuse(msg.sender, tokenId, amount);
     }
 
@@ -472,12 +468,13 @@ contract RebornPortal is
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        Pool storage pool = pools[tokenId];
+
         if (portfolio.accumulativeAmount < amount) {
             revert SwitchAmountExceedBalance();
         }
-        portfolio.accumulativeAmount -= amount;
 
-        Pool storage pool = pools[tokenId];
+        portfolio.accumulativeAmount -= amount;
         pool.totalAmount -= amount;
 
         _enter(tokenId, pool.totalAmount);

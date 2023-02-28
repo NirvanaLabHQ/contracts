@@ -160,7 +160,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
     function testInfuseNumericalValue(uint256 amount) public {
         vm.assume(amount < rbt.cap() - 100 ether);
-        testEngrave(bytes32(new bytes(32)), 10, 10, 10);
+        vm.assume(amount > 0);
 
         mintRBT(rbt, owner, _user, amount);
 
@@ -170,7 +170,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         mockInfuse(_user, 1, amount);
 
-        assertEq(portal.getPool(1).accNativePerShare, amount);
+        assertEq(portal.getPool(1).totalAmount, amount);
         assertEq(portal.getPortfolio(_user, 1).accumulativeAmount, amount);
     }
 
