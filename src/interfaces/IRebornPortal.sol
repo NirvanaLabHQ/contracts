@@ -104,7 +104,11 @@ interface IRebornPortal is IRebornDefination {
      * @param innate talent and property choice
      * @param referrer the referrer address
      */
-    function incarnate(Innate memory innate, address referrer) external payable;
+    function incarnate(
+        Innate memory innate,
+        address referrer,
+        uint256 soupPrice
+    ) external payable;
 
     /**
      * @dev engrave the result on chain and reward
@@ -167,10 +171,4 @@ interface IRebornPortal is IRebornDefination {
         uint256 toTokenId,
         uint256 amount
     ) external;
-
-    /**
-     * @dev a bottle of soup is needed to play the game, only owner can set the price
-     * @param price the price of soup, decimal 10^18
-     */
-    function setSoupPrice(uint256 price) external;
 }

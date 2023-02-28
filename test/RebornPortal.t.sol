@@ -13,6 +13,7 @@ import {TestUtils} from "test/TestUtils.sol";
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
 contract RebornPortalTest is Test, IRebornDefination, EventDefination {
+    uint256 public constant SOUP_PRICE = 0.01 * 1 ether;
     RebornPortal portal;
     RBT rbt;
     address owner = vm.addr(2);
@@ -126,10 +127,11 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     function testIncarnate() public {
         hoax(_user);
         bytes memory callData = abi.encodeWithSignature(
-            "incarnate((uint256,uint256),address)",
+            "incarnate((uint256,uint256),address,uint256)",
             0.1 * 1 ether,
             0.5 * 1 ether,
-            address(0)
+            address(0),
+            SOUP_PRICE
         );
 
         vm.expectRevert(InsufficientAmount.selector);
@@ -225,8 +227,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         portal.switchPool(1, 2, 0.1 * 1 ether);
         assertEq(portal.getPool(1).totalAmount, 0.4 * 1 ether);
         assertEq(portal.portfolios(_user, 1), 0.4 * 1 ether);
-        assertEq(portal.getPool(2).totalAmount, 1.1 * 1 ether);
-        assertEq(portal.portfolios(_user, 2), 1.1 * 1 ether);
+        assertEq(portal.getPool(2).totalAmount, 1.095 * 1 ether);
+        assertEq(portal.portfolios(_user, 2), 1.095 * 1 ether);
 
         vm.expectRevert(SwitchAmountExceedBalance.selector);
         vm.prank(_user);
@@ -320,10 +322,11 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         );
         payable(address(portal)).call{value: amount}(
             abi.encodeWithSignature(
-                "incarnate((uint256,uint256),address)",
+                "incarnate((uint256,uint256),address,uint256)",
                 0.1 ether,
                 0.5 ether,
-                ref1
+                ref1,
+                SOUP_PRICE
             )
         );
 
