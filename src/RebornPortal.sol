@@ -94,7 +94,7 @@ contract RebornPortal is
         vault.reward(user, reward);
 
         // mint to referrer
-        _mintRewardToRefs(user, reward);
+        _vaultRewardToRefs(user, reward);
 
         emit Engrave(seed, user, tokenId, score, reward);
     }
@@ -189,6 +189,25 @@ contract RebornPortal is
         for (uint256 i = 0; i < toRemove.length; i++) {
             delete signers[toRemove[i]];
             emit SignerUpdate(toRemove[i], false);
+        }
+    }
+
+    /**
+     * @notice mul 100 when set. eg: 8% -> 800 18%-> 1800
+     * @dev set percentage of referrer reward
+     * @param rewardType 0: incarnate reward 1: engrave reward
+     */
+    function setReferrerRewardFee(
+        uint16 refL1Fee,
+        uint16 refL2Fee,
+        RewardType rewardType
+    ) external onlyOwner {
+        if (rewardType == RewardType.NativeToken) {
+            rewardFees.incarnateRef1Fee = refL1Fee;
+            rewardFees.incarnateRef2Fee = refL2Fee;
+        } else if (rewardType == RewardType.RebornToken) {
+            rewardFees.vaultRef1Fee = refL1Fee;
+            rewardFees.vaultRef2Fee = refL2Fee;
         }
     }
 
@@ -322,9 +341,9 @@ contract RebornPortal is
     }
 
     /**
-     * @dev mint $REBORN token to referrers
+     * @dev vault $REBORN token to referrers
      */
-    function _mintRewardToRefs(address account, uint256 amount) internal {
+    function _vaultRewardToRefs(address account, uint256 amount) internal {
         (
             address ref1,
             uint256 ref1Reward,
@@ -433,13 +452,21 @@ contract RebornPortal is
         ref2 = referrals[ref1];
 
         if (rewardType == RewardType.NativeToken) {
-            ref1Reward = ref1 == address(0) ? 0 : (amount * 8) / 100;
-            ref2Reward = ref2 == address(0) ? 0 : (amount * 2) / 100;
+            ref1Reward = ref1 == address(0)
+                ? 0
+                : (amount * rewardFees.incarnateRef1Fee) / 10000;
+            ref2Reward = ref2 == address(0)
+                ? 0
+                : (amount * rewardFees.incarnateRef2Fee) / 10000;
         }
 
         if (rewardType == RewardType.RebornToken) {
-            ref1Reward = ref1 == address(0) ? 0 : (amount * 18) / 100;
-            ref2Reward = ref2 == address(0) ? 0 : (amount * 2) / 100;
+            ref1Reward = ref1 == address(0)
+                ? 0
+                : (amount * rewardFees.vaultRef1Fee) / 10000;
+            ref2Reward = ref2 == address(0)
+                ? 0
+                : (amount * rewardFees.vaultRef2Fee) / 10000;
         }
     }
 

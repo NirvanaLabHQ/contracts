@@ -31,6 +31,13 @@ interface IRebornDefination {
         uint256 accumulativeAmount;
     }
 
+    struct ReferrerRewardFees {
+        uint16 incarnateRef1Fee;
+        uint16 incarnateRef2Fee;
+        uint16 vaultRef1Fee;
+        uint16 vaultRef2Fee;
+    }
+
     event Incarnate(
         address indexed user,
         uint256 indexed talentPrice,

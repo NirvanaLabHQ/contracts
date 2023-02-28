@@ -34,6 +34,8 @@ contract RebornPortalStorage is IRebornDefination {
     // BitMapsUpgradeable.BitMap baptism;
     uint256 private _placeholder;
 
+    ReferrerRewardFees public rewardFees;
+
     /// @dev gap for potential vairable
     uint256[38] private _gap;
 }
