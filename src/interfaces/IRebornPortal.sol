@@ -36,6 +36,7 @@ interface IRebornDefination {
         uint16 incarnateRef2Fee;
         uint16 vaultRef1Fee;
         uint16 vaultRef2Fee;
+        uint192 _slotPlaceholder;
     }
 
     event Incarnate(
