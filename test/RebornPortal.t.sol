@@ -170,10 +170,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         mockInfuse(_user, 1, amount);
 
-        (uint256 a, , , , ) = portal.pools(1);
-        assertEq(a, amount);
-        (uint256 b, , ) = portal.portfolios(_user, 1);
-        assertEq(b, amount);
+        assertEq( portal.getPool(1).accNativePerShare, amount);
+        assertEq(portal.getPortfolio(_user, 1).accumulativeAmount, amount);
     }
 
     function mockInfuse(address user, uint256 tokenId, uint256 amount) public {

@@ -22,8 +22,6 @@ import {RankUpgradeable} from "src/RankUpgradeable.sol";
 
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
-import "forge-std/console.sol";
-
 contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,
@@ -166,9 +164,6 @@ contract RebornPortal is
     function checkUpkeep(
         bytes calldata /* checkData */
     ) external view override returns (bool upkeepNeeded, bytes memory) {
-        console.log(_dropConf._dropOn);
-        console.log(block.timestamp);
-        console.log(_dropConf._dropLastUpdate);
         upkeepNeeded =
             _dropConf._dropOn == 1 &&
             (block.timestamp >

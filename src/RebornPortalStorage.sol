@@ -16,14 +16,14 @@ contract RebornPortalStorage is IRebornDefination {
 
     mapping(address => bool) public signers;
 
-    mapping(address => uint32) public rounds;
+    mapping(address => uint32) internal rounds;
 
     mapping(uint256 => LifeDetail) public details;
 
-    mapping(uint256 => Pool) public pools;
+    mapping(uint256 => Pool) internal pools;
 
     /// @dev user address => pool tokenId => Portfolio
-    mapping(address => mapping(uint256 => Portfolio)) public portfolios;
+    mapping(address => mapping(uint256 => Portfolio)) internal portfolios;
 
     mapping(address => address) public referrals;
 
@@ -31,7 +31,7 @@ contract RebornPortalStorage is IRebornDefination {
 
     BitMapsUpgradeable.BitMap internal _seeds;
 
-    uint256 public idx;
+    uint256 internal idx;
 
     // WARN: data residual exists
     // BitMapsUpgradeable.BitMap baptism;
