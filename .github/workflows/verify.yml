@@ -2,8 +2,6 @@ name: Verify on scan
 
 on:
   push:
-    branches:
-      - main
 
 jobs:
   foundry-test:
