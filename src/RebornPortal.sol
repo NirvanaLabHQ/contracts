@@ -32,13 +32,11 @@ contract RebornPortal is
 
     function initialize(
         RBT rebornToken_,
-        uint256 soupPrice_,
         address owner_,
         string memory name_,
         string memory symbol_
     ) public initializer {
         rebornToken = rebornToken_;
-        soupPrice = soupPrice_;
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();

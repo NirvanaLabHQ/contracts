@@ -19,13 +19,7 @@ const func: DeployFunction = async function ({
       execute: {
         init: {
           methodName: "initialize",
-          args: [
-            rbt.address,
-            parseEther("0.01"),
-            owner,
-            "Degen Tombstone",
-            "RIP",
-          ],
+          args: [rbt.address, owner, "Degen Tombstone", "RIP"],
         },
       },
     },
