@@ -115,6 +115,14 @@ interface IRebornDefination {
         uint256 amount
     );
 
+    event ClaimDrop(
+        uint256 indexed tokenId,
+        uint256 rebornAmount,
+        uint256 nativeAmount
+    );
+
+    event Drop(uint256[] tokenIds);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer

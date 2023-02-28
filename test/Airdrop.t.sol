@@ -4,16 +4,19 @@ pragma solidity 0.8.17;
 import "test/RebornPortal.t.sol";
 
 contract AirdropTest is RebornPortalTest {
-    function testDrop(address[] memory users) public {
+    function testDropFuzz(address[] memory users) public {
+        vm.assume(users.length > 100);
         // mock infuse
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
-            uint256 amount = i;
+            uint256 amount = bound(
+                uint160(user),
+                1,
+                rbt.cap() - rbt.totalSupply()
+            );
             uint256 tokenId = uint160(user);
             // only EOA and not precompile address
             vm.assume(user.code.length == 0 && tokenId > 20);
-            vm.assume(amount < rbt.cap() - rbt.totalSupply());
-            vm.assume(users[i] != address(0));
 
             mintRBT(rbt, owner, users[i], amount);
             vm.startPrank(users[i]);
@@ -52,15 +55,18 @@ contract AirdropTest is RebornPortalTest {
         // infuse again to trigger claim
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
-            uint256 amount = i;
+            uint256 amount = bound(
+                uint160(user),
+                1,
+                rbt.cap() - rbt.totalSupply()
+            );
             uint256 tokenId = uint160(user);
             // only EOA and not precompile address
             vm.assume(user.code.length == 0 && tokenId > 20);
-            vm.assume(amount < rbt.cap() - rbt.totalSupply());
-            vm.assume(users[i] != address(0));
 
             mintRBT(rbt, owner, users[i], amount);
             vm.startPrank(users[i]);
+            portal.claimDrop(tokenId);
             rbt.approve(address(portal), amount);
             portal.infuse(tokenId, amount);
             vm.stopPrank();

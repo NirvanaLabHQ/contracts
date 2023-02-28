@@ -150,7 +150,25 @@ contract RebornPortal is
     }
 
     /**
-     * @dev
+     * @dev user claim many pools' airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimDrops(uint256[] memory tokenIds) public whenNotPaused {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _claimPoolDrop(tokenIds[i]);
+        }
+    }
+
+    /**
+     * @dev user claim many pools' airdrop
+     * @param tokenId pool's tokenId to claim
+     */
+    function claimDrop(uint256 tokenId) public whenNotPaused {
+        _claimPoolDrop(tokenId);
+    }
+
+    /**
+     * @dev checkUpkeep for chainlink automation
      */
     function checkUpkeep(
         bytes calldata /* checkData */
@@ -365,6 +383,8 @@ contract RebornPortal is
 
         // set last drop to specific hour
         _dropConf._dropLastUpdate = uint40(_toLastHour(block.timestamp));
+
+        emit Drop(tokenIds);
     }
 
     /**
@@ -393,11 +413,15 @@ contract RebornPortal is
             PERSHARE_BASE;
 
         /// @dev send drop
-        if (pendingNative != 0) {
-            payable(msg.sender).transfer(pendingNative);
-        }
-        if (pendingReborn != 0) {
-            vault.reward(msg.sender, pendingReborn);
+        if (pendingNative != 0 || pendingReborn != 0) {
+            if (pendingNative != 0) {
+                payable(msg.sender).transfer(pendingNative);
+            }
+            if (pendingReborn != 0) {
+                vault.reward(msg.sender, pendingReborn);
+            }
+
+            emit ClaimDrop(tokenId, pendingReborn, pendingNative);
         }
     }
 
