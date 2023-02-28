@@ -56,6 +56,16 @@ interface IRebornDefination {
         uint192 _slotPlaceholder;
     }
 
+    struct AirdropConf {
+        uint8 _dropOn; //   ---
+        uint40 _rebornDropInternal; //     |
+        uint40 _nativeDropInternal; //     |
+        uint40 _dropLastUpdate; //         |
+        uint128 _rankLength; //         ---
+        uint128 _rebornDropAmount; //   ---
+        uint128 _nativeDropAmount; //   ---
+    }
+
     event Incarnate(
         address indexed user,
         uint256 indexed talentPrice,
@@ -92,6 +102,8 @@ interface IRebornDefination {
 
     event Refer(address referee, address referrer);
 
+    event NewDropConf(AirdropConf conf);
+
     event DecreaseFromPool(
         address indexed account,
         uint256 tokenId,
@@ -113,6 +125,8 @@ interface IRebornDefination {
     error SameSeed();
     /// @dev revert when swith amount from pool exceed staked balance
     error SwitchAmountExceedBalance();
+    /// @dev revert when the drop is not on
+    error DropOff();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -188,4 +202,9 @@ interface IRebornPortal is IRebornDefination {
         uint256 toTokenId,
         uint256 amount
     ) external;
+
+    /**
+     * @dev set new airdrop config
+     */
+    function setDropConf(AirdropConf calldata conf) external;
 }

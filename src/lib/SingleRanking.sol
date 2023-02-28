@@ -1,9 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-
 pragma solidity ^0.8.0;
-
-import "forge-std/console.sol";
-
 import "./FastArray.sol";
 import "./RankingRedBlackTree.sol";
 

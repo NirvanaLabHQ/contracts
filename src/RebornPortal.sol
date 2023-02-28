@@ -20,6 +20,8 @@ import {RewardVault} from "src/RewardVault.sol";
 
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
 
+import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+
 contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,
@@ -28,6 +30,7 @@ contract RebornPortal is
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
     PausableUpgradeable,
+    AutomationCompatible,
     RankUpgradeable
 {
     using SafeERC20Upgradeable for IRebornToken;
@@ -120,6 +123,7 @@ contract RebornPortal is
         uint256 tokenId,
         uint256 amount
     ) external override whenNotPaused {
+        _claimPoolDrop(tokenId);
         _infuse(tokenId, amount);
     }
 
@@ -135,6 +139,7 @@ contract RebornPortal is
         bytes32 s,
         uint8 v
     ) external override whenNotPaused {
+        _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount);
     }
@@ -147,8 +152,46 @@ contract RebornPortal is
         uint256 toTokenId,
         uint256 amount
     ) external override whenNotPaused {
+        _claimPoolDrop(fromTokenId);
+        _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
         _increaseToPool(toTokenId, amount);
+    }
+
+    /**
+     * @dev
+     */
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
+        upkeepNeeded =
+            _dropconf._dropOn == 1 &&
+            (block.timestamp >
+                _dropconf._dropLastUpdate + _dropconf._rebornDropInternal ||
+                block.timestamp >
+                _dropconf._dropLastUpdate + _dropconf._nativeDropInternal);
+    }
+
+    /**
+     * @dev
+     */
+    function performUpkeep(bytes calldata performData) external override {
+        _drop();
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function setDropConf(
+        AirdropConf calldata conf
+    ) external override onlyOwner {
+        _dropconf = conf;
+        emit NewDropConf(conf);
     }
 
     /**
@@ -340,29 +383,71 @@ contract RebornPortal is
     }
 
     /**
-     * @dev update the pool reward if the pool meets
-     * @param tokenId pool's tokenId
+     * @dev airdrop
      */
-    function _rewardPool(uint256 tokenId) internal {
-        Pool storage pool = pools[tokenId];
-        if (block.timestamp > _dropLastUpdate + _rebornDropInternal) {
-            pool.accRebornPerShare += _rebornDropAmount / pool.totalAmount;
+    function _drop() internal onlyDropOn {
+        uint256[] memory tokenIds = getTopNTokenId(100);
+        bool dropReborn = block.timestamp >
+            _dropconf._dropLastUpdate + _dropconf._rebornDropInternal;
+        bool dropNative = block.timestamp >
+            _dropconf._dropLastUpdate + _dropconf._nativeDropInternal;
+        for (uint256 i = 0; i < 100; i++) {
+            Pool storage pool = pools[tokenIds[i]];
+            if (dropReborn) {
+                pool.accRebornPerShare +=
+                    _dropconf._rebornDropAmount /
+                    pool.totalAmount;
+            }
+            if (dropNative) {
+                pool.accNativePerShare +=
+                    _dropconf._nativeDropAmount /
+                    pool.totalAmount;
+            }
         }
-        if (block.timestamp > _dropLastUpdate + _nativeDropInternal) {
-            pool.accNativePerShare += _rebornDropAmount / pool.totalAmount;
+
+        // set last drop to specific hour
+        _dropconf._dropLastUpdate = uint40(_toLastHour(block.timestamp));
+    }
+
+    /**
+     * @dev user claim a drop from a pool
+     */
+    function _claimPoolDrop(uint256 tokenId) internal {
+        Pool storage pool = pools[tokenId];
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+
+        uint256 pendingNative = (portfolio.accumulativeAmount *
+            pool.accNativePerShare) - portfolio.nativeRewardDebt;
+
+        uint256 pendingReborn = (portfolio.accumulativeAmount *
+            pool.accRebornPerShare) - portfolio.rebornRewardDebt;
+
+        // set current amount as debt
+        portfolio.nativeRewardDebt =
+            portfolio.accumulativeAmount *
+            pool.accNativePerShare;
+        portfolio.rebornRewardDebt =
+            portfolio.accumulativeAmount *
+            pool.accRebornPerShare;
+
+        /// @dev send drop
+        if (pendingNative != 0) {
+            payable(msg.sender).send(pendingNative);
+        }
+        if (pendingReborn != 0) {
+            vault.reward(msg.sender, pendingReborn);
         }
     }
 
     /**
-     * @dev reward pools
-     */
-    function _rewardPools() internal {}
-
-    /**
      *
      */
-    function _getHour(uint256 timestamp) internal view returns (uint256) {
-        return (timestamp % 86400) % 3600;
+    function _getHour(uint256 timestamp) internal pure returns (uint256) {
+        return (timestamp % (1 days)) % (1 hours);
+    }
+
+    function _toLastHour(uint256 timestamp) internal pure returns (uint256) {
+        return timestamp - ((timestamp % (1 days)) % (1 hours));
     }
 
     /**
@@ -572,10 +657,27 @@ contract RebornPortal is
     }
 
     /**
+     * @dev revert if _dropOn is false
+     */
+    function _checkDropOn() internal view {
+        if (_dropconf._dropOn == 0) {
+            revert DropOff();
+        }
+    }
+
+    /**
      * @dev only allowed signer address can do something
      */
     modifier onlySigner() {
         _checkSigner();
+        _;
+    }
+
+    /**
+     * @dev only allowed when drop is on
+     */
+    modifier onlyDropOn() {
+        _checkDropOn();
         _;
     }
 }

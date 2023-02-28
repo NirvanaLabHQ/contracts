@@ -39,18 +39,9 @@ contract RebornPortalStorage is IRebornDefination {
 
     ReferrerRewardFees public rewardFees;
 
-
-
-
     // airdrop config
-    uint8 internal _dropOn;               //   ---
-    uint40 internal _rebornDropInternal;  //     |
-    uint40 internal _nativeDropInternal;  //     |
-    uint40 internal _dropLastUpdate;      //     |
-    uint128 internal _rankLength;        //   ---
 
-    uint128 internal _rebornDropAmount;   //   ---
-    uint128 internal _nativeDropAmount;   //   ---
+    AirdropConf internal _dropconf;
 
     /// @dev gap for potential vairable
     uint256[35] private _gap;
