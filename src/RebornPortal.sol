@@ -454,19 +454,19 @@ contract RebornPortal is
         if (rewardType == RewardType.NativeToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef1Fee) / 10000;
+                : (amount * rewardFees.incarnateRef1Fee) / PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef2Fee) / 10000;
+                : (amount * rewardFees.incarnateRef2Fee) / PERCENTAGE_BASE;
         }
 
         if (rewardType == RewardType.RebornToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef1Fee) / 10000;
+                : (amount * rewardFees.vaultRef1Fee) / PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef2Fee) / 10000;
+                : (amount * rewardFees.vaultRef2Fee) / PERCENTAGE_BASE;
         }
     }
 
