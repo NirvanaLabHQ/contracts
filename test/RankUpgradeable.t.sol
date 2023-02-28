@@ -17,8 +17,8 @@ contract RankUpgradeableTest is Test {
         rank.enter(1, 3);
         rank.enter(2, 3);
         rank.enter(3, 3);
-        rank.enter(4, 3);
-        rank.enter(4, 3);
+        rank.enter(4, 1);
+        rank.enter(4, 2);
         rank.enter(4, 3);
 
         rank.getTopNValue(4);
@@ -31,7 +31,11 @@ contract RankUpgradeableTest is Test {
 
         for (uint256 j = 0; j < 10; j++) {
             for (uint256 i = 0; i < values.length; i++) {
-                rank.enter(values[i], i);
+                // skip zero value
+                if (values[i] == 0) {
+                    continue;
+                }
+                rank.enter(i, values[i]);
             }
         }
 

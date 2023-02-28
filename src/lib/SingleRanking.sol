@@ -29,6 +29,19 @@ library SingleRanking {
         _singleRanking.keys[_value].insert(_key);
 
         _singleRanking.length += 1;
+
+        // if (FastArray.length(keys) == 0) {
+        //     _singleRanking.length += 1;
+        // } else {
+        //     // remove old key to keep only one value for one key
+        //     uint256 oldKey = keys.get(0);
+        //     _singleRanking.tree.removeWithKey(oldKey);
+        //     _singleRanking.keys[_value].remove(oldKey);
+        // }
+
+        // _singleRanking.tree.insert(_value);
+
+        // _singleRanking.keys[_value].insert(_key);
     }
 
     function remove(

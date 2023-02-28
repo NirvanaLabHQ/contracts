@@ -7,10 +7,12 @@ import {SingleRanking} from "src/lib/SingleRanking.sol";
 contract RankUpgradeable {
     error RequireLengthExceedCurrentData();
     error InsufficientData();
+    error ZeroValueEnter();
 
     using SingleRanking for SingleRanking.Data;
     SingleRanking.Data private _rank;
     uint256 private _treeLength;
+    mapping(uint256 => uint256) _tokenIdOldValue;
 
     // index id => tokenid
     mapping(uint256 => uint256) internal _rankIndexMap;
@@ -19,8 +21,16 @@ contract RankUpgradeable {
      * @dev set a new value in tree, only save top x largest value
      * @param value new value enters in the tree
      */
-    function enter(uint256 value, uint256 tokenId) public {
-        _rank.add(value, tokenId);
+    function enter(uint256 tokenId, uint256 value) public {
+        if (value == 0) {
+            revert ZeroValueEnter();
+        }
+
+        if (_tokenIdOldValue[tokenId] != 0) {
+            _rank.remove(tokenId, _tokenIdOldValue[tokenId]);
+        }
+        _rank.add(tokenId, value);
+        _tokenIdOldValue[tokenId] = value;
     }
 
     // function getTopNIndex(
