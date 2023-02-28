@@ -10,6 +10,8 @@ contract AirdropTest is RebornPortalTest {
             address user = users[i];
             uint256 amount = i;
             uint256 tokenId = uint160(user);
+            // only EOA and not precompile address
+            vm.assume(user.code.length == 0 && tokenId > 20);
             vm.assume(amount < rbt.cap() - rbt.totalSupply());
             vm.assume(users[i] != address(0));
 
@@ -45,11 +47,16 @@ contract AirdropTest is RebornPortalTest {
 
         // mint reward to reward vault
         mintRBT(rbt, owner, address(portal.vault()), 10000 ether);
+        // give native token to portal
+        vm.deal(address(portal), 10 ** 18 * 1 ether);
+
         // infuse again to trigger claim
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
             uint256 amount = i;
             uint256 tokenId = uint160(user);
+            // only EOA and not precompile address
+            vm.assume(user.code.length == 0 && tokenId > 20);
             vm.assume(amount < rbt.cap() - rbt.totalSupply());
             vm.assume(users[i] != address(0));
 

@@ -294,7 +294,6 @@ contract RebornPortal is
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
         portfolio.accumulativeAmount += amount;
 
-
         emit Infuse(msg.sender, tokenId, amount);
     }
 
@@ -346,7 +345,7 @@ contract RebornPortal is
         bool dropNative = block.timestamp >
             _dropConf._dropLastUpdate + _dropConf._nativeDropInterval;
         for (uint256 i = 0; i < 100; i++) {
-            // if tokenId is zeor, continue
+            // if tokenId is zero, continue
             if (tokenIds[i] == 0) {
                 continue;
             }
