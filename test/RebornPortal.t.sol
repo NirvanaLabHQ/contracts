@@ -59,13 +59,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
     function deployPortal() public returns (RebornPortal portal_) {
         portal_ = new RebornPortal();
-        portal_.initialize(
-            rbt,
-            0.01 * 1 ether,
-            owner,
-            "Degen Tombstone",
-            "RIP"
-        );
+        portal_.initialize(rbt, owner, "Degen Tombstone", "RIP");
     }
 
     function mintRBT(

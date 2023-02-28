@@ -9,8 +9,8 @@ import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/stru
 contract RebornPortalStorage is IRebornDefination {
     // percentage base of refer reward fees
     uint256 public constant PERCENTAGE_BASE = 10000;
-    /** you need buy a soup before reborn */
-    uint256 public soupPrice = 0.01 * 1 ether;
+    /** Abandoned variable, for slot placeholder*/
+    uint256 private abandonedSoupPrice = 0.01 * 1 ether;
 
     RBT public rebornToken;
 

@@ -21,7 +21,6 @@ const func: DeployFunction = async function ({
           methodName: "initialize",
           args: [
             rbt.address,
-            parseEther("0.001"),
             "0xa23a69CB8aE1259937F1e6b51e76a53F3DEaA988",
             "Degen Tombstone",
             "RIP",
