@@ -153,38 +153,24 @@ contract RebornPortal is
      * @dev user claim many pools' airdrop
      * @param tokenIds pools' tokenId array to claim
      */
-    function claimDrops(uint256[] memory tokenIds) public whenNotPaused {
+    function claimDrops(uint256[] memory tokenIds) external whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             _claimPoolDrop(tokenIds[i]);
         }
     }
 
     /**
-     * @dev user claim many pools' airdrop
+     * @dev user specific pool's airdrop
      * @param tokenId pool's tokenId to claim
      */
-    function claimDrop(uint256 tokenId) public whenNotPaused {
+    function claimDrop(uint256 tokenId) external whenNotPaused {
         _claimPoolDrop(tokenId);
     }
 
     /**
-     * @dev checkUpkeep for chainlink automation
+     * @dev Upkeep perform of chainlink automation
      */
-    function checkUpkeep(
-        bytes calldata /* checkData */
-    ) external view override returns (bool upkeepNeeded, bytes memory) {
-        upkeepNeeded =
-            _dropConf._dropOn == 1 &&
-            (block.timestamp >
-                _dropConf._dropLastUpdate + _dropConf._rebornDropInterval ||
-                block.timestamp >
-                _dropConf._dropLastUpdate + _dropConf._nativeDropInterval);
-    }
-
-    /**
-     * @dev
-     */
-    function performUpkeep(bytes calldata) external override {
+    function performUpkeep(bytes calldata) external override whenNotPaused {
         _drop();
     }
 
@@ -258,6 +244,20 @@ contract RebornPortal is
      */
     function withdrawNativeToken(uint256 amount) external onlyOwner {
         payable(msg.sender).transfer(amount);
+    }
+
+    /**
+     * @dev checkUpkeep for chainlink automation
+     */
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    ) external view override returns (bool upkeepNeeded, bytes memory) {
+        upkeepNeeded =
+            _dropConf._dropOn == 1 &&
+            (block.timestamp >
+                _dropConf._dropLastUpdate + _dropConf._rebornDropInterval ||
+                block.timestamp >
+                _dropConf._dropLastUpdate + _dropConf._nativeDropInterval);
     }
 
     /**

@@ -44,13 +44,20 @@ contract AirdropTest is RebornPortalTest {
         (bool up, ) = portal.checkUpkeep(new bytes(0));
         assertEq(up, true);
 
+        // give native token to portal
+        vm.deal(address(portal), 10 ** 18 * 1 ether);
+        // manually set _jackpot
+        vm.store(
+            address(portal),
+            bytes32(uint256(201)),
+            bytes32(uint256(10 ether))
+        );
+
         // drop token
         portal.performUpkeep(new bytes(0));
 
         // mint reward to reward vault
         mintRBT(rbt, owner, address(portal.vault()), 10000 ether);
-        // give native token to portal
-        vm.deal(address(portal), 10 ** 18 * 1 ether);
 
         // infuse again to trigger claim
         for (uint256 i = 0; i < users.length; i++) {
