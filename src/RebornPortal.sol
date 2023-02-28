@@ -1,25 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
-
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
-import {IRebornToken} from "src/interfaces/IRebornToken.sol";
-
 import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
-
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
-
-import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import {Renderer} from "src/lib/Renderder.sol";
 
 contract RebornPortal is
@@ -33,7 +26,6 @@ contract RebornPortal is
     AutomationCompatible,
     RankUpgradeable
 {
-    using SafeERC20Upgradeable for IRebornToken;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
     function initialize(
