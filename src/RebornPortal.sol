@@ -345,9 +345,6 @@ contract RebornPortal is
         // transfer redundant native token back
         payable(msg.sender).transfer(msg.value - totalFee);
 
-        // 50% to jackpot
-        _jackPot += (totalFee * 1) / 2;
-
         // reward referrers
         _sendRewardToRefs(msg.sender, totalFee);
 
@@ -415,7 +412,7 @@ contract RebornPortal is
                 Pool storage pool = pools[tokenIds[i]];
 
                 pool.accNativePerShare +=
-                    (((_dropConf._nativeDropRatio * _jackPot * 3) / 100) *
+                    (((_dropConf._nativeDropRatio * address(this).balance * 3) / 200) *
                         PERSHARE_BASE) /
                     PERCENTAGE_BASE /
                     pool.totalAmount;

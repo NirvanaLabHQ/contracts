@@ -11,7 +11,7 @@ contract RebornPortalStorage is IRebornDefination {
     uint256 internal constant PERCENTAGE_BASE = 10000;
     uint256 internal constant PERSHARE_BASE = 10e18;
     /** Abandoned variable, for slot placeholder*/
-    uint256 internal _jackPot;
+    uint256 private abandonedSoupPrice;
 
     RBT public rebornToken;
 

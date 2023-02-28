@@ -47,12 +47,6 @@ contract AirdropTest is RebornPortalTest {
 
         // give native token to portal
         vm.deal(address(portal), 10 ** 18 * 1 ether);
-        // manually set _jackpot
-        vm.store(
-            address(portal),
-            bytes32(uint256(201)),
-            bytes32(uint256(10 ether))
-        );
 
         // drop reborn token
         portal.performUpkeep(abi.encode(1));
