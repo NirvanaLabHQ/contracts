@@ -54,8 +54,8 @@ contract RebornPortal is
         Innate memory innate,
         address referrer
     ) external payable override whenNotPaused nonReentrant {
-        _incarnate(innate);
         _refer(referrer);
+        _incarnate(innate);
     }
 
     /**
