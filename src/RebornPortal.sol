@@ -166,15 +166,15 @@ contract RebornPortal is
     function checkUpkeep(
         bytes calldata /* checkData */
     ) external view override returns (bool upkeepNeeded, bytes memory) {
-        console.log(_dropconf._dropOn);
+        console.log(_dropConf._dropOn);
         console.log(block.timestamp);
-        console.log(_dropconf._dropLastUpdate);
+        console.log(_dropConf._dropLastUpdate);
         upkeepNeeded =
-            _dropconf._dropOn == 1 &&
+            _dropConf._dropOn == 1 &&
             (block.timestamp >
-                _dropconf._dropLastUpdate + _dropconf._rebornDropInterval ||
+                _dropConf._dropLastUpdate + _dropConf._rebornDropInterval ||
                 block.timestamp >
-                _dropconf._dropLastUpdate + _dropconf._nativeDropInterval);
+                _dropConf._dropLastUpdate + _dropConf._nativeDropInterval);
     }
 
     /**
@@ -190,7 +190,7 @@ contract RebornPortal is
     function setDropConf(
         AirdropConf calldata conf
     ) external override onlyOwner {
-        _dropconf = conf;
+        _dropConf = conf;
         emit NewDropConf(conf);
     }
 
@@ -392,9 +392,9 @@ contract RebornPortal is
     function _drop() internal onlyDropOn {
         uint256[] memory tokenIds = getTopNTokenId(100);
         bool dropReborn = block.timestamp >
-            _dropconf._dropLastUpdate + _dropconf._rebornDropInterval;
+            _dropConf._dropLastUpdate + _dropConf._rebornDropInterval;
         bool dropNative = block.timestamp >
-            _dropconf._dropLastUpdate + _dropconf._nativeDropInterval;
+            _dropConf._dropLastUpdate + _dropConf._nativeDropInterval;
         for (uint256 i = 0; i < 100; i++) {
             // if tokenId is zeor, continue
             if (tokenIds[i] == 0) {
@@ -403,18 +403,18 @@ contract RebornPortal is
             Pool storage pool = pools[tokenIds[i]];
             if (dropReborn) {
                 pool.accRebornPerShare +=
-                    _dropconf._rebornDropAmount /
+                    _dropConf._rebornDropAmount /
                     pool.totalAmount;
             }
             if (dropNative) {
                 pool.accNativePerShare +=
-                    _dropconf._nativeDropAmount /
+                    _dropConf._nativeDropAmount /
                     pool.totalAmount;
             }
         }
 
         // set last drop to specific hour
-        _dropconf._dropLastUpdate = uint40(_toLastHour(block.timestamp));
+        _dropConf._dropLastUpdate = uint40(_toLastHour(block.timestamp));
     }
 
     /**
@@ -464,24 +464,22 @@ contract RebornPortal is
      */
     function _rewardPool(uint256 tokenId) internal {
         Pool storage pool = pools[tokenId];
-        if (block.timestamp > _dropLastUpdate + _rebornDropInternal) {
-            pool.accRebornPerShare += _rebornDropAmount / pool.totalAmount;
+        if (
+            block.timestamp >
+            _dropConf._dropLastUpdate + _dropConf._rebornDropInterval
+        ) {
+            pool.accRebornPerShare +=
+                _dropConf._rebornDropAmount /
+                pool.totalAmount;
         }
-        if (block.timestamp > _dropLastUpdate + _nativeDropInternal) {
-            pool.accNativePerShare += _rebornDropAmount / pool.totalAmount;
+        if (
+            block.timestamp >
+            _dropConf._dropLastUpdate + _dropConf._nativeDropInterval
+        ) {
+            pool.accNativePerShare +=
+                _dropConf._rebornDropAmount /
+                pool.totalAmount;
         }
-    }
-
-    /**
-     * @dev reward pools
-     */
-    function _rewardPools() internal {}
-
-    /**
-     *
-     */
-    function _getHour(uint256 timestamp) internal view returns (uint256) {
-        return (timestamp % 86400) % 3600;
     }
 
     /**
@@ -668,7 +666,7 @@ contract RebornPortal is
      * @dev revert if _dropOn is false
      */
     function _checkDropOn() internal view {
-        if (_dropconf._dropOn == 0) {
+        if (_dropConf._dropOn == 0) {
             revert DropOff();
         }
     }
