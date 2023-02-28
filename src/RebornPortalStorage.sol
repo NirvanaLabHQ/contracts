@@ -7,6 +7,8 @@ import {RewardVault} from "src/RewardVault.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 contract RebornPortalStorage is IRebornDefination {
+    // percentage base of refer reward fees
+    uint256 public constant PERCENTAGE_BASE = 10000;
     /** you need buy a soup before reborn */
     uint256 public soupPrice = 0.01 * 1 ether;
 
@@ -37,5 +39,5 @@ contract RebornPortalStorage is IRebornDefination {
     ReferrerRewardFees public rewardFees;
 
     /// @dev gap for potential vairable
-    uint256[38] private _gap;
+    uint256[37] private _gap;
 }
