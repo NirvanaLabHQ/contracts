@@ -28,8 +28,8 @@ contract AirdropTest is RebornPortalTest {
                 1 hours,
                 3 hours,
                 uint40(block.timestamp),
-                100,
-                1000 ether,
+                1,
+                1 ether,
                 1 ether
             )
         );
@@ -43,6 +43,21 @@ contract AirdropTest is RebornPortalTest {
         // drop token
         portal.performUpkeep(new bytes(0));
 
-        // claim
+        // mint reward to reward vault
+        mintRBT(rbt, owner, address(portal.vault()), 10000 ether);
+        // infuse again to trigger claim
+        for (uint256 i = 0; i < users.length; i++) {
+            address user = users[i];
+            uint256 amount = i;
+            uint256 tokenId = uint160(user);
+            vm.assume(amount < rbt.cap() - rbt.totalSupply());
+            vm.assume(users[i] != address(0));
+
+            mintRBT(rbt, owner, users[i], amount);
+            vm.startPrank(users[i]);
+            rbt.approve(address(portal), amount);
+            portal.infuse(tokenId, amount);
+            vm.stopPrank();
+        }
     }
 }
