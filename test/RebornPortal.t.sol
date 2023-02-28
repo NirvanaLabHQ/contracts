@@ -273,31 +273,52 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         address ref1 = vm.addr(20);
         address ref2 = vm.addr(21);
 
+        vm.prank(owner);
+        portal.setReferrerRewardFee(800, 200, RewardType.NativeToken);
+
+        // refer ref2->ref1
         hoax(ref1);
-        // ref2->ref1
-        payable(address(portal)).call{value: 0.61 ether}(
-            abi.encodeWithSignature(
-                "incarnate((uint256,uint256),address)",
-                0.1 ether,
-                0.5 ether,
-                ref2
-            )
+        incarnateWithReferrer(
+            ref1,
+            ref2,
+            0.61 * 0.08 * 1e18,
+            address(0),
+            0,
+            0.61 ether
         );
-        assertEq(ref2.balance, 0.61 * 0.08 * 1e18);
 
         // refer ref1->user
         vm.deal(ref1, 0);
         vm.deal(ref2, 0);
-
-        bytes memory callData = abi.encodeWithSignature(
-            "incarnate((uint256,uint256),address)",
-            0.1 ether,
-            0.5 ether,
-            ref2
-        );
-
         hoax(_user);
-        payable(address(portal)).call{value: 0.61 ether}(
+        incarnateWithReferrer(
+            _user,
+            ref1,
+            0.61 * 0.08 * 1e18,
+            ref2,
+            0.61 * 0.02 * 1e18,
+            0.61 * 1 ether
+        );
+    }
+
+    function incarnateWithReferrer(
+        address account,
+        address ref1,
+        uint256 ref1Reward,
+        address ref2,
+        uint256 ref2Reward,
+        uint256 amount
+    ) public {
+        vm.expectEmit(true, true, true, true);
+        emit ReferReward(
+            account,
+            ref1,
+            ref1Reward,
+            ref2,
+            ref2Reward,
+            RewardType.NativeToken
+        );
+        payable(address(portal)).call{value: amount}(
             abi.encodeWithSignature(
                 "incarnate((uint256,uint256),address)",
                 0.1 ether,
@@ -305,7 +326,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
                 ref1
             )
         );
-        assertEq(ref1.balance, 0.61 * 0.08 * 1e18);
-        assertEq(ref2.balance, 0.61 * 0.02 * 1e18);
+
+        assertEq(ref1.balance, ref1Reward);
+        assertEq(ref2.balance, ref2Reward);
     }
 }
