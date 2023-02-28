@@ -30,8 +30,7 @@ contract AirdropTest is RebornPortalTest {
                 1 hours,
                 3 hours,
                 uint40(block.timestamp),
-                1,
-                1 ether,
+                300,
                 1 ether
             )
         );

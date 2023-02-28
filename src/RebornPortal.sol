@@ -310,6 +310,9 @@ contract RebornPortal is
         // transfer redundant native token back
         payable(msg.sender).transfer(msg.value - totalFee);
 
+        // 50% to jackpot
+        _jackPot += (totalFee * 1) / 2;
+
         // reward referrers
         _sendRewardToRefs(msg.sender, totalFee);
 
@@ -352,12 +355,14 @@ contract RebornPortal is
             Pool storage pool = pools[tokenIds[i]];
             if (dropReborn) {
                 pool.accRebornPerShare +=
-                    _dropConf._rebornDropAmount /
+                    (_dropConf._rebornDropAmount * PERSHARE_BASE) /
                     pool.totalAmount;
             }
             if (dropNative) {
                 pool.accNativePerShare +=
-                    _dropConf._nativeDropAmount /
+                    (((_dropConf._nativeDropRatio * _jackPot * 3) / 100) *
+                        PERSHARE_BASE) /
+                    PERCENTAGE_BASE /
                     pool.totalAmount;
             }
         }
@@ -374,18 +379,22 @@ contract RebornPortal is
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 
         uint256 pendingNative = (portfolio.accumulativeAmount *
-            pool.accNativePerShare) - portfolio.nativeRewardDebt;
+            pool.accNativePerShare) /
+            PERSHARE_BASE -
+            portfolio.nativeRewardDebt;
 
         uint256 pendingReborn = (portfolio.accumulativeAmount *
-            pool.accRebornPerShare) - portfolio.rebornRewardDebt;
+            pool.accRebornPerShare) /
+            PERSHARE_BASE -
+            portfolio.rebornRewardDebt;
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
-            portfolio.accumulativeAmount *
-            pool.accNativePerShare;
+            (portfolio.accumulativeAmount * pool.accNativePerShare) /
+            PERSHARE_BASE;
         portfolio.rebornRewardDebt =
-            portfolio.accumulativeAmount *
-            pool.accRebornPerShare;
+            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
+            PERSHARE_BASE;
 
         /// @dev send drop
         if (pendingNative != 0) {

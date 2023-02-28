@@ -57,13 +57,12 @@ interface IRebornDefination {
     }
 
     struct AirdropConf {
-        uint8 _dropOn; //   ---
+        uint8 _dropOn; //               ---
         uint40 _rebornDropInterval; //     |
         uint40 _nativeDropInterval; //     |
         uint40 _dropLastUpdate; //         |
-        uint128 _rankLength; //         ---
-        uint128 _rebornDropAmount; //   ---
-        uint128 _nativeDropAmount; //   ---
+        uint16 _nativeDropRatio; //  |
+        uint112 _rebornDropAmount; //   ---
     }
 
     event Incarnate(
