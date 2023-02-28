@@ -294,7 +294,6 @@ contract RebornPortal is
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
         portfolio.accumulativeAmount += amount;
 
-        _enter(tokenId, pool.totalAmount);
 
         emit Infuse(msg.sender, tokenId, amount);
     }

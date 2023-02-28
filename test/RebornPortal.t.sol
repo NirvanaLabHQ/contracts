@@ -170,7 +170,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         mockInfuse(_user, 1, amount);
 
-        assertEq( portal.getPool(1).accNativePerShare, amount);
+        assertEq(portal.getPool(1).accNativePerShare, amount);
         assertEq(portal.getPortfolio(_user, 1).accumulativeAmount, amount);
     }
 
@@ -223,9 +223,15 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         vm.prank(_user);
         portal.switchPool(1, 2, 0.1 * 1 ether);
         assertEq(portal.getPool(1).totalAmount, 0.4 * 1 ether);
-        assertEq(portal.portfolios(_user, 1), 0.4 * 1 ether);
+        assertEq(
+            portal.getPortfolio(_user, 1).accumulativeAmount,
+            0.4 * 1 ether
+        );
         assertEq(portal.getPool(2).totalAmount, 1.095 * 1 ether);
-        assertEq(portal.portfolios(_user, 2), 1.095 * 1 ether);
+        assertEq(
+            portal.getPortfolio(_user, 2).accumulativeAmount,
+            1.095 * 1 ether
+        );
 
         vm.expectRevert(SwitchAmountExceedBalance.selector);
         vm.prank(_user);
