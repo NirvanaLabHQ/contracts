@@ -293,9 +293,10 @@ contract RebornPortal is
 
         _increasePool(tokenId, amount);
 
-        // _rankIndexMap[
-        //     enter(portfolio.accumulativeAmount, _rankLength)
-        // ] = tokenId;
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        portfolio.accumulativeAmount += amount;
+
+        enter(tokenId, pool.totalAmount);
 
         emit Infuse(msg.sender, tokenId, amount);
     }
@@ -461,6 +462,8 @@ contract RebornPortal is
         Pool storage pool = pools[tokenId];
         pool.totalAmount -= amount;
 
+        enter(tokenId, pool.totalAmount);
+
         emit DecreaseFromPool(msg.sender, tokenId, amount);
     }
 
@@ -482,6 +485,10 @@ contract RebornPortal is
 
         Pool storage pool = pools[tokenId];
         pool.totalAmount += amount;
+
+        enter(tokenId, pool.totalAmount);
+
+        emit IncreaseToPool(msg.sender, tokenId, amount);
     }
 
     /**

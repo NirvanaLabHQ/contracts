@@ -31,11 +31,6 @@ contract RankUpgradeableTest is Test {
 
         for (uint256 j = 0; j < 10; j++) {
             for (uint256 i = 0; i < values.length; i++) {
-                // if value is zero, it exits
-                if (values[i] == 0) {
-                    rank.exit(i + 1);
-                    continue;
-                }
                 rank.enter(i + 1, values[i]);
             }
         }

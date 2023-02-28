@@ -7,7 +7,6 @@ import {SingleRanking} from "src/lib/SingleRanking.sol";
 contract RankUpgradeable {
     error RequireLengthExceedCurrentData();
     error InsufficientData();
-    error ZeroValueEnter();
 
     using SingleRanking for SingleRanking.Data;
 
@@ -23,7 +22,7 @@ contract RankUpgradeable {
      */
     function enter(uint256 tokenId, uint256 value) public {
         if (value == 0) {
-            revert ZeroValueEnter();
+            exit(tokenId);
         }
 
         uint256 oldValue = _tokenIdOldValue[tokenId];
