@@ -21,9 +21,9 @@ contract RankUpgradeableTest is Test {
         rank.enter(4, 2);
         rank.enter(4, 3);
 
-        rank.getTopNValue(4);
-        rank.getTopNValue(6);
-        rank.getTopNValue(10);
+        rank.getTopNTokenId(4);
+        rank.getTopNTokenId(6);
+        rank.getTopNTokenId(10);
     }
 
     function testEnterMany(uint256[] memory values) public {
@@ -31,14 +31,15 @@ contract RankUpgradeableTest is Test {
 
         for (uint256 j = 0; j < 10; j++) {
             for (uint256 i = 0; i < values.length; i++) {
-                // skip zero value
+                // if value is zero, it exits
                 if (values[i] == 0) {
+                    rank.exit(i + 1);
                     continue;
                 }
-                rank.enter(i, values[i]);
+                rank.enter(i + 1, values[i]);
             }
         }
 
-        rank.getTopNValue(100);
+        rank.getTopNTokenId(100);
     }
 }

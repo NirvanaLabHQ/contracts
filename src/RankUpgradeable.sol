@@ -10,12 +10,12 @@ contract RankUpgradeable {
     error ZeroValueEnter();
 
     using SingleRanking for SingleRanking.Data;
+
     SingleRanking.Data private _rank;
     uint256 private _treeLength;
     mapping(uint256 => uint256) _tokenIdOldValue;
 
-    // index id => tokenid
-    mapping(uint256 => uint256) internal _rankIndexMap;
+    uint256[47] _gap;
 
     /**
      * @dev set a new value in tree, only save top x largest value
@@ -26,6 +26,8 @@ contract RankUpgradeable {
             revert ZeroValueEnter();
         }
 
+        uint256 oldValue = _tokenIdOldValue[tokenId];
+        // remove old value from the rank, keep one token Id only one value
         if (_tokenIdOldValue[tokenId] != 0) {
             _rank.remove(tokenId, _tokenIdOldValue[tokenId]);
         }
@@ -33,21 +35,19 @@ contract RankUpgradeable {
         _tokenIdOldValue[tokenId] = value;
     }
 
-    // function getTopNIndex(
-    //     uint256 n
-    // ) public view returns (uint256[] memory indexes) {
-    //     if (_tree.counter <= n) {
-    //         revert InsufficientData();
-    //     }
+    /**
+     * @dev if the tokenId's value is zero, it exits the ranking
+     * @param tokenId pool tokenId
+     */
+    function exit(uint256 tokenId) public {
+        if (_tokenIdOldValue[tokenId] != 0) {
+            uint256 oldValue = _tokenIdOldValue[tokenId];
+            _rank.remove(tokenId, _tokenIdOldValue[tokenId]);
+            delete _tokenIdOldValue[tokenId];
+        }
+    }
 
-    //     indexes = new uint256[](n);
-
-    //     for (uint256 i = 0; i < n; i++) {
-    //         (indexes[i], ) = _tree.lastByOffset(i + 1);
-    //     }
-    // }
-
-    function getTopNValue(
+    function getTopNTokenId(
         uint256 n
     ) public view returns (uint256[] memory values) {
         return _rank.get(0, n);
