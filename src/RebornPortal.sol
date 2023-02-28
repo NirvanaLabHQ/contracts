@@ -255,9 +255,11 @@ contract RebornPortal is
         upkeepNeeded =
             _dropConf._dropOn == 1 &&
             (block.timestamp >
-                _dropConf._dropLastUpdate + _dropConf._rebornDropInterval ||
+                _dropConf._rebornDropLastUpdate +
+                    _dropConf._rebornDropInterval ||
                 block.timestamp >
-                _dropConf._dropLastUpdate + _dropConf._nativeDropInterval);
+                _dropConf._nativeDropLastUpdate +
+                    _dropConf._nativeDropInterval);
     }
 
     /**
@@ -358,31 +360,38 @@ contract RebornPortal is
     function _drop() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
         bool dropReborn = block.timestamp >
-            _dropConf._dropLastUpdate + _dropConf._rebornDropInterval;
+            _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval;
         bool dropNative = block.timestamp >
-            _dropConf._dropLastUpdate + _dropConf._nativeDropInterval;
+            _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval;
         for (uint256 i = 0; i < 100; i++) {
             // if tokenId is zero, continue
             if (tokenIds[i] == 0) {
                 continue;
             }
             Pool storage pool = pools[tokenIds[i]];
-            if (dropReborn) {
-                pool.accRebornPerShare +=
-                    (_dropConf._rebornDropAmount * PERSHARE_BASE) /
-                    pool.totalAmount;
-            }
             if (dropNative) {
                 pool.accNativePerShare +=
                     (((_dropConf._nativeDropRatio * _jackPot * 3) / 100) *
                         PERSHARE_BASE) /
                     PERCENTAGE_BASE /
                     pool.totalAmount;
+
+                // set last drop timestamp to specific hour
+                _dropConf._nativeDropLastUpdate = uint40(
+                    _toLastHour(block.timestamp)
+                );
+            }
+            if (dropReborn) {
+                pool.accRebornPerShare +=
+                    (_dropConf._rebornDropEthAmount * 1 ether * PERSHARE_BASE) /
+                    pool.totalAmount;
+
+                // set last drop timestamp to specific hour
+                _dropConf._rebornDropLastUpdate = uint40(
+                    _toLastHour(block.timestamp)
+                );
             }
         }
-
-        // set last drop to specific hour
-        _dropConf._dropLastUpdate = uint40(_toLastHour(block.timestamp));
 
         emit Drop(tokenIds);
     }
