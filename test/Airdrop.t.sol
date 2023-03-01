@@ -70,7 +70,9 @@ contract AirdropTest is RebornPortalTest {
 
             mintRBT(rbt, owner, users[i], amount);
             vm.startPrank(users[i]);
-            portal.claimDrop(tokenId);
+            uint256[] memory ds = new uint256[](1);
+            ds[0] = tokenId;
+            portal.claimDrops(ds);
             rbt.approve(address(portal), amount);
             portal.infuse(tokenId, amount);
             vm.stopPrank();
