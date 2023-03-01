@@ -150,21 +150,36 @@ contract RebornPortal is
     }
 
     /**
-     * @dev user claim many pools' airdrop
-     * @param tokenIds pools' tokenId array to claim
+     * @inheritdoc IRebornPortal
      */
-    function claimDrops(uint256[] memory tokenIds) external whenNotPaused {
+    function claimDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             _claimPoolDrop(tokenIds[i]);
         }
     }
 
     /**
-     * @dev user specific pool's airdrop
-     * @param tokenId pool's tokenId to claim
+     * @inheritdoc IRebornPortal
      */
-    function claimDrop(uint256 tokenId) external whenNotPaused {
-        _claimPoolDrop(tokenId);
+    function claimNativeDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _claimPoolNativeDrop(tokenIds[i]);
+        }
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function claimRebornDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _claimPoolRebornDrop(tokenIds[i]);
+        }
     }
 
     /**
@@ -462,6 +477,11 @@ contract RebornPortal is
      * @dev user claim a drop from a pool
      */
     function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
+        _claimPoolNativeDrop(tokenId);
+        _claimPoolRebornDrop(tokenId);
+    }
+
+    function _claimPoolNativeDrop(uint256 tokenId) internal {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 
@@ -469,11 +489,6 @@ contract RebornPortal is
             pool.accNativePerShare) /
             PERSHARE_BASE -
             portfolio.nativeRewardDebt;
-
-        uint256 pendingReborn = (portfolio.accumulativeAmount *
-            pool.accRebornPerShare) /
-            PERSHARE_BASE -
-            portfolio.rebornRewardDebt;
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
@@ -484,16 +499,35 @@ contract RebornPortal is
             PERSHARE_BASE;
 
         /// @dev send drop
-        if (pendingNative != 0 || pendingReborn != 0) {
-            if (pendingNative != 0) {
-                payable(msg.sender).transfer(pendingNative);
-            }
-            if (pendingReborn != 0) {
-                vault.reward(msg.sender, pendingReborn);
-            }
+        if (pendingNative != 0) {
+            payable(msg.sender).transfer(pendingNative);
 
-            emit ClaimDrop(tokenId, pendingReborn, pendingNative);
+            emit ClaimNativeDrop(tokenId, pendingNative);
         }
+    }
+
+    function _claimPoolRebornDrop(uint256 tokenId) internal {
+        Pool storage pool = pools[tokenId];
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+
+        uint256 pendingReborn = (portfolio.accumulativeAmount *
+            pool.accRebornPerShare) /
+            PERSHARE_BASE -
+            portfolio.rebornRewardDebt;
+
+        // set current amount as debt
+
+        portfolio.rebornRewardDebt =
+            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
+            PERSHARE_BASE;
+
+        /// @dev send drop
+
+        if (pendingReborn != 0) {
+            vault.reward(msg.sender, pendingReborn);
+        }
+
+        emit ClaimRebornDrop(tokenId, pendingReborn);
     }
 
     function _toLastHour(uint256 timestamp) internal pure returns (uint256) {

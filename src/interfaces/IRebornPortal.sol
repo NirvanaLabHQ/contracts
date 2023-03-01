@@ -116,11 +116,8 @@ interface IRebornDefination {
         uint256 amount
     );
 
-    event ClaimDrop(
-        uint256 indexed tokenId,
-        uint256 rebornAmount,
-        uint256 nativeAmount
-    );
+    event ClaimRebornDrop(uint256 indexed tokenId, uint256 rebornAmount);
+    event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
 
     event Drop(uint256[] tokenIds);
 
@@ -215,4 +212,22 @@ interface IRebornPortal is IRebornDefination {
      * @dev set new airdrop config
      */
     function setDropConf(AirdropConf calldata conf) external;
+
+    /**
+     * @dev user claim many pools' native token airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimNativeDrops(uint256[] calldata tokenIds) external;
+
+    /**
+     * @dev user claim many pools' reborn token airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimRebornDrops(uint256[] calldata tokenIds) external;
+
+    /**
+     * @dev user claim many pools' airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimDrops(uint256[] calldata tokenIds) external;
 }
