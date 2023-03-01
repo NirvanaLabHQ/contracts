@@ -418,7 +418,7 @@ contract RebornPortal is
      */
     function _dropReborn() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
-        PortalLib._dropRebornTokenIds(tokenIds, _dropConf, pools);
+        PortalLib._dropRebornTokenIds(tokenIds, _dropConf, pools, portfolios);
     }
 
     /**
@@ -426,7 +426,7 @@ contract RebornPortal is
      */
     function _dropNative() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
-        PortalLib._dropNativeTokenIds(tokenIds, _dropConf, pools);
+        PortalLib._dropNativeTokenIds(tokenIds, _dropConf, pools, portfolios);
     }
 
     /**

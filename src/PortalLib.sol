@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {RewardVault} from "src/RewardVault.sol";
 
 library PortalLib {
@@ -31,6 +32,10 @@ library PortalLib {
         //   2. User receives the pending reward sent to his/her address.
         //   3. User's `amount` gets updated.
         //   4. User's `rewardDebt` gets updated.
+
+        /// @dev reward for holding the NFT when the NFT is selected
+        uint256 pendingOwnerRebornReward;
+        uint256 pendingOwernNativeReward;
     }
 
     struct AirdropConf {
@@ -59,16 +64,18 @@ library PortalLib {
         uint256 pendingReborn = (portfolio.accumulativeAmount *
             pool.accRebornPerShare) /
             PERSHARE_BASE -
-            portfolio.rebornRewardDebt;
+            portfolio.rebornRewardDebt +
+            portfolio.pendingOwnerRebornReward;
 
         // set current amount as debt
-
         portfolio.rebornRewardDebt =
             (portfolio.accumulativeAmount * pool.accRebornPerShare) /
             PERSHARE_BASE;
 
-        /// @dev send drop
+        // clean up reward as owner
+        portfolio.pendingOwnerRebornReward = 0;
 
+        /// @dev send drop
         if (pendingReborn != 0) {
             vault.reward(msg.sender, pendingReborn);
         }
@@ -87,7 +94,8 @@ library PortalLib {
         uint256 pendingNative = (portfolio.accumulativeAmount *
             pool.accNativePerShare) /
             PERSHARE_BASE -
-            portfolio.nativeRewardDebt;
+            portfolio.nativeRewardDebt +
+            portfolio.pendingOwernNativeReward;
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
@@ -96,6 +104,9 @@ library PortalLib {
         portfolio.rebornRewardDebt =
             (portfolio.accumulativeAmount * pool.accRebornPerShare) /
             PERSHARE_BASE;
+
+        // clean up reward as owner
+        portfolio.pendingOwernNativeReward = 0;
 
         /// @dev send drop
         if (pendingNative != 0) {
@@ -119,34 +130,47 @@ library PortalLib {
         pendingNative =
             (portfolio.accumulativeAmount * pool.accNativePerShare) /
             PERSHARE_BASE -
-            portfolio.nativeRewardDebt;
+            portfolio.nativeRewardDebt +
+            portfolio.pendingOwernNativeReward;
 
         pendingReborn =
             (portfolio.accumulativeAmount * pool.accRebornPerShare) /
             PERSHARE_BASE -
-            portfolio.rebornRewardDebt;
+            portfolio.rebornRewardDebt +
+            portfolio.pendingOwnerRebornReward;
     }
 
     function _dropNativeTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
-        mapping(uint256 => Pool) storage pools
+        mapping(uint256 => Pool) storage pools,
+        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
     ) external {
         bool dropNative = block.timestamp >
             _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval;
         if (dropNative) {
             for (uint256 i = 0; i < 100; i++) {
+                uint256 tokenId = tokenIds[i];
                 // if tokenId is zero, continue
-                if (tokenIds[i] == 0) {
+                if (tokenId == 0) {
                     return;
                 }
-                PortalLib.Pool storage pool = pools[tokenIds[i]];
+                Pool storage pool = pools[tokenId];
 
+                uint256 dropAmount = (_dropConf._nativeDropRatio *
+                    address(this).balance *
+                    3) / 200;
+
+                // 85% to pool
                 pool.accNativePerShare +=
-                    (((_dropConf._nativeDropRatio * address(this).balance * 3) /
-                        200) * PortalLib.PERSHARE_BASE) /
+                    (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
                     PERCENTAGE_BASE /
                     pool.totalAmount;
+
+                // 15% to owner
+                address owner = IERC721(address(this)).ownerOf(tokenId);
+                Portfolio storage portfolio = portfolios[owner][tokenId];
+                portfolio.pendingOwernNativeReward += (dropAmount * 15) / 100;
             }
             // set last drop timestamp to specific hour
             _dropConf._nativeDropLastUpdate = uint40(
@@ -158,23 +182,31 @@ library PortalLib {
     function _dropRebornTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
-        mapping(uint256 => Pool) storage pools
+        mapping(uint256 => Pool) storage pools,
+        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
     ) external {
         bool dropReborn = block.timestamp >
             _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval;
         if (dropReborn) {
             for (uint256 i = 0; i < 100; i++) {
+                uint256 tokenId = tokenIds[i];
                 // if tokenId is zero, continue
-                if (tokenIds[i] == 0) {
+                if (tokenId == 0) {
                     return;
                 }
-                PortalLib.Pool storage pool = pools[tokenIds[i]];
+                Pool storage pool = pools[tokenId];
 
+                uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
+
+                // 85% to pool
                 pool.accRebornPerShare +=
-                    (_dropConf._rebornDropEthAmount *
-                        1 ether *
-                        PortalLib.PERSHARE_BASE) /
+                    (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
                     pool.totalAmount;
+
+                // 15% to owner
+                address owner = IERC721(address(this)).ownerOf(tokenId);
+                Portfolio storage portfolio = portfolios[owner][tokenId];
+                portfolio.pendingOwnerRebornReward += (dropAmount * 15) / 100;
             }
             // set last drop timestamp to specific hour
             _dropConf._rebornDropLastUpdate = uint40(
