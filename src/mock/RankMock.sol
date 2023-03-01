@@ -11,10 +11,6 @@ contract RankMock is RankUpgradeable {
         _enterTvlRank(tokenId, value);
     }
 
-    function exitTvlRank(uint256 tokenId) public {
-        _exitTvlRank(tokenId);
-    }
-
     function getTopNTokenId(
         uint256 n
     ) public view returns (uint256[] memory values) {
