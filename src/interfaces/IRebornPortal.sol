@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
+import {PortalLib} from "src/PortalLib.sol";
+
 interface IRebornDefination {
     enum RewardType {
         NativeToken,
@@ -23,47 +25,12 @@ interface IRebornDefination {
         uint256 score;
     }
 
-    struct Pool {
-        uint256 totalAmount;
-        uint256 accRebornPerShare;
-        uint256 accNativePerShare;
-        uint256 epoch;
-        uint256 lastUpdated;
-    }
-
-    struct Portfolio {
-        uint256 accumulativeAmount;
-        uint256 rebornRewardDebt;
-        uint256 nativeRewardDebt;
-        //
-        // We do some fancy math here. Basically, any point in time, the amount
-        // entitled to a user but is pending to be distributed is:
-        //
-        //   pending reward = (Amount * pool.accPerShare) - user.rewardDebt
-        //
-        // Whenever a user infuse or switchPool. Here's what happens:
-        //   1. The pool's `accPerShare` (and `lastRewardBlock`) gets updated.
-        //   2. User receives the pending reward sent to his/her address.
-        //   3. User's `amount` gets updated.
-        //   4. User's `rewardDebt` gets updated.
-    }
-
     struct ReferrerRewardFees {
         uint16 incarnateRef1Fee;
         uint16 incarnateRef2Fee;
         uint16 vaultRef1Fee;
         uint16 vaultRef2Fee;
         uint192 _slotPlaceholder;
-    }
-
-    struct AirdropConf {
-        uint8 _dropOn; //                  ---
-        uint40 _rebornDropInterval; //        |
-        uint40 _nativeDropInterval; //        |
-        uint40 _rebornDropLastUpdate; //      |
-        uint40 _nativeDropLastUpdate; //      |
-        uint16 _nativeDropRatio; //           |
-        uint72 _rebornDropEthAmount; //    ---
     }
 
     event Incarnate(
@@ -102,8 +69,6 @@ interface IRebornDefination {
 
     event Refer(address referee, address referrer);
 
-    event NewDropConf(AirdropConf conf);
-
     event DecreaseFromPool(
         address indexed account,
         uint256 tokenId,
@@ -115,9 +80,6 @@ interface IRebornDefination {
         uint256 tokenId,
         uint256 amount
     );
-
-    event ClaimRebornDrop(uint256 indexed tokenId, uint256 rebornAmount);
-    event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
 
     event Drop(uint256[] tokenIds);
 
@@ -211,7 +173,7 @@ interface IRebornPortal is IRebornDefination {
     /**
      * @dev set new airdrop config
      */
-    function setDropConf(AirdropConf calldata conf) external;
+    function setDropConf(PortalLib.AirdropConf calldata conf) external;
 
     /**
      * @dev user claim many pools' native token airdrop

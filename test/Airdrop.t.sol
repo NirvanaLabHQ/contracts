@@ -3,6 +3,9 @@ pragma solidity 0.8.17;
 
 import "test/RebornPortal.t.sol";
 
+import {PortalLib} from "src/PortalLib.sol";
+
+
 contract AirdropTest is RebornPortalTest {
     function testDropFuzz(address[] memory users) public {
         vm.assume(users.length > 100);
@@ -28,7 +31,7 @@ contract AirdropTest is RebornPortalTest {
         // set drop conf
         vm.prank(owner);
         portal.setDropConf(
-            AirdropConf(
+            PortalLib.AirdropConf(
                 1,
                 1 hours,
                 3 hours,

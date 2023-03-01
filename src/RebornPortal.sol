@@ -15,6 +15,8 @@ import {RewardVault} from "src/RewardVault.sol";
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
 import {Renderer} from "src/lib/Renderder.sol";
 
+import {PortalLib} from "src/PortalLib.sol";
+
 contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,
@@ -170,7 +172,7 @@ contract RebornPortal is
         uint256[] calldata tokenIds
     ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            _claimPoolNativeDrop(tokenIds[i]);
+            PortalLib._claimPoolNativeDrop(tokenIds[i], pools, portfolios);
         }
     }
 
@@ -181,7 +183,12 @@ contract RebornPortal is
         uint256[] calldata tokenIds
     ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            _claimPoolRebornDrop(tokenIds[i]);
+            PortalLib._claimPoolRebornDrop(
+                tokenIds[i],
+                vault,
+                pools,
+                portfolios
+            );
         }
     }
 
@@ -195,7 +202,7 @@ contract RebornPortal is
         if (t == 1) {
             _dropReborn();
         } else if (t == 2) {
-            _dropReborn();
+            _dropNative();
         }
     }
 
@@ -203,10 +210,10 @@ contract RebornPortal is
      * @inheritdoc IRebornPortal
      */
     function setDropConf(
-        AirdropConf calldata conf
+        PortalLib.AirdropConf calldata conf
     ) external override onlyOwner {
         _dropConf = conf;
-        emit NewDropConf(conf);
+        emit PortalLib.NewDropConf(conf);
     }
 
     /**
@@ -279,7 +286,11 @@ contract RebornPortal is
         uint256[] memory tokenIds
     ) external view returns (uint256 pNative, uint256 pReborn) {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            (uint256 n, uint256 r) = _calculatePoolDrop(tokenIds[i]);
+            (uint256 n, uint256 r) = PortalLib._calculatePoolDrop(
+                tokenIds[i],
+                pools,
+                portfolios
+            );
             pNative += n;
             pReborn += r;
         }
@@ -407,25 +418,7 @@ contract RebornPortal is
      */
     function _dropReborn() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
-        bool dropReborn = block.timestamp >
-            _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval;
-        if (dropReborn) {
-            for (uint256 i = 0; i < 100; i++) {
-                // if tokenId is zero, continue
-                if (tokenIds[i] == 0) {
-                    return;
-                }
-                Pool storage pool = pools[tokenIds[i]];
-
-                pool.accRebornPerShare +=
-                    (_dropConf._rebornDropEthAmount * 1 ether * PERSHARE_BASE) /
-                    pool.totalAmount;
-            }
-            // set last drop timestamp to specific hour
-            _dropConf._rebornDropLastUpdate = uint40(
-                _toLastHour(block.timestamp)
-            );
-        }
+        PortalLib._dropRebornTokenIds(tokenIds, _dropConf, pools);
     }
 
     /**
@@ -433,108 +426,15 @@ contract RebornPortal is
      */
     function _dropNative() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
-        bool dropNative = block.timestamp >
-            _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval;
-        if (dropNative) {
-            for (uint256 i = 0; i < 100; i++) {
-                // if tokenId is zero, continue
-                if (tokenIds[i] == 0) {
-                    return;
-                }
-                Pool storage pool = pools[tokenIds[i]];
-
-                pool.accNativePerShare +=
-                    (((_dropConf._nativeDropRatio * address(this).balance * 3) /
-                        200) * PERSHARE_BASE) /
-                    PERCENTAGE_BASE /
-                    pool.totalAmount;
-            }
-            // set last drop timestamp to specific hour
-            _dropConf._nativeDropLastUpdate = uint40(
-                _toLastHour(block.timestamp)
-            );
-        }
-    }
-
-    /**
-     * @dev calculate drop from a pool
-     */
-    function _calculatePoolDrop(
-        uint256 tokenId
-    ) internal view returns (uint256 pendingNative, uint256 pendingReborn) {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-
-        pendingNative =
-            (portfolio.accumulativeAmount * pool.accNativePerShare) /
-            PERSHARE_BASE -
-            portfolio.nativeRewardDebt;
-
-        pendingReborn =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-            PERSHARE_BASE -
-            portfolio.rebornRewardDebt;
+        PortalLib._dropNativeTokenIds(tokenIds, _dropConf, pools);
     }
 
     /**
      * @dev user claim a drop from a pool
      */
     function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
-        _claimPoolNativeDrop(tokenId);
-        _claimPoolRebornDrop(tokenId);
-    }
-
-    function _claimPoolNativeDrop(uint256 tokenId) internal {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-
-        uint256 pendingNative = (portfolio.accumulativeAmount *
-            pool.accNativePerShare) /
-            PERSHARE_BASE -
-            portfolio.nativeRewardDebt;
-
-        // set current amount as debt
-        portfolio.nativeRewardDebt =
-            (portfolio.accumulativeAmount * pool.accNativePerShare) /
-            PERSHARE_BASE;
-        portfolio.rebornRewardDebt =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-            PERSHARE_BASE;
-
-        /// @dev send drop
-        if (pendingNative != 0) {
-            payable(msg.sender).transfer(pendingNative);
-
-            emit ClaimNativeDrop(tokenId, pendingNative);
-        }
-    }
-
-    function _claimPoolRebornDrop(uint256 tokenId) internal {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-
-        uint256 pendingReborn = (portfolio.accumulativeAmount *
-            pool.accRebornPerShare) /
-            PERSHARE_BASE -
-            portfolio.rebornRewardDebt;
-
-        // set current amount as debt
-
-        portfolio.rebornRewardDebt =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-            PERSHARE_BASE;
-
-        /// @dev send drop
-
-        if (pendingReborn != 0) {
-            vault.reward(msg.sender, pendingReborn);
-        }
-
-        emit ClaimRebornDrop(tokenId, pendingReborn);
-    }
-
-    function _toLastHour(uint256 timestamp) internal pure returns (uint256) {
-        return timestamp - (timestamp % (1 hours));
+        PortalLib._claimPoolNativeDrop(tokenId, pools, portfolios);
+        PortalLib._claimPoolRebornDrop(tokenId, vault, pools, portfolios);
     }
 
     /**
@@ -599,8 +499,8 @@ contract RebornPortal is
      * @dev decrease amount from pool of switch from
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-        Pool storage pool = pools[tokenId];
+        PortalLib.Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        PortalLib.Pool storage pool = pools[tokenId];
 
         if (portfolio.accumulativeAmount < amount) {
             revert SwitchAmountExceedBalance();
@@ -627,10 +527,10 @@ contract RebornPortal is
     }
 
     function _increasePool(uint256 tokenId, uint256 amount) internal {
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        PortalLib.Portfolio storage portfolio = portfolios[msg.sender][tokenId];
         portfolio.accumulativeAmount += amount;
 
-        Pool storage pool = pools[tokenId];
+        PortalLib.Pool storage pool = pools[tokenId];
         pool.totalAmount += amount;
 
         _enterTvlRank(tokenId, pool.totalAmount);
@@ -663,26 +563,32 @@ contract RebornPortal is
         if (rewardType == RewardType.NativeToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef1Fee) / PERCENTAGE_BASE;
+                : (amount * rewardFees.incarnateRef1Fee) /
+                    PortalLib.PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef2Fee) / PERCENTAGE_BASE;
+                : (amount * rewardFees.incarnateRef2Fee) /
+                    PortalLib.PERCENTAGE_BASE;
         }
 
         if (rewardType == RewardType.RebornToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef1Fee) / PERCENTAGE_BASE;
+                : (amount * rewardFees.vaultRef1Fee) /
+                    PortalLib.PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef2Fee) / PERCENTAGE_BASE;
+                : (amount * rewardFees.vaultRef2Fee) /
+                    PortalLib.PERCENTAGE_BASE;
         }
     }
 
     /**
      * @dev read pool attribute
      */
-    function getPool(uint256 tokenId) public view returns (Pool memory) {
+    function getPool(
+        uint256 tokenId
+    ) public view returns (PortalLib.Pool memory) {
         return pools[tokenId];
     }
 
@@ -692,7 +598,7 @@ contract RebornPortal is
     function getPortfolio(
         address user,
         uint256 tokenId
-    ) public view returns (Portfolio memory) {
+    ) public view returns (PortalLib.Portfolio memory) {
         return portfolios[user][tokenId];
     }
 
