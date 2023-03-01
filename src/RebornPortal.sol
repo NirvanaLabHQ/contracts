@@ -254,6 +254,20 @@ contract RebornPortal is
     }
 
     /**
+     * @dev read pending reward from specific pool
+     * @param tokenIds tokenId array of the pools
+     */
+    function pendingDrop(
+        uint256[] memory tokenIds
+    ) external view returns (uint256 pNative, uint256 pReborn) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            (uint256 n, uint256 r) = _calculatePoolDrop(tokenIds[i]);
+            pNative += n;
+            pReborn += r;
+        }
+    }
+
+    /**
      * @dev checkUpkeep for chainlink automation
      */
     function checkUpkeep(
@@ -412,8 +426,8 @@ contract RebornPortal is
                 Pool storage pool = pools[tokenIds[i]];
 
                 pool.accNativePerShare +=
-                    (((_dropConf._nativeDropRatio * address(this).balance * 3) / 200) *
-                        PERSHARE_BASE) /
+                    (((_dropConf._nativeDropRatio * address(this).balance * 3) /
+                        200) * PERSHARE_BASE) /
                     PERCENTAGE_BASE /
                     pool.totalAmount;
             }
@@ -422,6 +436,26 @@ contract RebornPortal is
                 _toLastHour(block.timestamp)
             );
         }
+    }
+
+    /**
+     * @dev calculate drop from a pool
+     */
+    function _calculatePoolDrop(
+        uint256 tokenId
+    ) internal view returns (uint256 pendingNative, uint256 pendingReborn) {
+        Pool storage pool = pools[tokenId];
+        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+
+        pendingNative =
+            (portfolio.accumulativeAmount * pool.accNativePerShare) /
+            PERSHARE_BASE -
+            portfolio.nativeRewardDebt;
+
+        pendingReborn =
+            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
+            PERSHARE_BASE -
+            portfolio.rebornRewardDebt;
     }
 
     /**
