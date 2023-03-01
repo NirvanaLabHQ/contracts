@@ -5,6 +5,7 @@ import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {SingleRanking} from "src/lib/SingleRanking.sol";
 
 contract RebornPortalStorage is IRebornDefination {
     // percentage base of refer reward fees
@@ -43,6 +44,14 @@ contract RebornPortalStorage is IRebornDefination {
     // airdrop config
     AirdropConf internal _dropConf;
 
+    SingleRanking.Data internal _tributeRank;
+    SingleRanking.Data internal _scoreRank;
+
+    mapping(uint256 => uint256) internal _oldStakeAmounts;
+
+    /// tokenId => bool
+    BitMapsUpgradeable.BitMap internal _isTopHundredScore;
+
     /// @dev gap for potential vairable
-    uint256[36] private _gap;
+    uint256[32] private _gap;
 }

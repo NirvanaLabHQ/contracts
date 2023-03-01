@@ -89,6 +89,9 @@ contract RebornPortal is
         // send $REBORN reward
         vault.reward(user, reward);
 
+        // let tokenId enter the score rank
+        _enterScoreRank(tokenId, score);
+
         // mint to referrer
         _vaultRewardToRefs(user, reward);
 
@@ -606,7 +609,7 @@ contract RebornPortal is
         portfolio.accumulativeAmount -= amount;
         pool.totalAmount -= amount;
 
-        _enter(tokenId, pool.totalAmount);
+        _enterTvlRank(tokenId, pool.totalAmount);
 
         emit DecreaseFromPool(msg.sender, tokenId, amount);
     }
@@ -630,9 +633,7 @@ contract RebornPortal is
         Pool storage pool = pools[tokenId];
         pool.totalAmount += amount;
 
-        _enter(tokenId, pool.totalAmount);
-
-        emit IncreaseToPool(msg.sender, tokenId, amount);
+        _enterTvlRank(tokenId, pool.totalAmount);
     }
 
     /**
