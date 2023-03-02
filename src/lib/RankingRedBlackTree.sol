@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.17;
 
 // A red-black tree that holds a "count" variable next to the value in the tree.
 // This library is used to resolve which values should be skipped to respect the _offset when querying from the rank library.

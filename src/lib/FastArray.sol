@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.17;
 
 // A simple array that supports insert and removal.
 // The values are assumed to be unique and the library is meant to be lightweight.

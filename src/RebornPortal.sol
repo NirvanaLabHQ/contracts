@@ -172,7 +172,11 @@ contract RebornPortal is
         uint256[] calldata tokenIds
     ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            PortalLib._claimPoolNativeDrop(tokenIds[i], pools, portfolios);
+            PortalLib._claimPoolNativeDrop(
+                tokenIds[i],
+                _seasonData[_season].pools,
+                _seasonData[_season].portfolios
+            );
         }
     }
 
@@ -186,8 +190,8 @@ contract RebornPortal is
             PortalLib._claimPoolRebornDrop(
                 tokenIds[i],
                 vault,
-                pools,
-                portfolios
+                _seasonData[_season].pools,
+                _seasonData[_season].portfolios
             );
         }
     }
@@ -204,6 +208,29 @@ contract RebornPortal is
         } else if (t == 2) {
             _dropNative();
         }
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function toNextSeason() external onlyOwner {
+        _season += 1;
+
+        // 16% to next season jackpot
+        payable(msg.sender).transfer((address(this).balance * 16) / 100);
+
+        // pause the contract
+        _pause();
+
+        emit NewSeason(_season);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unPause() external onlyOwner {
+        _unpause();
     }
 
     /**
@@ -288,8 +315,8 @@ contract RebornPortal is
         for (uint256 i = 0; i < tokenIds.length; i++) {
             (uint256 n, uint256 r) = PortalLib._calculatePoolDrop(
                 tokenIds[i],
-                pools,
-                portfolios
+                _seasonData[_season].pools,
+                _seasonData[_season].portfolios
             );
             pNative += n;
             pReborn += r;
@@ -418,7 +445,12 @@ contract RebornPortal is
      */
     function _dropReborn() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
-        PortalLib._dropRebornTokenIds(tokenIds, _dropConf, pools, portfolios);
+        PortalLib._dropRebornTokenIds(
+            tokenIds,
+            _dropConf,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
     }
 
     /**
@@ -426,15 +458,29 @@ contract RebornPortal is
      */
     function _dropNative() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
-        PortalLib._dropNativeTokenIds(tokenIds, _dropConf, pools, portfolios);
+        PortalLib._dropNativeTokenIds(
+            tokenIds,
+            _dropConf,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
     }
 
     /**
      * @dev user claim a drop from a pool
      */
     function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
-        PortalLib._claimPoolNativeDrop(tokenId, pools, portfolios);
-        PortalLib._claimPoolRebornDrop(tokenId, vault, pools, portfolios);
+        PortalLib._claimPoolNativeDrop(
+            tokenId,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
+        PortalLib._claimPoolRebornDrop(
+            tokenId,
+            vault,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
     }
 
     /**
@@ -446,7 +492,7 @@ contract RebornPortal is
             uint256 ref1Reward,
             address ref2,
             uint256 ref2Reward
-        ) = _calculateReferReward(account, amount, RewardType.RebornToken);
+        ) = calculateReferReward(account, amount, RewardType.RebornToken);
 
         if (ref1Reward > 0) {
             vault.reward(ref1, ref1Reward);
@@ -475,7 +521,7 @@ contract RebornPortal is
             uint256 ref1Reward,
             address ref2,
             uint256 ref2Reward
-        ) = _calculateReferReward(account, amount, RewardType.NativeToken);
+        ) = calculateReferReward(account, amount, RewardType.NativeToken);
 
         if (ref1Reward > 0) {
             payable(ref1).transfer(ref1Reward);
@@ -499,8 +545,10 @@ contract RebornPortal is
      * @dev decrease amount from pool of switch from
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
-        PortalLib.Portfolio storage portfolio = portfolios[msg.sender][tokenId];
-        PortalLib.Pool storage pool = pools[tokenId];
+        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
+            msg.sender
+        ][tokenId];
+        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
 
         if (portfolio.accumulativeAmount < amount) {
             revert SwitchAmountExceedBalance();
@@ -527,10 +575,12 @@ contract RebornPortal is
     }
 
     function _increasePool(uint256 tokenId, uint256 amount) internal {
-        PortalLib.Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
+            msg.sender
+        ][tokenId];
         portfolio.accumulativeAmount += amount;
 
-        PortalLib.Pool storage pool = pools[tokenId];
+        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
         pool.totalAmount += amount;
 
         _enterTvlRank(tokenId, pool.totalAmount);
@@ -543,12 +593,12 @@ contract RebornPortal is
      * @return ref2  level2 of referrer. referrer's referrer
      * @return ref2Reward  level 2 referrer reward
      */
-    function _calculateReferReward(
+    function calculateReferReward(
         address account,
         uint256 amount,
         RewardType rewardType
     )
-        internal
+        public
         view
         returns (
             address ref1,
@@ -589,7 +639,7 @@ contract RebornPortal is
     function getPool(
         uint256 tokenId
     ) public view returns (PortalLib.Pool memory) {
-        return pools[tokenId];
+        return _seasonData[_season].pools[tokenId];
     }
 
     /**
@@ -599,7 +649,7 @@ contract RebornPortal is
         address user,
         uint256 tokenId
     ) public view returns (PortalLib.Portfolio memory) {
-        return portfolios[user][tokenId];
+        return _seasonData[_season].portfolios[user][tokenId];
     }
 
     /**

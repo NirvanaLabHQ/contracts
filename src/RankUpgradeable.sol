@@ -17,10 +17,10 @@ contract RankUpgradeable is RebornPortalStorage {
      */
     function _enterScoreRank(uint256 tokenId, uint256 value) internal {
         DegenRank._enterScoreRank(
-            _scoreRank,
-            _tributeRank,
-            _isTopHundredScore,
-            _oldStakeAmounts,
+            _seasonData[_season]._scoreRank,
+            _seasonData[_season]._tributeRank,
+            _seasonData[_season]._isTopHundredScore,
+            _seasonData[_season]._oldStakeAmounts,
             tokenId,
             value
         );
@@ -32,9 +32,9 @@ contract RankUpgradeable is RebornPortalStorage {
      */
     function _enterTvlRank(uint256 tokenId, uint256 value) internal {
         DegenRank._enterTvlRank(
-            _tributeRank,
-            _isTopHundredScore,
-            _oldStakeAmounts,
+            _seasonData[_season]._tributeRank,
+            _seasonData[_season]._isTopHundredScore,
+            _seasonData[_season]._oldStakeAmounts,
             tokenId,
             value
         );
@@ -46,6 +46,6 @@ contract RankUpgradeable is RebornPortalStorage {
     function _getTopNTokenId(
         uint256 n
     ) internal view returns (uint256[] memory values) {
-        return _tributeRank.get(0, n);
+        return _seasonData[_season]._tributeRank.get(0, n);
     }
 }

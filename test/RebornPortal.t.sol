@@ -336,4 +336,11 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         assertEq(ref1.balance, ref1Reward);
         assertEq(ref2.balance, ref2Reward);
     }
+
+    function invariant_testToNextSeason() public {
+        vm.prank(owner);
+        portal.toNextSeason();
+
+        assertEq(portal.paused(), true);
+    }
 }

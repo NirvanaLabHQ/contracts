@@ -2,6 +2,8 @@
 pragma solidity 0.8.17;
 
 import {PortalLib} from "src/PortalLib.sol";
+import {SingleRanking} from "src/lib/SingleRanking.sol";
+import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 interface IRebornDefination {
     enum RewardType {
@@ -31,6 +33,17 @@ interface IRebornDefination {
         uint16 vaultRef1Fee;
         uint16 vaultRef2Fee;
         uint192 _slotPlaceholder;
+    }
+
+    struct SeasonData {
+        mapping(uint256 => PortalLib.Pool) pools;
+        /// @dev user address => pool tokenId => Portfolio
+        mapping(address => mapping(uint256 => PortalLib.Portfolio)) portfolios;
+        SingleRanking.Data _tributeRank;
+        SingleRanking.Data _scoreRank;
+        mapping(uint256 => uint256) _oldStakeAmounts;
+        /// tokenId => bool
+        BitMapsUpgradeable.BitMap _isTopHundredScore;
     }
 
     event Incarnate(
@@ -82,6 +95,8 @@ interface IRebornDefination {
     );
 
     event Drop(uint256[] tokenIds);
+
+    event NewSeason(uint256);
 
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
@@ -192,4 +207,9 @@ interface IRebornPortal is IRebornDefination {
      * @param tokenIds pools' tokenId array to claim
      */
     function claimDrops(uint256[] calldata tokenIds) external;
+
+    /**
+     * @dev switch to next season, call by owner
+     */
+    function toNextSeason() external;
 }
