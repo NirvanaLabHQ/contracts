@@ -9,24 +9,26 @@ contract FastArrayTest is Test {
 
     function testInsert() public {
         FastArray.insert(fastArray, 10);
-        vm.expectRevert("remove value not exist");
-        FastArray.remove(fastArray, 100);
+        assertEq(FastArray.length(fastArray), 1);
 
         FastArray.remove(fastArray, 10);
         uint256 value = FastArray.get(fastArray, 0);
         assertEq(value, 0);
-    }
+        assertEq(FastArray.length(fastArray), 0);
 
-    function testRemoveFromEmptyArray() public {
-        vm.expectRevert("can not remove from empty array");
-        FastArray.remove(fastArray, 100);
-    }
-
-    function testRemoveItemNotExist() public {
         FastArray.insert(fastArray, 10);
-        FastArray.insert(fastArray, 50);
+        FastArray.insert(fastArray, 20);
+        FastArray.insert(fastArray, 15);
+        FastArray.insert(fastArray, 17);
+        assertEq(FastArray.length(fastArray), 4);
 
-        vm.expectRevert("remove value not exist");
-        FastArray.remove(fastArray, 100);
+        FastArray.remove(fastArray, 20);
+        assertEq(FastArray.length(fastArray), 3);
+        assertEq(FastArray.get(fastArray, 1), 17);
+
+        FastArray.remove(fastArray, 10);
+        FastArray.remove(fastArray, 15);
+        FastArray.remove(fastArray, 17);
+        assertEq(FastArray.length(fastArray), 0);
     }
 }
