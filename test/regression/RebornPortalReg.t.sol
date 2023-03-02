@@ -26,11 +26,13 @@ contract RebornPortalReg is Test {
     }
 
     function testPerformUpkeep() public {
+        vm.rollFork(27692275);
         bytes memory b = abi.encode(1);
         portal.performUpkeep(b);
     }
 
     function testPendingDrop() public {
+        vm.rollFork(27693331);
         uint256[] memory arr = new uint256[](4);
         (arr[0], arr[1], arr[2], arr[3]) = (
             97000000000000000015,
