@@ -35,13 +35,13 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
-  await execute(
-    "RebornPortal",
-    { from: owner },
-    "updateSigners",
-    ["0x803470638940Ec595B40397cbAa597439DE55907"],
-    []
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner },
+  //   "updateSigners",
+  //   ["0x803470638940Ec595B40397cbAa597439DE55907"],
+  //   []
+  // );
 };
 func.tags = ["Portal"];
 

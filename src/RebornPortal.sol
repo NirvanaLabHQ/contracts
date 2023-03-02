@@ -172,7 +172,11 @@ contract RebornPortal is
         uint256[] calldata tokenIds
     ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            PortalLib._claimPoolNativeDrop(tokenIds[i], _seasonData[_season].pools, _seasonData[_season].portfolios);
+            PortalLib._claimPoolNativeDrop(
+                tokenIds[i],
+                _seasonData[_season].pools,
+                _seasonData[_season].portfolios
+            );
         }
     }
 
@@ -488,7 +492,7 @@ contract RebornPortal is
             uint256 ref1Reward,
             address ref2,
             uint256 ref2Reward
-        ) = _calculateReferReward(account, amount, RewardType.RebornToken);
+        ) = calculateReferReward(account, amount, RewardType.RebornToken);
 
         if (ref1Reward > 0) {
             vault.reward(ref1, ref1Reward);
@@ -517,7 +521,7 @@ contract RebornPortal is
             uint256 ref1Reward,
             address ref2,
             uint256 ref2Reward
-        ) = _calculateReferReward(account, amount, RewardType.NativeToken);
+        ) = calculateReferReward(account, amount, RewardType.NativeToken);
 
         if (ref1Reward > 0) {
             payable(ref1).transfer(ref1Reward);
@@ -589,12 +593,12 @@ contract RebornPortal is
      * @return ref2  level2 of referrer. referrer's referrer
      * @return ref2Reward  level 2 referrer reward
      */
-    function _calculateReferReward(
+    function calculateReferReward(
         address account,
         uint256 amount,
         RewardType rewardType
     )
-        internal
+        public
         view
         returns (
             address ref1,
