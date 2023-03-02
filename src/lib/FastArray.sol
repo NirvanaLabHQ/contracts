@@ -11,11 +11,9 @@ library FastArray {
         uint256 length;
     }
 
-    modifier checkEmpty(Data storage _fastArray) {
-        require(_fastArray.length > 0, "can not remove from empty array");
-        _;
-    }
-
+    /**
+     * @notice please confirm no eq item exist before insert
+     */
     function insert(Data storage _fastArray, uint256 _value) internal {
         _fastArray.array[_fastArray.length] = _value;
         _fastArray.indexMap[_value] = _fastArray.length;
@@ -23,16 +21,11 @@ library FastArray {
     }
 
     /**
-     * @dev remove item from array,but not keep sort
+     * @dev remove item from array,but not keep rest item sort
+     * @notice Please confirm array is not empty && item is exist && index not out of bounds
      */
-    function remove(
-        Data storage _fastArray,
-        uint256 _value
-    ) internal checkEmpty(_fastArray) {
+    function remove(Data storage _fastArray, uint256 _value) internal {
         uint256 index = _fastArray.indexMap[_value];
-
-        _checkItemExist(_fastArray, _value, index);
-        _checkOutOfBounds(index, _fastArray.length);
 
         _fastArray.array[index] = _fastArray.array[_fastArray.length - 1];
         delete _fastArray.indexMap[_value];
@@ -41,14 +34,12 @@ library FastArray {
         _fastArray.length -= 1;
     }
 
-    function removeKeepSort(
-        Data storage _fastArray,
-        uint256 _value
-    ) internal checkEmpty(_fastArray) {
+    /**
+     * @dev remove item and keep rest item in sort
+     * @notice Please confirm array is not empty && item is exist && index not out of bounds
+     */
+    function removeKeepSort(Data storage _fastArray, uint256 _value) internal {
         uint256 index = _fastArray.indexMap[_value];
-
-        _checkItemExist(_fastArray, _value, index);
-        _checkOutOfBounds(index, _fastArray.length);
 
         uint256 tempLastItem = _fastArray.array[_fastArray.length - 1];
 
@@ -62,11 +53,13 @@ library FastArray {
         _fastArray.length -= 1;
     }
 
+    /**
+     * @notice PLease confirm index is not out of bounds
+     */
     function get(
         Data storage _fastArray,
         uint256 _index
     ) public view returns (uint256) {
-        _checkOutOfBounds(_index, _fastArray.length);
         return _fastArray.array[_index];
     }
 
@@ -79,22 +72,5 @@ library FastArray {
         uint256 _value
     ) public view returns (bool) {
         return _fastArray.indexMap[_value] != 0;
-    }
-
-    /** internal check */
-    function _checkItemExist(
-        Data storage _fastArray,
-        uint256 _value,
-        uint256 index
-    ) internal view {
-        if (index == 0 && _value != _fastArray.array[0]) {
-            revert("remove value not exist");
-        }
-    }
-
-    function _checkOutOfBounds(uint256 index, uint256 len) internal pure {
-        if (index >= len) {
-            revert("out of bounds");
-        }
     }
 }
