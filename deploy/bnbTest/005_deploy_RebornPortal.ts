@@ -4,7 +4,7 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get, execute } = deployments;
+  const { deploy, get } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
@@ -34,31 +34,31 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
-  await execute(
-    "RebornPortal",
-    { from: owner, log: true },
-    "updateSigners",
-    ["0x803470638940Ec595B40397cbAa597439DE55907"],
-    []
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "updateSigners",
+  //   ["0x803470638940Ec595B40397cbAa597439DE55907"],
+  //   []
+  // );
 
-  // set refer reward
-  await execute(
-    "RebornPortal",
-    { from: owner, log: true },
-    "setReferrerRewardFee",
-    800,
-    200,
-    0
-  );
-  await execute(
-    "RebornPortal",
-    { from: owner, log: true },
-    "setReferrerRewardFee",
-    1800,
-    200,
-    0
-  );
+  // // set refer reward
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setReferrerRewardFee",
+  //   800,
+  //   200,
+  //   0
+  // );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setReferrerRewardFee",
+  //   1800,
+  //   200,
+  //   0
+  // );
 };
 func.tags = ["Portal"];
 

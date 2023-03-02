@@ -101,9 +101,6 @@ library PortalLib {
         portfolio.nativeRewardDebt =
             (portfolio.accumulativeAmount * pool.accNativePerShare) /
             PERSHARE_BASE;
-        portfolio.rebornRewardDebt =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-            PERSHARE_BASE;
 
         // clean up reward as owner
         portfolio.pendingOwernNativeReward = 0;
@@ -126,6 +123,11 @@ library PortalLib {
     ) external view returns (uint256 pendingNative, uint256 pendingReborn) {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+
+        // if no portfolio, no pending reward
+        if (portfolio.accumulativeAmount == 0) {
+            return (pendingNative, pendingReborn);
+        }
 
         pendingNative =
             (portfolio.accumulativeAmount * pool.accNativePerShare) /
