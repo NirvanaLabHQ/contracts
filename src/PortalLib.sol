@@ -151,14 +151,20 @@ library PortalLib {
         if (dropNative) {
             for (uint256 i = 0; i < 100; i++) {
                 uint256 tokenId = tokenIds[i];
-                // if tokenId is zero, continue
+                // if tokenId is zero , continue
                 if (tokenId == 0) {
                     return;
                 }
+
                 Pool storage pool = pools[tokenId];
 
+                // if no one tribute, continue
+                if (pool.totalAmount == 0) {
+                    continue;
+                }
+
                 uint256 dropAmount = (_dropConf._nativeDropRatio *
-                    address(this).balance ) / PortalLib.PERCENTAGE_BASE;
+                    address(this).balance) / PortalLib.PERCENTAGE_BASE;
 
                 // 85% to pool
                 pool.accNativePerShare +=
@@ -194,6 +200,11 @@ library PortalLib {
                     return;
                 }
                 Pool storage pool = pools[tokenId];
+
+                // if no one tribute, continue
+                if (pool.totalAmount == 0) {
+                    continue;
+                }
 
                 uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
 
