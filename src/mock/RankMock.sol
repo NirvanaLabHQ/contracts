@@ -18,7 +18,7 @@ contract RankMock is RankUpgradeable {
     }
 
     function setTokenIdToTvlRank(uint256 tokenId) public {
-        _isTopHundredScore.set(tokenId);
+        _seasonData[_season]._isTopHundredScore.set(tokenId);
     }
 
     function setTokenIdsToTvlRank(uint256[] memory tokenIds) public {
