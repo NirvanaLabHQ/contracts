@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
+import {PortalLib} from "src/PortalLib.sol";
+
 interface IRebornDefination {
     enum RewardType {
         NativeToken,
@@ -21,14 +23,6 @@ interface IRebornDefination {
         uint128 cost;
         uint128 reward;
         uint256 score;
-    }
-
-    struct Pool {
-        uint256 totalAmount;
-    }
-
-    struct Portfolio {
-        uint256 accumulativeAmount;
     }
 
     struct ReferrerRewardFees {
@@ -87,6 +81,8 @@ interface IRebornDefination {
         uint256 amount
     );
 
+    event Drop(uint256[] tokenIds);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer
@@ -96,6 +92,8 @@ interface IRebornDefination {
     error SameSeed();
     /// @dev revert when swith amount from pool exceed staked balance
     error SwitchAmountExceedBalance();
+    /// @dev revert when the drop is not on
+    error DropOff();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -171,4 +169,27 @@ interface IRebornPortal is IRebornDefination {
         uint256 toTokenId,
         uint256 amount
     ) external;
+
+    /**
+     * @dev set new airdrop config
+     */
+    function setDropConf(PortalLib.AirdropConf calldata conf) external;
+
+    /**
+     * @dev user claim many pools' native token airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimNativeDrops(uint256[] calldata tokenIds) external;
+
+    /**
+     * @dev user claim many pools' reborn token airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimRebornDrops(uint256[] calldata tokenIds) external;
+
+    /**
+     * @dev user claim many pools' airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimDrops(uint256[] calldata tokenIds) external;
 }
