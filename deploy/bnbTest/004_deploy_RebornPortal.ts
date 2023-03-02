@@ -36,7 +36,7 @@ const func: DeployFunction = async function ({
 
   await execute(
     "RebornPortal",
-    { from: owner },
+    { from: owner, log: true },
     "updateSigners",
     ["0x803470638940Ec595B40397cbAa597439DE55907"],
     []
