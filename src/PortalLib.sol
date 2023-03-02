@@ -158,8 +158,7 @@ library PortalLib {
                 Pool storage pool = pools[tokenId];
 
                 uint256 dropAmount = (_dropConf._nativeDropRatio *
-                    address(this).balance *
-                    3) / 200;
+                    address(this).balance ) / PortalLib.PERCENTAGE_BASE;
 
                 // 85% to pool
                 pool.accNativePerShare +=

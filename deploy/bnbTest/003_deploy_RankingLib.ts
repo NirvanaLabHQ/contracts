@@ -27,9 +27,8 @@ const func: DeployFunction = async function ({
     },
     log: true,
   });
-  await deploy("PortalLib", { from: deployer, log: true });
 };
 
-func.tags = ["PortalLib"];
+func.tags = ["RankingLib"];
 
 export default func;
