@@ -96,6 +96,9 @@ interface IRebornDefination {
     error SameSeed();
     /// @dev revert when swith amount from pool exceed staked balance
     error SwitchAmountExceedBalance();
+
+    /// @dev revert when set ZeroAddress
+    error ZeroAddressSet();
 }
 
 interface IRebornPortal is IRebornDefination {

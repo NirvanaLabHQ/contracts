@@ -38,6 +38,8 @@ contract RebornPortalStorage is IRebornDefination {
 
     ReferrerRewardFees public rewardFees;
 
+    address public burnPool;
+
     /// @dev gap for potential vairable
-    uint256[37] private _gap;
+    uint256[36] private _gap;
 }

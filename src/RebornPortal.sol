@@ -12,6 +12,7 @@ import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOw
 
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
+import {IBurnPool} from "src/interfaces/IBurnPool.sol";
 
 import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RenderEngine} from "src/lib/RenderEngine.sol";
@@ -165,6 +166,14 @@ contract RebornPortal is
     }
 
     /**
+     * @dev burn $REBORN from burn pool
+     * @param amount burn from burn pool
+     */
+    function burnFromBurnPool(uint256 amount) external onlyOwner {
+        IBurnPool(burnPool).burn(amount);
+    }
+
+    /**
      * @dev update signers
      * @param toAdd list of to be added signer
      * @param toRemove list of to be removed signer
@@ -200,6 +209,14 @@ contract RebornPortal is
             rewardFees.vaultRef1Fee = refL1Fee;
             rewardFees.vaultRef2Fee = refL2Fee;
         }
+    }
+
+    // set burnPool address for pre burn $REBORN
+    function setBurnPool(address burnPool_) external onlyOwner {
+        if (burnPool_ == address(0)) {
+            revert ZeroAddressSet();
+        }
+        burnPool = burnPool_;
     }
 
     /**
@@ -285,8 +302,10 @@ contract RebornPortal is
     }
 
     function _infuse(uint256 tokenId, uint256 amount) internal {
-        // burn reborn token from msg.sender
-        rebornToken.burnFrom(msg.sender, amount);
+        // deposit $REBORN to burn pool
+        rebornToken.transferFrom(msg.sender, address(this), amount);
+        rebornToken.approve(burnPool, amount);
+        IBurnPool(burnPool).deposit(amount);
 
         _increasePool(tokenId, amount);
 
