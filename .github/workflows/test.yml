@@ -51,3 +51,4 @@ jobs:
         id: forge-test
         env:
           BNB_CHAIN_URL: ${{ secrets.BNB_CHAIN_URL }}
+          BNB_CHAIN_TEST_URL: ${{ secrets.BNB_CHAIN_TEST_URL }}
