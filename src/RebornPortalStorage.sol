@@ -36,5 +36,5 @@ contract RebornPortalStorage is IRebornDefination {
     address public burnPool;
 
     /// @dev gap for potential vairable
-    uint256[36] private _gap;
+    uint256[37] private _gap;
 }
