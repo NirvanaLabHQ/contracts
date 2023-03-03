@@ -1,7 +1,7 @@
-import env from 'hardhat';
-import path from 'path';
-import fs from 'fs-extra';
-import { exit } from 'process';
+import env from "hardhat";
+import path from "path";
+import fs from "fs-extra";
+import { exit } from "process";
 
 // If the contract does not require verification, just add it here
 const whiteList: string[] = [];
@@ -10,40 +10,55 @@ function getNoVerifyFile() {
   const files: string[] = [];
   if (whiteList.length > 0) {
     whiteList.forEach((l) => {
-      const pathFile = path.join(__dirname, '../deployments') + '/' + env.network.name + '/' + l;
+      const pathFile =
+        path.join(__dirname, "../deployments") +
+        "/" +
+        env.network.name +
+        "/" +
+        l;
       files.push(pathFile);
     });
   }
   return files;
 }
 async function main() {
-  const dir = path.join(__dirname, '/deployments') + '/' + env.network.name;
+  const dir = path.join(__dirname, "/deployments") + "/" + env.network.name;
   const reg = /.chainId|solcInputs|_Proxy/gi;
   const whiteList = getNoVerifyFile();
   travel(dir, async function (fileName) {
     if (!whiteList.includes(fileName) && fileName.search(reg) === -1) {
-      const content = fs.readJSONSync(fileName, { encoding: 'utf-8' });
+      const content = fs.readJSONSync(fileName, { encoding: "utf-8" });
       try {
         if (!content.implementation) {
-          if (content.storageLayout && content.storageLayout.storage.length !== 0) {
-            await verify(content.address, content.args, content.storageLayout.storage[0].contract);
+          if (
+            content.storageLayout &&
+            content.storageLayout.storage.length !== 0
+          ) {
+            await verify(
+              content.address,
+              content.args,
+              content.storageLayout.storage[0].contract
+            );
           } else {
             await verify(content.address, content.args);
           }
         }
       } catch (err) {
         const str: string = String(err);
-        if (str.includes('Reason: Already Verified') || str.includes('Contract source code already verified')) {
+        if (
+          str.includes("Reason: Already Verified") ||
+          str.includes("Contract source code already verified")
+        ) {
           console.log(
             `${
               content.storageLayout.storage[0]
                 ? content.storageLayout.storage[0].contract
                 : `contract/` +
-                  fileName.split('/').pop()?.split('.')[0] +
+                  fileName.split("/").pop()?.split(".")[0] +
                   `.sol` +
                   `:` +
-                  fileName.split('/').pop()?.split('.')[0]
-            } at ${content.address} Already Verified`,
+                  fileName.split("/").pop()?.split(".")[0]
+            } at ${content.address} Already Verified`
           );
         } else {
           console.log(
@@ -51,12 +66,12 @@ async function main() {
               content.storageLayout?.storage[0]
                 ? content.storageLayout.storage[0].contract
                 : `contract/` +
-                  fileName.split('/').pop()?.split('.')[0] +
+                  fileName.split("/").pop()?.split(".")[0] +
                   `.sol` +
                   `:` +
-                  fileName.split('/').pop()?.split('.')[0]
+                  fileName.split("/").pop()?.split(".")[0]
             } at ${content.address} fail`,
-            err,
+            err
           );
         }
       }
@@ -86,11 +101,16 @@ function travel(dir: string, callback: (arg0: string) => void) {
   });
 }
 
-async function verify(_contractAddress: string, _constructorArguments: string[], _contract?: string) {
-  await env.run('verify:verify', {
+async function verify(
+  _contractAddress: string,
+  _constructorArguments: string[],
+  _contract?: string
+) {
+  await env.run("verify:verify", {
     address: _contractAddress,
     constructorArguments: _constructorArguments,
     contract: _contract,
+    noCompile: true,
   });
 }
 
