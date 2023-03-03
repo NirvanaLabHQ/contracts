@@ -1,5 +1,5 @@
 {
-  "address": "0x940cBc5de5bb3c17aBeA21AB901fb9056F330c51",
+  "address": "0xF6D95a75464B0C2C717407867eEF377ab1fe7046",
   "abi": [
     {
       "anonymous": false,
@@ -56,12 +56,22 @@
     },
     {
       "inputs": [],
+      "name": "DropOff",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "InsufficientAmount",
       "type": "error"
     },
     {
       "inputs": [],
       "name": "NotSigner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OnlySimulatedBackend",
       "type": "error"
     },
     {
@@ -166,6 +176,19 @@
         }
       ],
       "name": "DecreaseFromPool",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "Drop",
       "type": "event"
     },
     {
@@ -322,6 +345,19 @@
         }
       ],
       "name": "Initialized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "NewSeason",
       "type": "event"
     },
     {
@@ -489,19 +525,6 @@
       "type": "event"
     },
     {
-      "inputs": [],
-      "name": "PERCENTAGE_BASE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -601,8 +624,71 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "name": "checkUpkeep",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "upkeepNeeded",
+          "type": "bool"
+        },
+        {
+          "internalType": "bytes",
+          "name": "performData",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "claimDrops",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "claimNativeDrops",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "claimOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "claimRebornDrops",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -734,9 +820,80 @@
               "internalType": "uint256",
               "name": "totalAmount",
               "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "accRebornPerShare",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "accNativePerShare",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "epoch",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "lastUpdated",
+              "type": "uint256"
             }
           ],
-          "internalType": "struct IRebornDefination.Pool",
+          "internalType": "struct PortalLib.Pool",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPortfolio",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "accumulativeAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rebornRewardDebt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nativeRewardDebt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pendingOwnerRebornReward",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pendingOwernNativeReward",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct PortalLib.Portfolio",
           "name": "",
           "type": "tuple"
         }
@@ -763,19 +920,6 @@
           "internalType": "address",
           "name": "referrer2",
           "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "idx",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -976,12 +1120,43 @@
     },
     {
       "inputs": [],
+      "name": "pause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "paused",
       "outputs": [
         {
           "internalType": "bool",
           "name": "",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "pendingDrop",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "pNative",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "pReborn",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -1003,44 +1178,14 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
+          "internalType": "bytes",
+          "name": "performData",
+          "type": "bytes"
         }
       ],
-      "name": "pools",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "totalAmount",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "portfolios",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "accumulativeAmount",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
+      "name": "performUpkeep",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1132,25 +1277,6 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "rounds",
-      "outputs": [
-        {
-          "internalType": "uint32",
-          "name": "",
-          "type": "uint32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "from",
           "type": "address"
         },
@@ -1231,6 +1357,56 @@
         }
       ],
       "name": "setApprovalForAll",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint8",
+              "name": "_dropOn",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint40",
+              "name": "_rebornDropInterval",
+              "type": "uint40"
+            },
+            {
+              "internalType": "uint40",
+              "name": "_nativeDropInterval",
+              "type": "uint40"
+            },
+            {
+              "internalType": "uint40",
+              "name": "_rebornDropLastUpdate",
+              "type": "uint40"
+            },
+            {
+              "internalType": "uint40",
+              "name": "_nativeDropLastUpdate",
+              "type": "uint40"
+            },
+            {
+              "internalType": "uint16",
+              "name": "_nativeDropRatio",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint72",
+              "name": "_rebornDropEthAmount",
+              "type": "uint72"
+            }
+          ],
+          "internalType": "struct PortalLib.AirdropConf",
+          "name": "conf",
+          "type": "tuple"
+        }
+      ],
+      "name": "setDropConf",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1346,6 +1522,13 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "toNextSeason",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -1401,6 +1584,13 @@
         }
       ],
       "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unPause",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1510,68 +1700,68 @@
       "type": "constructor"
     }
   ],
-  "transactionHash": "0x6c2ffbe54a691f4b8cf44f206b905244c20c9416c8922e0d2da892268624d93e",
+  "transactionHash": "0x7c0a31f9ec0e1431ad355ea488b2b24bb084401aab10f5b171868ad6b1aeae2c",
   "receipt": {
     "to": null,
     "from": "0xe0B4c9C36f5A5D0Ff3A547FeaBB6BC9Ba65805F2",
-    "contractAddress": "0x940cBc5de5bb3c17aBeA21AB901fb9056F330c51",
-    "transactionIndex": 1,
-    "gasUsed": "431387",
-    "logsBloom": "0x00000000000000000000100000000000400000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000041000000000000000000000000000000000000020000000000000000000800001000000000000020000000000000400000000000000000000000040000000000000000000080000000000000000000000000000400000000000002000400000000000000000000000000800000000000000020000000000000000000040000000000000000000000000000000020000000000000000000000000000000000001000000000000000000000000000000",
-    "blockHash": "0x6a17f016daa785ee566810bece2f95c1bdb9bf680646da62c79738116f6e3d35",
-    "transactionHash": "0x6c2ffbe54a691f4b8cf44f206b905244c20c9416c8922e0d2da892268624d93e",
+    "contractAddress": "0xF6D95a75464B0C2C717407867eEF377ab1fe7046",
+    "transactionIndex": 13,
+    "gasUsed": "410997",
+    "logsBloom": "0x00000000000200000200100000000000400000000000000000800000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000002000001000000000000000000000000000000000000020000000000000000000800000000000000000020000000000000400000000000000000000000080000000000000000000080000000000000000000000000000000000000000000000400000080000000000000000000000000000000000020000000000000000000040000000000000000000000000000000020000000000000000000000020000000000001000000000000000000000000000000",
+    "blockHash": "0x98fe26d2dea6f5f57258b3453d8875abec6e38ad7973b323bc198ac6e4825998",
+    "transactionHash": "0x7c0a31f9ec0e1431ad355ea488b2b24bb084401aab10f5b171868ad6b1aeae2c",
     "logs": [
       {
-        "transactionIndex": 1,
-        "blockNumber": 27397061,
-        "transactionHash": "0x6c2ffbe54a691f4b8cf44f206b905244c20c9416c8922e0d2da892268624d93e",
-        "address": "0x940cBc5de5bb3c17aBeA21AB901fb9056F330c51",
+        "transactionIndex": 13,
+        "blockNumber": 27690128,
+        "transactionHash": "0x7c0a31f9ec0e1431ad355ea488b2b24bb084401aab10f5b171868ad6b1aeae2c",
+        "address": "0xF6D95a75464B0C2C717407867eEF377ab1fe7046",
         "topics": [
           "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b",
-          "0x00000000000000000000000016b879163ca347a84c6e9ca9e0eecd8b9328303a"
+          "0x000000000000000000000000c208fa819083c003792219d8acdd9e3b07857d48"
         ],
         "data": "0x",
-        "logIndex": 0,
-        "blockHash": "0x6a17f016daa785ee566810bece2f95c1bdb9bf680646da62c79738116f6e3d35"
+        "logIndex": 10,
+        "blockHash": "0x98fe26d2dea6f5f57258b3453d8875abec6e38ad7973b323bc198ac6e4825998"
       },
       {
-        "transactionIndex": 1,
-        "blockNumber": 27397061,
-        "transactionHash": "0x6c2ffbe54a691f4b8cf44f206b905244c20c9416c8922e0d2da892268624d93e",
-        "address": "0x940cBc5de5bb3c17aBeA21AB901fb9056F330c51",
+        "transactionIndex": 13,
+        "blockNumber": 27690128,
+        "transactionHash": "0x7c0a31f9ec0e1431ad355ea488b2b24bb084401aab10f5b171868ad6b1aeae2c",
+        "address": "0xF6D95a75464B0C2C717407867eEF377ab1fe7046",
         "topics": [
           "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
           "0x0000000000000000000000000000000000000000000000000000000000000000",
           "0x000000000000000000000000e0b4c9c36f5a5d0ff3a547feabb6bc9ba65805f2"
         ],
         "data": "0x",
-        "logIndex": 1,
-        "blockHash": "0x6a17f016daa785ee566810bece2f95c1bdb9bf680646da62c79738116f6e3d35"
+        "logIndex": 11,
+        "blockHash": "0x98fe26d2dea6f5f57258b3453d8875abec6e38ad7973b323bc198ac6e4825998"
       },
       {
-        "transactionIndex": 1,
-        "blockNumber": 27397061,
-        "transactionHash": "0x6c2ffbe54a691f4b8cf44f206b905244c20c9416c8922e0d2da892268624d93e",
-        "address": "0x940cBc5de5bb3c17aBeA21AB901fb9056F330c51",
+        "transactionIndex": 13,
+        "blockNumber": 27690128,
+        "transactionHash": "0x7c0a31f9ec0e1431ad355ea488b2b24bb084401aab10f5b171868ad6b1aeae2c",
+        "address": "0xF6D95a75464B0C2C717407867eEF377ab1fe7046",
         "topics": [
           "0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498"
         ],
         "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
-        "logIndex": 2,
-        "blockHash": "0x6a17f016daa785ee566810bece2f95c1bdb9bf680646da62c79738116f6e3d35"
+        "logIndex": 12,
+        "blockHash": "0x98fe26d2dea6f5f57258b3453d8875abec6e38ad7973b323bc198ac6e4825998"
       }
     ],
-    "blockNumber": 27397061,
-    "cumulativeGasUsed": "494464",
+    "blockNumber": 27690128,
+    "cumulativeGasUsed": "1137414",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0x16B879163CA347a84c6e9ca9E0eeCD8B9328303a",
-    "0xe6660f59000000000000000000000000ab56705951d88b87108f81e4b24f88648a328603000000000000000000000000000000000000000000000000002386f26fc10000000000000000000000000000e0b4c9c36f5a5d0ff3a547feabb6bc9ba65805f200000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000f446567656e20546f6d6273746f6e65000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000035249500000000000000000000000000000000000000000000000000000000000"
+    "0xC208Fa819083c003792219D8acDd9e3b07857D48",
+    "0x2016a0d2000000000000000000000000ab56705951d88b87108f81e4b24f88648a328603000000000000000000000000e0b4c9c36f5a5d0ff3a547feabb6bc9ba65805f2000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000f446567656e20546f6d6273746f6e65000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000035249500000000000000000000000000000000000000000000000000000000000"
   ],
-  "numDeployments": 16,
+  "numDeployments": 8,
   "bytecode": "0x60806040526040516107813803806107818339810160408190526100229161032b565b61004d60017f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbd6103f9565b60008051602061073a833981519152146100695761006961041e565b6100758282600061007c565b5050610483565b610085836100e6565b6040516001600160a01b038416907fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b90600090a26000825111806100c65750805b156100e1576100df83836101a660201b6100291760201c565b505b505050565b6100f9816101d260201b6100551760201c565b6101605760405162461bcd60e51b815260206004820152602d60248201527f455243313936373a206e657720696d706c656d656e746174696f6e206973206e60448201526c1bdd08184818dbdb9d1c9858dd609a1b60648201526084015b60405180910390fd5b8061018560008051602061073a83398151915260001b6101d860201b61005b1760201c565b80546001600160a01b0319166001600160a01b039290921691909117905550565b60606101cb838360405180606001604052806027815260200161075a602791396101db565b9392505050565b3b151590565b90565b6060833b61023a5760405162461bcd60e51b815260206004820152602660248201527f416464726573733a2064656c65676174652063616c6c20746f206e6f6e2d636f6044820152651b9d1c9858dd60d21b6064820152608401610157565b600080856001600160a01b0316856040516102559190610434565b600060405180830381855af49150503d8060008114610290576040519150601f19603f3d011682016040523d82523d6000602084013e610295565b606091505b5090925090506102a68282866102b0565b9695505050505050565b606083156102bf5750816101cb565b8251156102cf5782518084602001fd5b8160405162461bcd60e51b81526004016101579190610450565b634e487b7160e01b600052604160045260246000fd5b60005b8381101561031a578181015183820152602001610302565b838111156100df5750506000910152565b6000806040838503121561033e57600080fd5b82516001600160a01b038116811461035557600080fd5b60208401519092506001600160401b038082111561037257600080fd5b818501915085601f83011261038657600080fd5b815181811115610398576103986102e9565b604051601f8201601f19908116603f011681019083821181831017156103c0576103c06102e9565b816040528281528860208487010111156103d957600080fd5b6103ea8360208301602088016102ff565b80955050505050509250929050565b60008282101561041957634e487b7160e01b600052601160045260246000fd5b500390565b634e487b7160e01b600052600160045260246000fd5b600082516104468184602087016102ff565b9190910192915050565b602081526000825180602084015261046f8160408501602087016102ff565b601f01601f19169190910160400192915050565b6102a8806104926000396000f3fe60806040523661001357610011610017565b005b6100115b61002761002261005e565b610096565b565b606061004e838360405180606001604052806027815260200161024c602791396100ba565b9392505050565b3b151590565b90565b60006100917f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc546001600160a01b031690565b905090565b3660008037600080366000845af43d6000803e8080156100b5573d6000f35b3d6000fd5b6060833b61011e5760405162461bcd60e51b815260206004820152602660248201527f416464726573733a2064656c65676174652063616c6c20746f206e6f6e2d636f6044820152651b9d1c9858dd60d21b60648201526084015b60405180910390fd5b600080856001600160a01b03168560405161013991906101fc565b600060405180830381855af49150503d8060008114610174576040519150601f19603f3d011682016040523d82523d6000602084013e610179565b606091505b5091509150610189828286610193565b9695505050505050565b606083156101a257508161004e565b8251156101b25782518084602001fd5b8160405162461bcd60e51b81526004016101159190610218565b60005b838110156101e75781810151838201526020016101cf565b838111156101f6576000848401525b50505050565b6000825161020e8184602087016101cc565b9190910192915050565b60208152600082518060208401526102378160408501602087016101cc565b601f01601f1916919091016040019291505056fe416464726573733a206c6f772d6c6576656c2064656c65676174652063616c6c206661696c6564a264697066735822122041f64d2ff908c9983923017ed36c949dd92697a1f359295e2ea2f809da86127664736f6c63430008090033360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc416464726573733a206c6f772d6c6576656c2064656c65676174652063616c6c206661696c6564",
   "deployedBytecode": "0x60806040523661001357610011610017565b005b6100115b61002761002261005e565b610096565b565b606061004e838360405180606001604052806027815260200161024c602791396100ba565b9392505050565b3b151590565b90565b60006100917f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc546001600160a01b031690565b905090565b3660008037600080366000845af43d6000803e8080156100b5573d6000f35b3d6000fd5b6060833b61011e5760405162461bcd60e51b815260206004820152602660248201527f416464726573733a2064656c65676174652063616c6c20746f206e6f6e2d636f6044820152651b9d1c9858dd60d21b60648201526084015b60405180910390fd5b600080856001600160a01b03168560405161013991906101fc565b600060405180830381855af49150503d8060008114610174576040519150601f19603f3d011682016040523d82523d6000602084013e610179565b606091505b5091509150610189828286610193565b9695505050505050565b606083156101a257508161004e565b8251156101b25782518084602001fd5b8160405162461bcd60e51b81526004016101159190610218565b60005b838110156101e75781810151838201526020016101cf565b838111156101f6576000848401525b50505050565b6000825161020e8184602087016101cc565b9190910192915050565b60208152600082518060208401526102378160408501602087016101cc565b601f01601f1916919091016040019291505056fe416464726573733a206c6f772d6c6576656c2064656c65676174652063616c6c206661696c6564a264697066735822122041f64d2ff908c9983923017ed36c949dd92697a1f359295e2ea2f809da86127664736f6c63430008090033",
-  "implementation": "0x97a31f34aF33D942382C13d4f15Fd4C70C022e49"
+  "implementation": "0xdF5EE9553E4e4658B978B823116c52353A8E8e73"
 }

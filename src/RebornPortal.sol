@@ -1,23 +1,22 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
-
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
-import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 import {IBurnPool} from "src/interfaces/IBurnPool.sol";
-
 import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
-import {RenderEngine} from "src/lib/RenderEngine.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
+import {RankUpgradeable} from "src/RankUpgradeable.sol";
+import {Renderer} from "src/lib/Renderder.sol";
+
+import {PortalLib} from "src/PortalLib.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -26,9 +25,10 @@ contract RebornPortal is
     RebornPortalStorage,
     ERC721Upgradeable,
     ReentrancyGuardUpgradeable,
-    PausableUpgradeable
+    PausableUpgradeable,
+    AutomationCompatible,
+    RankUpgradeable
 {
-    using SafeERC20Upgradeable for IRebornToken;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
     function initialize(
@@ -83,7 +83,6 @@ contract RebornPortal is
             uint16(age),
             ++rounds[user],
             0,
-            // set cost to 0 temporary, should implement later
             uint128(cost),
             uint128(reward),
             score
@@ -92,6 +91,9 @@ contract RebornPortal is
         _safeMint(user, tokenId);
         // send $REBORN reward
         vault.reward(user, reward);
+
+        // let tokenId enter the score rank
+        _enterScoreRank(tokenId, score);
 
         // mint to referrer
         _vaultRewardToRefs(user, reward);
@@ -118,6 +120,7 @@ contract RebornPortal is
         uint256 tokenId,
         uint256 amount
     ) external override whenNotPaused {
+        _claimPoolDrop(tokenId);
         _infuse(tokenId, amount);
     }
 
@@ -133,6 +136,7 @@ contract RebornPortal is
         bytes32 s,
         uint8 v
     ) external override whenNotPaused {
+        _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount);
     }
@@ -145,8 +149,99 @@ contract RebornPortal is
         uint256 toTokenId,
         uint256 amount
     ) external override whenNotPaused {
+        _claimPoolDrop(fromTokenId);
+        _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
         _increaseToPool(toTokenId, amount);
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function claimDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _claimPoolDrop(tokenIds[i]);
+        }
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function claimNativeDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            PortalLib._claimPoolNativeDrop(
+                tokenIds[i],
+                _seasonData[_season].pools,
+                _seasonData[_season].portfolios
+            );
+        }
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function claimRebornDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            PortalLib._claimPoolRebornDrop(
+                tokenIds[i],
+                vault,
+                _seasonData[_season].pools,
+                _seasonData[_season].portfolios
+            );
+        }
+    }
+
+    /**
+     * @dev Upkeep perform of chainlink automation
+     */
+    function performUpkeep(
+        bytes calldata performData
+    ) external override whenNotPaused {
+        uint256 t = abi.decode(performData, (uint256));
+        if (t == 1) {
+            _dropReborn();
+        } else if (t == 2) {
+            _dropNative();
+        }
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function toNextSeason() external onlyOwner {
+        _season += 1;
+
+        // 16% to next season jackpot
+        payable(msg.sender).transfer((address(this).balance * 16) / 100);
+
+        // pause the contract
+        _pause();
+
+        emit NewSeason(_season);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unPause() external onlyOwner {
+        _unpause();
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function setDropConf(
+        PortalLib.AirdropConf calldata conf
+    ) external override onlyOwner {
+        _dropConf = conf;
+        emit PortalLib.NewDropConf(conf);
     }
 
     /**
@@ -228,48 +323,58 @@ contract RebornPortal is
     }
 
     /**
+     * @dev read pending reward from specific pool
+     * @param tokenIds tokenId array of the pools
+     */
+    function pendingDrop(
+        uint256[] memory tokenIds
+    ) external view returns (uint256 pNative, uint256 pReborn) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            (uint256 n, uint256 r) = PortalLib._calculatePoolDrop(
+                tokenIds[i],
+                _seasonData[_season].pools,
+                _seasonData[_season].portfolios
+            );
+            pNative += n;
+            pReborn += r;
+        }
+    }
+
+    /**
+     * @dev checkUpkeep for chainlink automation
+     */
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
+        if (_dropConf._dropOn == 1) {
+            if (
+                block.timestamp >
+                _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval
+            ) {
+                upkeepNeeded = true;
+                performData = abi.encode(1);
+            } else if (
+                block.timestamp >
+                _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval
+            ) {
+                upkeepNeeded = true;
+                performData = abi.encode(2);
+            }
+        }
+    }
+
+    /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(
         uint256 tokenId
     ) public view virtual override returns (string memory) {
-        string memory metadata = Base64.encode(
-            bytes(
-                string.concat(
-                    '{"name": "',
-                    name(),
-                    '","description":"',
-                    "",
-                    '","image":"',
-                    "data:image/svg+xml;base64,",
-                    Base64.encode(
-                        bytes(
-                            RenderEngine.renderSvg(
-                                details[tokenId].seed,
-                                details[tokenId].score,
-                                details[tokenId].round,
-                                details[tokenId].age,
-                                details[tokenId].creator,
-                                details[tokenId].cost
-                            )
-                        )
-                    ),
-                    '","attributes": ',
-                    RenderEngine.renderTrait(
-                        details[tokenId].seed,
-                        details[tokenId].score,
-                        details[tokenId].round,
-                        details[tokenId].age,
-                        details[tokenId].creator,
-                        details[tokenId].reward,
-                        details[tokenId].cost
-                    ),
-                    "}"
-                )
-            )
-        );
-
-        return string.concat("data:application/json;base64,", metadata);
+        return Renderer.renderByTokenId(details, tokenId);
     }
 
     /**
@@ -302,6 +407,10 @@ contract RebornPortal is
     }
 
     function _infuse(uint256 tokenId, uint256 amount) internal {
+        // if amount is zero, nothing happen
+        if (amount == 0) {
+            return;
+        }
         // deposit $REBORN to burn pool
         if (burnPool == address(0)) {
             revert NotSetBurnPoolAddress();
@@ -349,6 +458,49 @@ contract RebornPortal is
             referrals[msg.sender] = referrer;
             emit Refer(msg.sender, referrer);
         }
+    }
+
+    /**
+     * @dev airdrop to top 100 tvl pool
+     */
+    function _dropReborn() internal onlyDropOn {
+        uint256[] memory tokenIds = _getTopNTokenId(100);
+        PortalLib._dropRebornTokenIds(
+            tokenIds,
+            _dropConf,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
+    }
+
+    /**
+     * @dev airdrop to top 100 tvl pool
+     */
+    function _dropNative() internal onlyDropOn {
+        uint256[] memory tokenIds = _getTopNTokenId(100);
+        PortalLib._dropNativeTokenIds(
+            tokenIds,
+            _dropConf,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
+    }
+
+    /**
+     * @dev user claim a drop from a pool
+     */
+    function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
+        PortalLib._claimPoolNativeDrop(
+            tokenId,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
+        PortalLib._claimPoolRebornDrop(
+            tokenId,
+            vault,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
     }
 
     /**
@@ -413,14 +565,19 @@ contract RebornPortal is
      * @dev decrease amount from pool of switch from
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
+            msg.sender
+        ][tokenId];
+        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
+
         if (portfolio.accumulativeAmount < amount) {
             revert SwitchAmountExceedBalance();
         }
-        portfolio.accumulativeAmount -= amount;
 
-        Pool storage pool = pools[tokenId];
+        portfolio.accumulativeAmount -= amount;
         pool.totalAmount -= amount;
+
+        _enterTvlRank(tokenId, pool.totalAmount);
 
         emit DecreaseFromPool(msg.sender, tokenId, amount);
     }
@@ -438,11 +595,15 @@ contract RebornPortal is
     }
 
     function _increasePool(uint256 tokenId, uint256 amount) internal {
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
+            msg.sender
+        ][tokenId];
         portfolio.accumulativeAmount += amount;
 
-        Pool storage pool = pools[tokenId];
+        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
         pool.totalAmount += amount;
+
+        _enterTvlRank(tokenId, pool.totalAmount);
     }
 
     /**
@@ -472,27 +633,43 @@ contract RebornPortal is
         if (rewardType == RewardType.NativeToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef1Fee) / PERCENTAGE_BASE;
+                : (amount * rewardFees.incarnateRef1Fee) /
+                    PortalLib.PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef2Fee) / PERCENTAGE_BASE;
+                : (amount * rewardFees.incarnateRef2Fee) /
+                    PortalLib.PERCENTAGE_BASE;
         }
 
         if (rewardType == RewardType.RebornToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef1Fee) / PERCENTAGE_BASE;
+                : (amount * rewardFees.vaultRef1Fee) /
+                    PortalLib.PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef2Fee) / PERCENTAGE_BASE;
+                : (amount * rewardFees.vaultRef2Fee) /
+                    PortalLib.PERCENTAGE_BASE;
         }
     }
 
     /**
      * @dev read pool attribute
      */
-    function getPool(uint256 tokenId) public view returns (Pool memory) {
-        return pools[tokenId];
+    function getPool(
+        uint256 tokenId
+    ) public view returns (PortalLib.Pool memory) {
+        return _seasonData[_season].pools[tokenId];
+    }
+
+    /**
+     * @dev read pool attribute
+     */
+    function getPortfolio(
+        address user,
+        uint256 tokenId
+    ) public view returns (PortalLib.Portfolio memory) {
+        return _seasonData[_season].portfolios[user][tokenId];
     }
 
     /**
@@ -520,6 +697,16 @@ contract RebornPortal is
      */
     modifier onlySigner() {
         _checkSigner();
+        _;
+    }
+
+    /**
+     * @dev only allowed when drop is on
+     */
+    modifier onlyDropOn() {
+        if (_dropConf._dropOn == 0) {
+            revert DropOff();
+        }
         _;
     }
 }

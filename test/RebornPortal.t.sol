@@ -23,7 +23,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     address _user = vm.addr(10);
     address signer = vm.addr(11);
     // solhint-disable-next-line var-name-mixedcase
-    bytes32 private constant _PERMIT_TYPEHASH =
+    bytes32 internal constant _PERMIT_TYPEHASH =
         keccak256(
             "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
         );
@@ -168,7 +168,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
     function testInfuseNumericalValue(uint256 amount) public {
         vm.assume(amount < rbt.cap() - 100 ether);
-        testEngrave(bytes32(new bytes(32)), 10, 10, 10);
+        vm.assume(amount > 0);
 
         mintRBT(rbt, owner, _user, amount);
 
@@ -178,8 +178,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         mockInfuse(_user, 1, amount);
 
-        assertEq(portal.pools(1), amount);
-        assertEq(portal.portfolios(_user, 1), amount);
+        assertEq(portal.getPool(1).totalAmount, amount);
+        assertEq(portal.getPortfolio(_user, 1).accumulativeAmount, amount);
     }
 
     function testBurnPool(uint256 amount) public {
@@ -232,20 +232,29 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         // infuse pool 1
         mockInfuse(_user, 1, 0.5 * 1 ether);
         assertEq(portal.getPool(1).totalAmount, 0.5 * 1 ether);
-        assertEq(portal.portfolios(_user, 1), 0.5 * 1 ether);
+        assertEq(
+            portal.getPortfolio(_user, 1).accumulativeAmount,
+            0.5 * 1 ether
+        );
 
         // infuse pool 2
         mockInfuse(_user, 2, 1 ether);
         assertEq(portal.getPool(2).totalAmount, 1 ether);
-        assertEq(portal.portfolios(_user, 2), 1 ether);
+        assertEq(portal.getPortfolio(_user, 2).accumulativeAmount, 1 ether);
 
         // switch pool 1 -> pool 2
         vm.prank(_user);
         portal.switchPool(1, 2, 0.1 * 1 ether);
         assertEq(portal.getPool(1).totalAmount, 0.4 * 1 ether);
-        assertEq(portal.portfolios(_user, 1), 0.4 * 1 ether);
+        assertEq(
+            portal.getPortfolio(_user, 1).accumulativeAmount,
+            0.4 * 1 ether
+        );
         assertEq(portal.getPool(2).totalAmount, 1.095 * 1 ether);
-        assertEq(portal.portfolios(_user, 2), 1.095 * 1 ether);
+        assertEq(
+            portal.getPortfolio(_user, 2).accumulativeAmount,
+            1.095 * 1 ether
+        );
 
         vm.expectRevert(SwitchAmountExceedBalance.selector);
         vm.prank(_user);
@@ -282,6 +291,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         uint16 score,
         uint16 age
     ) public {
+        vm.assume(uint256(seed) > 1);
         testEngrave(seed, reward, score, age);
 
         assertEq(portal.seedExists(seed), true);
@@ -349,5 +359,12 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         assertEq(ref1.balance, ref1Reward);
         assertEq(ref2.balance, ref2Reward);
+    }
+
+    function invariant_testToNextSeason() public {
+        vm.prank(owner);
+        portal.toNextSeason();
+
+        assertEq(portal.paused(), true);
     }
 }
