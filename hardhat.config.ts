@@ -117,6 +117,7 @@ const config: HardhatUserConfig = {
     apiKey: {
       bscTestnet: process.env.BNB_SCAN_API_KEY!,
       bsc: process.env.BNB_SCAN_API_KEY!,
+      polygonMumbai: process.env.POLYGON_SCAN_API_KEY!
     },
   },
   external: {
