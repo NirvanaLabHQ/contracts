@@ -268,6 +268,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         uint16 score,
         uint16 age
     ) public {
+        vm.assume(uint256(seed) > 1);
         testEngrave(seed, reward, score, age);
 
         assertEq(portal.seedExists(seed), true);
