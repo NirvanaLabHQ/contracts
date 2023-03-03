@@ -61,6 +61,10 @@ library PortalLib {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 
+        if (portfolio.accumulativeAmount == 0) {
+            return;
+        }
+
         uint256 pendingReborn = (portfolio.accumulativeAmount *
             pool.accRebornPerShare) /
             PERSHARE_BASE -
@@ -90,6 +94,10 @@ library PortalLib {
     ) external {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+
+        if (portfolio.accumulativeAmount == 0) {
+            return;
+        }
 
         uint256 pendingNative = (portfolio.accumulativeAmount *
             pool.accNativePerShare) /

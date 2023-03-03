@@ -17,9 +17,10 @@ contract RebornPortalReg is Test {
         bnbTest = vm.createFork(bnbTestRpcUrl);
         vm.selectFork(bnbTest);
         portal = RebornPortal(0xF6D95a75464B0C2C717407867eEF377ab1fe7046);
+    }
 
+    function mockUpgradeToDevVersion() public {
         RebornPortal newImpl = new RebornPortal();
-
         // mock upgrade to new one
         vm.prank(portal.owner());
         portal.upgradeTo(address(newImpl));
@@ -42,5 +43,21 @@ contract RebornPortalReg is Test {
         );
         vm.prank(0x679658Be03475D0A5393c70ea0E9A1158Dfae1Ff);
         portal.pendingDrop(arr);
+    }
+
+    function testClaimRebornDrop() public {
+        vm.rollFork(27708623);
+
+        mockUpgradeToDevVersion();
+
+        uint256[] memory arr = new uint256[](4);
+        (arr[0], arr[1], arr[2], arr[3]) = (
+            97000000000000000015,
+            97000000000000000011,
+            97000000000000000013,
+            97000000000000000010
+        );
+        vm.prank(0x679658Be03475D0A5393c70ea0E9A1158Dfae1Ff);
+        portal.claimRebornDrops(arr);
     }
 }
