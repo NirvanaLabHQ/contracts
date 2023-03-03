@@ -66,6 +66,14 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/bnbTest"],
       tags: ["test"],
     },
+    mumbai: {
+      url: process.env.POLYGON_MUMBAI_RPC_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/mumbai"],
+      tags: ["test"],
+    },
   },
   namedAccounts: {
     deployer: {
