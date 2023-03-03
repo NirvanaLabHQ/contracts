@@ -35,6 +35,8 @@ contract RebornPortalStorage is IRebornDefination {
 
     address public burnPool;
 
+    PortalLib.VrfConf internal _vrfConf;
+
     /// @dev gap for potential vairable
-    uint256[37] private _gap;
+    uint256[36] private _gap;
 }

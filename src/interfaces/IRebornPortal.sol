@@ -200,6 +200,11 @@ interface IRebornPortal is IRebornDefination {
     function setDropConf(PortalLib.AirdropConf calldata conf) external;
 
     /**
+     * @dev set new chainlink vrf v2 config
+     */
+    function setVrfConf(PortalLib.VrfConf calldata conf) external;
+
+    /**
      * @dev user claim many pools' native token airdrop
      * @param tokenIds pools' tokenId array to claim
      */

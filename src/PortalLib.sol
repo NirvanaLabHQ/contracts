@@ -48,9 +48,19 @@ library PortalLib {
         uint72 _rebornDropEthAmount; //    ---
     }
 
+    struct VrfConf {
+        bytes32 keyHash;
+        uint64 s_subscriptionId;
+        uint32 callbackGasLimit;
+        uint32 numWords;
+        uint16 requestConfirmations;
+    }
+
     event ClaimRebornDrop(uint256 indexed tokenId, uint256 rebornAmount);
     event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
     event NewDropConf(AirdropConf conf);
+    event NewVrfConf(VrfConf conf);
+
 
     function _claimPoolRebornDrop(
         uint256 tokenId,

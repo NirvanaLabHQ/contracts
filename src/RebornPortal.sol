@@ -7,6 +7,8 @@ import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import {VRFConsumerBaseV2Upgradeable} from "@chainlink/contracts/src/v0.8/dev/VRFConsumerBaseV2Upgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {IBurnPool} from "src/interfaces/IBurnPool.sol";
@@ -27,7 +29,8 @@ contract RebornPortal is
     ReentrancyGuardUpgradeable,
     PausableUpgradeable,
     AutomationCompatible,
-    RankUpgradeable
+    RankUpgradeable,
+    VRFConsumerBaseV2Upgradeable
 {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
@@ -35,13 +38,15 @@ contract RebornPortal is
         RBT rebornToken_,
         address owner_,
         string memory name_,
-        string memory symbol_
+        string memory symbol_,
+        address _vrfCoordinator
     ) public initializer {
         rebornToken = rebornToken_;
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
         __Pausable_init();
+        __VRFConsumerBaseV2_init(_vrfCoordinator);
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -244,6 +249,16 @@ contract RebornPortal is
     ) external override onlyOwner {
         _dropConf = conf;
         emit PortalLib.NewDropConf(conf);
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function setVrfConf(
+        PortalLib.VrfConf calldata conf
+    ) external override onlyOwner {
+        _vrfConf = conf;
+        emit PortalLib.NewVrfConf(conf);
     }
 
     /**
@@ -487,6 +502,11 @@ contract RebornPortal is
             _seasonData[_season].portfolios
         );
     }
+
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal override {}
 
     /**
      * @dev user claim a drop from a pool

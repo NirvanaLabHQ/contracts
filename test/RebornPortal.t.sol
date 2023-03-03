@@ -22,6 +22,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     address owner = vm.addr(2);
     address _user = vm.addr(10);
     address signer = vm.addr(11);
+    address _vrfCoordinator = vm.addr(12);
     // solhint-disable-next-line var-name-mixedcase
     bytes32 internal constant _PERMIT_TYPEHASH =
         keccak256(
@@ -67,7 +68,13 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
     function deployPortal() public returns (RebornPortal portal_) {
         portal_ = new RebornPortal();
-        portal_.initialize(rbt, owner, "Degen Tombstone", "RIP");
+        portal_.initialize(
+            rbt,
+            owner,
+            "Degen Tombstone",
+            "RIP",
+            _vrfCoordinator
+        );
     }
 
     function mintRBT(
