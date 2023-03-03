@@ -99,6 +99,9 @@ interface IRebornDefination {
 
     /// @dev revert when set ZeroAddress
     error ZeroAddressSet();
+
+    /// @dev revert if burnPool address not set when infuse
+    error NotSetBurnPoolAddress();
 }
 
 interface IRebornPortal is IRebornDefination {

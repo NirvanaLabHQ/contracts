@@ -303,9 +303,10 @@ contract RebornPortal is
 
     function _infuse(uint256 tokenId, uint256 amount) internal {
         // deposit $REBORN to burn pool
-        rebornToken.transferFrom(msg.sender, address(this), amount);
-        rebornToken.approve(burnPool, amount);
-        IBurnPool(burnPool).deposit(amount);
+        if (burnPool == address(0)) {
+            revert NotSetBurnPoolAddress();
+        }
+        rebornToken.transferFrom(msg.sender, burnPool, amount);
 
         _increasePool(tokenId, amount);
 
