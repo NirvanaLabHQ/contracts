@@ -5,7 +5,6 @@ import "test/RebornPortal.t.sol";
 
 import {PortalLib} from "src/PortalLib.sol";
 
-
 contract AirdropTest is RebornPortalTest {
     function testDropFuzz(address[] memory users) public {
         vm.assume(users.length > 100);
@@ -14,8 +13,8 @@ contract AirdropTest is RebornPortalTest {
             address user = users[i];
             uint256 amount = bound(
                 uint160(user),
-                1,
-                rbt.cap() - rbt.totalSupply()
+                0,
+                (rbt.cap() - rbt.totalSupply() - 1000000 ether) / 2
             );
             uint256 tokenId = uint160(user);
             // only EOA and not precompile address
@@ -64,8 +63,8 @@ contract AirdropTest is RebornPortalTest {
             address user = users[i];
             uint256 amount = bound(
                 uint160(user),
-                1,
-                rbt.cap() - rbt.totalSupply()
+                0,
+                (rbt.cap() - rbt.totalSupply()) / 2
             );
             uint256 tokenId = uint160(user);
             // only EOA and not precompile address
