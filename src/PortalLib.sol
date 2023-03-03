@@ -61,6 +61,10 @@ library PortalLib {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 
+        if (portfolio.accumulativeAmount == 0) {
+            return;
+        }
+
         uint256 pendingReborn = (portfolio.accumulativeAmount *
             pool.accRebornPerShare) /
             PERSHARE_BASE -
@@ -91,6 +95,10 @@ library PortalLib {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 
+        if (portfolio.accumulativeAmount == 0) {
+            return;
+        }
+
         uint256 pendingNative = (portfolio.accumulativeAmount *
             pool.accNativePerShare) /
             PERSHARE_BASE -
@@ -100,9 +108,6 @@ library PortalLib {
         // set current amount as debt
         portfolio.nativeRewardDebt =
             (portfolio.accumulativeAmount * pool.accNativePerShare) /
-            PERSHARE_BASE;
-        portfolio.rebornRewardDebt =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
             PERSHARE_BASE;
 
         // clean up reward as owner
@@ -127,6 +132,11 @@ library PortalLib {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 
+        // if no portfolio, no pending reward
+        if (portfolio.accumulativeAmount == 0) {
+            return (pendingNative, pendingReborn);
+        }
+
         pendingNative =
             (portfolio.accumulativeAmount * pool.accNativePerShare) /
             PERSHARE_BASE -
@@ -149,17 +159,28 @@ library PortalLib {
         bool dropNative = block.timestamp >
             _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval;
         if (dropNative) {
+            // set last drop timestamp to specific hour
+            _dropConf._nativeDropLastUpdate = uint40(
+                _toLastHour(block.timestamp)
+            );
+
             for (uint256 i = 0; i < 100; i++) {
                 uint256 tokenId = tokenIds[i];
-                // if tokenId is zero, continue
+                // if tokenId is zero , return
                 if (tokenId == 0) {
                     return;
                 }
+
                 Pool storage pool = pools[tokenId];
 
+                // if no one tribute, return
+                // as it's loof from high tvl to low tvl
+                if (pool.totalAmount == 0) {
+                    return;
+                }
+
                 uint256 dropAmount = (_dropConf._nativeDropRatio *
-                    address(this).balance *
-                    3) / 200;
+                    address(this).balance) / PortalLib.PERCENTAGE_BASE;
 
                 // 85% to pool
                 pool.accNativePerShare +=
@@ -172,10 +193,6 @@ library PortalLib {
                 Portfolio storage portfolio = portfolios[owner][tokenId];
                 portfolio.pendingOwernNativeReward += (dropAmount * 15) / 100;
             }
-            // set last drop timestamp to specific hour
-            _dropConf._nativeDropLastUpdate = uint40(
-                _toLastHour(block.timestamp)
-            );
         }
     }
 
@@ -188,6 +205,11 @@ library PortalLib {
         bool dropReborn = block.timestamp >
             _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval;
         if (dropReborn) {
+            // set last drop timestamp to specific hour
+            _dropConf._rebornDropLastUpdate = uint40(
+                _toLastHour(block.timestamp)
+            );
+
             for (uint256 i = 0; i < 100; i++) {
                 uint256 tokenId = tokenIds[i];
                 // if tokenId is zero, continue
@@ -195,6 +217,12 @@ library PortalLib {
                     return;
                 }
                 Pool storage pool = pools[tokenId];
+
+                // if no one tribute, continue
+                // as it's loof from high tvl to low tvl
+                if (pool.totalAmount == 0) {
+                    return;
+                }
 
                 uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
 
@@ -208,10 +236,6 @@ library PortalLib {
                 Portfolio storage portfolio = portfolios[owner][tokenId];
                 portfolio.pendingOwnerRebornReward += (dropAmount * 15) / 100;
             }
-            // set last drop timestamp to specific hour
-            _dropConf._rebornDropLastUpdate = uint40(
-                _toLastHour(block.timestamp)
-            );
         }
     }
 

@@ -27,14 +27,8 @@ const func: DeployFunction = async function ({
     },
     log: true,
   });
-  await deploy("PortalLib", { from: deployer, log: true });
-  await deploy("Renderer", {
-    from: deployer,
-    log: true,
-    libraries: { RenderEngine: (await get("RenderEngine")).address },
-  });
 };
 
-func.tags = ["PortalLib"];
+func.tags = ["RankingLib"];
 
 export default func;
