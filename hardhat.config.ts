@@ -74,19 +74,30 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/mumbai"],
       tags: ["test"],
     },
+    scrollAlpha: {
+      url: "https://alpha-rpc.scroll.io/l2",
+      accounts: accounts,
+      chainId: 534353,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/scrollAlpha"],
+      tags: ["test"],
+    },
   },
   namedAccounts: {
     deployer: {
-      default: 0,
       bnbTest: deployer,
       bnbTestStaging: deployer,
       bnbMain: deployer,
+      mumbai: deployer,
+      scrollAlpha: deployer,
     },
     owner: {
-      default: 0,
       bnbTest: owner,
       bnbTestStaging: owner,
       bnbMain: owner,
+      mumbai: owner,
+      scrollAlpha: owner,
     },
     degen_deployer: {
       bnbMain: degen_deployer,
@@ -117,7 +128,7 @@ const config: HardhatUserConfig = {
     apiKey: {
       bscTestnet: process.env.BNB_SCAN_API_KEY!,
       bsc: process.env.BNB_SCAN_API_KEY!,
-      polygonMumbai: process.env.POLYGON_SCAN_API_KEY!
+      polygonMumbai: process.env.POLYGON_SCAN_API_KEY!,
     },
   },
   external: {
