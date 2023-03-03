@@ -103,6 +103,7 @@ const config: HardhatUserConfig = {
       bnbMain: degen_deployer,
     },
   },
+
   paths: {
     sources: "./src", // Use ./src rather than ./contracts as Hardhat expects
     cache: "./cache_hardhat", // Use a different cache for Hardhat than Foundry
@@ -129,7 +130,18 @@ const config: HardhatUserConfig = {
       bscTestnet: process.env.BNB_SCAN_API_KEY!,
       bsc: process.env.BNB_SCAN_API_KEY!,
       polygonMumbai: process.env.POLYGON_SCAN_API_KEY!,
+      scrollAlpha: "scrollAlpha",
     },
+    customChains: [
+      {
+        network: "scrollAlpha",
+        chainId: 534353,
+        urls: {
+          apiURL: "https://blockscout.scroll.io/api",
+          browserURL: "https://blockscout.scroll.io",
+        },
+      },
+    ],
   },
   external: {
     contracts: [
