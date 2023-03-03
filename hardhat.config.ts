@@ -66,6 +66,14 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/bnbTest"],
       tags: ["test"],
     },
+    mumbai: {
+      url: process.env.POLYGON_MUMBAI_RPC_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/mumbai"],
+      tags: ["test"],
+    },
   },
   namedAccounts: {
     deployer: {
@@ -109,6 +117,7 @@ const config: HardhatUserConfig = {
     apiKey: {
       bscTestnet: process.env.BNB_SCAN_API_KEY!,
       bsc: process.env.BNB_SCAN_API_KEY!,
+      polygonMumbai: process.env.POLYGON_SCAN_API_KEY!
     },
   },
   external: {
