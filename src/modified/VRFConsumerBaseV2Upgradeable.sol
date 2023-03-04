@@ -106,7 +106,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  */
 abstract contract VRFConsumerBaseV2Upgradeable is Initializable {
     error OnlyCoordinatorCanFulfill(address have, address want);
-    error ZeroAddressSet();
+    error ZeroAddressCoordinatorSet();
     address internal vrfCoordinator;
 
     // See https://github.com/OpenZeppelin/openzeppelin-sdk/issues/37.
@@ -122,7 +122,7 @@ abstract contract VRFConsumerBaseV2Upgradeable is Initializable {
         address _vrfCoordinator
     ) internal onlyInitializing {
         if (_vrfCoordinator == address(0)) {
-            revert ZeroAddressSet();
+            revert ZeroAddressCoordinatorSet();
         }
 
         vrfCoordinator = _vrfCoordinator;
