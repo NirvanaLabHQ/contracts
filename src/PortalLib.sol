@@ -230,16 +230,16 @@ library PortalLib {
             uint256 dropAmount = (_dropConf._nativeDropRatio *
                 address(this).balance) / PortalLib.PERCENTAGE_BASE;
 
-            // 85% to pool
+            // 80% to pool
             pool.accNativePerShare +=
-                (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
+                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
                 PERCENTAGE_BASE /
                 pool.totalAmount;
 
-            // 15% to owner
+            // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = portfolios[owner][tokenId];
-            portfolio.pendingOwernNativeReward += (dropAmount * 15) / 100;
+            portfolio.pendingOwernNativeReward += (dropAmount * 1) / 5;
 
             emit DropNative(tokenId);
         }
@@ -268,15 +268,15 @@ library PortalLib {
 
             uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
 
-            // 85% to pool
+            // 80% to pool
             pool.accRebornPerShare +=
-                (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
+                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
                 pool.totalAmount;
 
-            // 15% to owner
+            // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = portfolios[owner][tokenId];
-            portfolio.pendingOwnerRebornReward += (dropAmount * 15) / 100;
+            portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
 
             emit DropNative(tokenId);
         }
