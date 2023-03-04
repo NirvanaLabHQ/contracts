@@ -50,7 +50,7 @@ jobs:
           contract: src/RebornPortal.sol:RebornPortal
           # settings below are optional, but allows to check whether the added storage slots are empty on the deployed contract
           rpcUrl: https://bsc-testnet.nodereal.io/v1/9385b24e71384bfcbb737c3c774b49bc # the RPC url to use to query the deployed contract's storage slots
-          address: "0xfEbdf06AC0A49Cd7f2F5126656C7067D6713616a" # the address at which the contract check is deployed
+          address: "0xF6D95a75464B0C2C717407867eEF377ab1fe7046" # the address at which the contract check is deployed
           failOnRemoval: true # fail the CI when removing storage slots (default: false)
 
       - name: Check storage layout
@@ -59,6 +59,6 @@ jobs:
           contract: src/RBT.sol:RBT
           # settings below are optional, but allows to check whether the added storage slots are empty on the deployed contract
           rpcUrl: https://bsc-testnet.nodereal.io/v1/9385b24e71384bfcbb737c3c774b49bc # the RPC url to use to query the deployed contract's storage slots
-          address: "0xfEbdf06AC0A49Cd7f2F5126656C7067D6713616a" # the address at which the contract check is deployed
+          address: "0xab56705951d88b87108f81e4b24f88648a328603" # the address at which the contract check is deployed
           failOnRemoval: true # fail the CI when removing storage slots (default: false)
 
