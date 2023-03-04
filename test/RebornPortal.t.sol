@@ -23,6 +23,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     address owner = vm.addr(2);
     address _user = vm.addr(10);
     address signer = vm.addr(11);
+    uint256 internal _seedIndex;
     // address on bnb testnet
     address internal _vrfCoordinator;
     // solhint-disable-next-line var-name-mixedcase
@@ -174,8 +175,43 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         vm.prank(signer);
         portal.engrave(seed, _user, reward, score, age, 1, "@ElonMusk");
+    }
 
-        // assertEq(portal.details[], b);
+    function mockEngrave() public returns (uint256 r) {
+        r = ++_seedIndex;
+        mintRBT(rbt, owner, address(portal.vault()), r);
+
+        vm.prank(signer);
+        portal.engrave(
+            keccak256(abi.encode(r)),
+            _user,
+            r,
+            r,
+            r,
+            r,
+            "@DegenReborn"
+        );
+    }
+
+    function mockEngraves(uint256 count) public {
+        for (uint i = 0; i < count; i++) {
+            mockEngrave();
+        }
+    }
+
+    function mockEngravesAndInfuses(uint256 count) public {
+        for (uint i = 0; i < count; i++) {
+            uint256 t = mockEngrave();
+            mockInfuse(_user, t, 1);
+        }
+    }
+
+    function testManyEngraves() public {
+        mockEngraves(120);
+    }
+
+    function testFuzzManyEngravesFuzz(uint256 count) public {
+        mockEngraves(count);
     }
 
     function testInfuseNumericalValue(uint256 amount) public {
@@ -210,6 +246,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     }
 
     function mockInfuse(address user, uint256 tokenId, uint256 amount) public {
+        mintRBT(rbt, owner, user, amount);
+
         vm.startPrank(user);
         rbt.approve(address(portal), amount);
         portal.infuse(tokenId, amount);

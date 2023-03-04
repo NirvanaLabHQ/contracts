@@ -220,7 +220,7 @@ contract RebornPortal is
         } else if (t == 3) {
             _fulfillDropReborn(id);
         } else if (t == 4) {
-            _fulfillDropReborn(id);
+            _fulfillDropNative(id);
         }
     }
 

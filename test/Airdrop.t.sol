@@ -25,6 +25,8 @@ contract AirdropTest is RebornPortalTest {
     }
 
     function testUpKeepProgressSmoothly() public {
+        mockEngravesAndInfuses(120);
+
         setDropConf();
         // set timestamp
         vm.warp(block.timestamp + 1 days);
@@ -56,12 +58,15 @@ contract AirdropTest is RebornPortalTest {
         vm.prank(_vrfCoordinator);
         portal.rawFulfillRandomWords(2, words);
 
-        // perform the random number with native drop
+        // perform the random number with reborn drop
         (up, perfromData) = portal.checkUpkeep(new bytes(0));
         assertEq(up, true);
+        vm.expectEmit(false, false, false, false);
+        emit PortalLib.DropNative(1);
+        emit PortalLib.DropReborn(1);
         portal.performUpkeep(perfromData);
 
-        // perform the random number with reborn drop
+        // perform the random number with native drop
         (up, perfromData) = portal.checkUpkeep(new bytes(0));
         assertEq(up, true);
         portal.performUpkeep(perfromData);
@@ -87,11 +92,7 @@ contract AirdropTest is RebornPortalTest {
             // only EOA and not precompile address
             vm.assume(user.code.length == 0 && tokenId > 20);
 
-            mintRBT(rbt, owner, users[i], amount);
-            vm.startPrank(users[i]);
-            rbt.approve(address(portal), amount);
-            portal.infuse(tokenId, amount);
-            vm.stopPrank();
+            mockInfuse(user, tokenId, amount);
         }
 
         // give native token to portal
@@ -114,13 +115,12 @@ contract AirdropTest is RebornPortalTest {
             // only EOA and not precompile address
             vm.assume(user.code.length == 0 && tokenId > 20);
 
-            mintRBT(rbt, owner, users[i], amount);
             vm.startPrank(users[i]);
             uint256[] memory ds = new uint256[](1);
             ds[0] = tokenId;
             portal.claimDrops(ds);
-            rbt.approve(address(portal), amount);
-            portal.infuse(tokenId, amount);
+            mockInfuse(user, tokenId, amount);
+
             vm.stopPrank();
         }
     }

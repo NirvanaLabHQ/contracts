@@ -69,6 +69,8 @@ library PortalLib {
         uint16 requestConfirmations;
     }
 
+    event DropNative(uint256 indexed tokenId);
+    event DropReborn(uint256 indexed tokenId);
     event ClaimRebornDrop(uint256 indexed tokenId, uint256 rebornAmount);
     event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
     event NewDropConf(AirdropConf conf);
@@ -210,7 +212,7 @@ library PortalLib {
         mapping(uint256 => Pool) storage pools,
         mapping(address => mapping(uint256 => Portfolio)) storage portfolios
     ) external {
-        for (uint256 i = 0; i < 100; i++) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             // if tokenId is zero , return
             if (tokenId == 0) {
@@ -238,6 +240,8 @@ library PortalLib {
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = portfolios[owner][tokenId];
             portfolio.pendingOwernNativeReward += (dropAmount * 15) / 100;
+
+            emit DropNative(tokenId);
         }
     }
 
@@ -247,8 +251,9 @@ library PortalLib {
         mapping(uint256 => Pool) storage pools,
         mapping(address => mapping(uint256 => Portfolio)) storage portfolios
     ) external {
-        for (uint256 i = 0; i < 100; i++) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
+
             // if tokenId is zero, continue
             if (tokenId == 0) {
                 return;
@@ -272,6 +277,8 @@ library PortalLib {
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = portfolios[owner][tokenId];
             portfolio.pendingOwnerRebornReward += (dropAmount * 15) / 100;
+
+            emit DropNative(tokenId);
         }
     }
 

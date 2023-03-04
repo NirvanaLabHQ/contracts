@@ -26,7 +26,7 @@ library DegenRank {
                 return;
             }
             // remove the smallest in the score rank
-            uint256 tokenIdWithMinmalScore = _scoreRank.get(99, 0)[0];
+            uint256 tokenIdWithMinmalScore = _scoreRank.get(99, 1)[0];
             _scoreRank.remove(tokenIdWithMinmalScore, minValue);
 
             // also remove it from tvl rank
