@@ -206,8 +206,9 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         }
     }
 
+    // for test engrave gas
     function testManyEngraves() public {
-        mockEngraves(120);
+        mockEngraves(500);
     }
 
     function testFuzzManyEngravesFuzz(uint256 count) public {
