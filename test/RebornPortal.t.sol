@@ -11,11 +11,14 @@ import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {EventDefination} from "src/test/EventDefination.sol";
 import {TestUtils} from "test/TestUtils.sol";
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {BurnPool} from "src/BurnPool.sol";
 
 contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     uint256 public constant SOUP_PRICE = 0.01 * 1 ether;
     RebornPortal portal;
     RBT rbt;
+    BurnPool burnPool;
     address owner = vm.addr(2);
     address _user = vm.addr(10);
     address signer = vm.addr(11);
@@ -43,6 +46,11 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         toAdd[0] = signer;
         address[] memory toRemove;
         portal.updateSigners(toAdd, toRemove);
+
+        // deploy burn pool
+        burnPool = new BurnPool(address(portal), address(rbt));
+        vm.prank(owner);
+        portal.setBurnPool(address(burnPool));
 
         // deploy vault
         RewardVault vault = new RewardVault(address(portal), address(rbt));
@@ -172,6 +180,21 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         assertEq(portal.getPool(1).totalAmount, amount);
         assertEq(portal.getPortfolio(_user, 1).accumulativeAmount, amount);
+    }
+
+    function testBurnPool(uint256 amount) public {
+        testInfuseNumericalValue(amount);
+        assertEq(
+            IERC20Upgradeable(address(rbt)).balanceOf(address(burnPool)),
+            amount
+        );
+
+        vm.prank(owner);
+        portal.burnFromBurnPool(amount);
+        assertEq(
+            IERC20Upgradeable(address(rbt)).balanceOf(address(burnPool)),
+            0
+        );
     }
 
     function mockInfuse(address user, uint256 tokenId, uint256 amount) public {

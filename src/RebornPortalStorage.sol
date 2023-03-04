@@ -33,6 +33,8 @@ contract RebornPortalStorage is IRebornDefination {
     // airdrop config
     PortalLib.AirdropConf internal _dropConf;
 
+    address public burnPool;
+
     /// @dev gap for potential vairable
-    uint256[38] private _gap;
+    uint256[37] private _gap;
 }

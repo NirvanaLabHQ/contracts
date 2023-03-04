@@ -9,6 +9,7 @@ import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/stru
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
+import {IBurnPool} from "src/interfaces/IBurnPool.sol";
 import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
@@ -260,6 +261,14 @@ contract RebornPortal is
     }
 
     /**
+     * @dev burn $REBORN from burn pool
+     * @param amount burn from burn pool
+     */
+    function burnFromBurnPool(uint256 amount) external onlyOwner {
+        IBurnPool(burnPool).burn(amount);
+    }
+
+    /**
      * @dev update signers
      * @param toAdd list of to be added signer
      * @param toRemove list of to be removed signer
@@ -295,6 +304,14 @@ contract RebornPortal is
             rewardFees.vaultRef1Fee = refL1Fee;
             rewardFees.vaultRef2Fee = refL2Fee;
         }
+    }
+
+    // set burnPool address for pre burn $REBORN
+    function setBurnPool(address burnPool_) external onlyOwner {
+        if (burnPool_ == address(0)) {
+            revert ZeroAddressSet();
+        }
+        burnPool = burnPool_;
     }
 
     /**
@@ -394,8 +411,11 @@ contract RebornPortal is
         if (amount == 0) {
             return;
         }
-        // burn reborn token from msg.sender
-        rebornToken.burnFrom(msg.sender, amount);
+        // deposit $REBORN to burn pool
+        if (burnPool == address(0)) {
+            revert NotSetBurnPoolAddress();
+        }
+        rebornToken.transferFrom(msg.sender, burnPool, amount);
 
         _increasePool(tokenId, amount);
 

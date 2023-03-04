@@ -107,6 +107,13 @@ interface IRebornDefination {
     error SameSeed();
     /// @dev revert when swith amount from pool exceed staked balance
     error SwitchAmountExceedBalance();
+
+    /// @dev revert when set ZeroAddress
+    error ZeroAddressSet();
+
+    /// @dev revert if burnPool address not set when infuse
+    error NotSetBurnPoolAddress();
+
     /// @dev revert when the drop is not on
     error DropOff();
 }
