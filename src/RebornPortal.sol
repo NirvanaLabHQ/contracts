@@ -8,7 +8,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import {VRFConsumerBaseV2Upgradeable} from "@chainlink/contracts/src/v0.8/dev/VRFConsumerBaseV2Upgradeable.sol";
+import {VRFConsumerBaseV2Upgradeable} from "src/modified/VRFConsumerBaseV2Upgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {IBurnPool} from "src/interfaces/IBurnPool.sol";
@@ -294,14 +294,7 @@ contract RebornPortal is
         address[] calldata toAdd,
         address[] calldata toRemove
     ) external onlyOwner {
-        for (uint256 i = 0; i < toAdd.length; i++) {
-            signers[toAdd[i]] = true;
-            emit SignerUpdate(toAdd[i], true);
-        }
-        for (uint256 i = 0; i < toRemove.length; i++) {
-            delete signers[toRemove[i]];
-            emit SignerUpdate(toRemove[i], false);
-        }
+        PortalLib._updateSigners(signers, toAdd, toRemove);
     }
 
     /**
@@ -312,12 +305,12 @@ contract RebornPortal is
     function setReferrerRewardFee(
         uint16 refL1Fee,
         uint16 refL2Fee,
-        RewardType rewardType
+        PortalLib.RewardType rewardType
     ) external onlyOwner {
-        if (rewardType == RewardType.NativeToken) {
+        if (rewardType == PortalLib.RewardType.NativeToken) {
             rewardFees.incarnateRef1Fee = refL1Fee;
             rewardFees.incarnateRef2Fee = refL2Fee;
-        } else if (rewardType == RewardType.RebornToken) {
+        } else if (rewardType == PortalLib.RewardType.RebornToken) {
             rewardFees.vaultRef1Fee = refL1Fee;
             rewardFees.vaultRef2Fee = refL2Fee;
         }
@@ -534,7 +527,11 @@ contract RebornPortal is
             uint256 ref1Reward,
             address ref2,
             uint256 ref2Reward
-        ) = calculateReferReward(account, amount, RewardType.RebornToken);
+        ) = calculateReferReward(
+                account,
+                amount,
+                PortalLib.RewardType.RebornToken
+            );
 
         if (ref1Reward > 0) {
             vault.reward(ref1, ref1Reward);
@@ -550,7 +547,7 @@ contract RebornPortal is
             ref1Reward,
             ref2,
             ref2Reward,
-            RewardType.RebornToken
+            PortalLib.RewardType.RebornToken
         );
     }
 
@@ -563,7 +560,11 @@ contract RebornPortal is
             uint256 ref1Reward,
             address ref2,
             uint256 ref2Reward
-        ) = calculateReferReward(account, amount, RewardType.NativeToken);
+        ) = calculateReferReward(
+                account,
+                amount,
+                PortalLib.RewardType.NativeToken
+            );
 
         if (ref1Reward > 0) {
             payable(ref1).transfer(ref1Reward);
@@ -579,7 +580,7 @@ contract RebornPortal is
             ref1Reward,
             ref2,
             ref2Reward,
-            RewardType.NativeToken
+            PortalLib.RewardType.NativeToken
         );
     }
 
@@ -638,7 +639,7 @@ contract RebornPortal is
     function calculateReferReward(
         address account,
         uint256 amount,
-        RewardType rewardType
+        PortalLib.RewardType rewardType
     )
         public
         view
@@ -649,30 +650,14 @@ contract RebornPortal is
             uint256 ref2Reward
         )
     {
-        ref1 = referrals[account];
-        ref2 = referrals[ref1];
-
-        if (rewardType == RewardType.NativeToken) {
-            ref1Reward = ref1 == address(0)
-                ? 0
-                : (amount * rewardFees.incarnateRef1Fee) /
-                    PortalLib.PERCENTAGE_BASE;
-            ref2Reward = ref2 == address(0)
-                ? 0
-                : (amount * rewardFees.incarnateRef2Fee) /
-                    PortalLib.PERCENTAGE_BASE;
-        }
-
-        if (rewardType == RewardType.RebornToken) {
-            ref1Reward = ref1 == address(0)
-                ? 0
-                : (amount * rewardFees.vaultRef1Fee) /
-                    PortalLib.PERCENTAGE_BASE;
-            ref2Reward = ref2 == address(0)
-                ? 0
-                : (amount * rewardFees.vaultRef2Fee) /
-                    PortalLib.PERCENTAGE_BASE;
-        }
+        return
+            PortalLib._calculateReferReward(
+                referrals,
+                rewardFees,
+                account,
+                amount,
+                rewardType
+            );
     }
 
     /**

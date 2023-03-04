@@ -9,6 +9,19 @@ library PortalLib {
     // percentage base of refer reward fees
     uint256 public constant PERCENTAGE_BASE = 10000;
 
+    enum RewardType {
+        NativeToken,
+        RebornToken
+    }
+
+    struct ReferrerRewardFees {
+        uint16 incarnateRef1Fee;
+        uint16 incarnateRef2Fee;
+        uint16 vaultRef1Fee;
+        uint16 vaultRef2Fee;
+        uint192 _slotPlaceholder;
+    }
+
     struct Pool {
         uint256 totalAmount;
         uint256 accRebornPerShare;
@@ -60,7 +73,7 @@ library PortalLib {
     event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
     event NewDropConf(AirdropConf conf);
     event NewVrfConf(VrfConf conf);
-
+    event SignerUpdate(address signer, bool valid);
 
     function _claimPoolRebornDrop(
         uint256 tokenId,
@@ -251,5 +264,74 @@ library PortalLib {
 
     function _toLastHour(uint256 timestamp) internal pure returns (uint256) {
         return timestamp - (timestamp % (1 hours));
+    }
+
+    /**
+     * @dev update signers
+     * @param toAdd list of to be added signer
+     * @param toRemove list of to be removed signer
+     */
+    function _updateSigners(
+        mapping(address => bool) storage signers,
+        address[] calldata toAdd,
+        address[] calldata toRemove
+    ) public {
+        for (uint256 i = 0; i < toAdd.length; i++) {
+            signers[toAdd[i]] = true;
+            emit SignerUpdate(toAdd[i], true);
+        }
+        for (uint256 i = 0; i < toRemove.length; i++) {
+            delete signers[toRemove[i]];
+            emit SignerUpdate(toRemove[i], false);
+        }
+    }
+
+    /**
+     * @dev returns referrer and referer reward
+     * @return ref1  level1 of referrer. direct referrer
+     * @return ref1Reward  level 1 referrer reward
+     * @return ref2  level2 of referrer. referrer's referrer
+     * @return ref2Reward  level 2 referrer reward
+     */
+    function _calculateReferReward(
+        mapping(address => address) storage referrals,
+        ReferrerRewardFees storage rewardFees,
+        address account,
+        uint256 amount,
+        RewardType rewardType
+    )
+        public
+        view
+        returns (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        )
+    {
+        ref1 = referrals[account];
+        ref2 = referrals[ref1];
+
+        if (rewardType == RewardType.NativeToken) {
+            ref1Reward = ref1 == address(0)
+                ? 0
+                : (amount * rewardFees.incarnateRef1Fee) /
+                    PortalLib.PERCENTAGE_BASE;
+            ref2Reward = ref2 == address(0)
+                ? 0
+                : (amount * rewardFees.incarnateRef2Fee) /
+                    PortalLib.PERCENTAGE_BASE;
+        }
+
+        if (rewardType == RewardType.RebornToken) {
+            ref1Reward = ref1 == address(0)
+                ? 0
+                : (amount * rewardFees.vaultRef1Fee) /
+                    PortalLib.PERCENTAGE_BASE;
+            ref2Reward = ref2 == address(0)
+                ? 0
+                : (amount * rewardFees.vaultRef2Fee) /
+                    PortalLib.PERCENTAGE_BASE;
+        }
     }
 }

@@ -318,7 +318,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         address ref2 = vm.addr(21);
 
         vm.prank(owner);
-        portal.setReferrerRewardFee(800, 200, RewardType.NativeToken);
+        portal.setReferrerRewardFee(800, 200, PortalLib.RewardType.NativeToken);
 
         // refer ref2->ref1
         hoax(ref1);
@@ -360,7 +360,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
             ref1Reward,
             ref2,
             ref2Reward,
-            RewardType.NativeToken
+            PortalLib.RewardType.NativeToken
         );
         payable(address(portal)).call{value: amount}(
             abi.encodeWithSignature(

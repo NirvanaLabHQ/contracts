@@ -6,11 +6,7 @@ import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 interface IRebornDefination {
-    enum RewardType {
-        NativeToken,
-        RebornToken
-    }
-
+  
     struct Innate {
         uint256 talentPrice;
         uint256 propertyPrice;
@@ -28,13 +24,6 @@ interface IRebornDefination {
         string creatorName;
     }
 
-    struct ReferrerRewardFees {
-        uint16 incarnateRef1Fee;
-        uint16 incarnateRef2Fee;
-        uint16 vaultRef1Fee;
-        uint16 vaultRef2Fee;
-        uint192 _slotPlaceholder;
-    }
 
     struct SeasonData {
         mapping(uint256 => PortalLib.Pool) pools;
@@ -68,7 +57,7 @@ interface IRebornDefination {
         uint256 amount1,
         address indexed ref2,
         uint256 amount2,
-        RewardType rewardType
+        PortalLib.RewardType rewardType
     );
 
     event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
@@ -78,8 +67,6 @@ interface IRebornDefination {
     event Baptise(address indexed user, uint256 amount);
 
     event NewSoupPrice(uint256 price);
-
-    event SignerUpdate(address signer, bool valid);
 
     event Refer(address referee, address referrer);
 

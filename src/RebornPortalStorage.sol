@@ -24,7 +24,7 @@ contract RebornPortalStorage is IRebornDefination {
     mapping(uint256 => SeasonData) internal _seasonData;
 
     mapping(address => address) public referrals;
-    ReferrerRewardFees public rewardFees;
+    PortalLib.ReferrerRewardFees public rewardFees;
 
     RewardVault public vault;
 
