@@ -83,6 +83,9 @@ library PortalLib {
         PortalLib.RewardType rewardType
     );
 
+    /// @dev invliad chainlink vrf request id
+    error InvalidRequestId(uint256);
+
     function _claimPoolRebornDrop(
         uint256 tokenId,
         RewardVault vault,
@@ -201,92 +204,74 @@ library PortalLib {
         }
     }
 
-    function _dropNativeTokenIds(
+    function _directDropNativeTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
         mapping(uint256 => Pool) storage pools,
         mapping(address => mapping(uint256 => Portfolio)) storage portfolios
     ) external {
-        bool dropNative = block.timestamp >
-            _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval;
-        if (dropNative) {
-            // set last drop timestamp to specific hour
-            _dropConf._nativeDropLastUpdate = uint40(
-                _toLastHour(block.timestamp)
-            );
-
-            for (uint256 i = 0; i < 100; i++) {
-                uint256 tokenId = tokenIds[i];
-                // if tokenId is zero , return
-                if (tokenId == 0) {
-                    return;
-                }
-
-                Pool storage pool = pools[tokenId];
-
-                // if no one tribute, return
-                // as it's loof from high tvl to low tvl
-                if (pool.totalAmount == 0) {
-                    return;
-                }
-
-                uint256 dropAmount = (_dropConf._nativeDropRatio *
-                    address(this).balance) / PortalLib.PERCENTAGE_BASE;
-
-                // 85% to pool
-                pool.accNativePerShare +=
-                    (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
-                    PERCENTAGE_BASE /
-                    pool.totalAmount;
-
-                // 15% to owner
-                address owner = IERC721(address(this)).ownerOf(tokenId);
-                Portfolio storage portfolio = portfolios[owner][tokenId];
-                portfolio.pendingOwernNativeReward += (dropAmount * 15) / 100;
+        for (uint256 i = 0; i < 100; i++) {
+            uint256 tokenId = tokenIds[i];
+            // if tokenId is zero , return
+            if (tokenId == 0) {
+                return;
             }
+
+            Pool storage pool = pools[tokenId];
+
+            // if no one tribute, return
+            // as it's loof from high tvl to low tvl
+            if (pool.totalAmount == 0) {
+                return;
+            }
+
+            uint256 dropAmount = (_dropConf._nativeDropRatio *
+                address(this).balance) / PortalLib.PERCENTAGE_BASE;
+
+            // 85% to pool
+            pool.accNativePerShare +=
+                (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
+                PERCENTAGE_BASE /
+                pool.totalAmount;
+
+            // 15% to owner
+            address owner = IERC721(address(this)).ownerOf(tokenId);
+            Portfolio storage portfolio = portfolios[owner][tokenId];
+            portfolio.pendingOwernNativeReward += (dropAmount * 15) / 100;
         }
     }
 
-    function _dropRebornTokenIds(
+    function _directDropRebornTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
         mapping(uint256 => Pool) storage pools,
         mapping(address => mapping(uint256 => Portfolio)) storage portfolios
     ) external {
-        bool dropReborn = block.timestamp >
-            _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval;
-        if (dropReborn) {
-            // set last drop timestamp to specific hour
-            _dropConf._rebornDropLastUpdate = uint40(
-                _toLastHour(block.timestamp)
-            );
-
-            for (uint256 i = 0; i < 100; i++) {
-                uint256 tokenId = tokenIds[i];
-                // if tokenId is zero, continue
-                if (tokenId == 0) {
-                    return;
-                }
-                Pool storage pool = pools[tokenId];
-
-                // if no one tribute, continue
-                // as it's loof from high tvl to low tvl
-                if (pool.totalAmount == 0) {
-                    return;
-                }
-
-                uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
-
-                // 85% to pool
-                pool.accRebornPerShare +=
-                    (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
-                    pool.totalAmount;
-
-                // 15% to owner
-                address owner = IERC721(address(this)).ownerOf(tokenId);
-                Portfolio storage portfolio = portfolios[owner][tokenId];
-                portfolio.pendingOwnerRebornReward += (dropAmount * 15) / 100;
+        for (uint256 i = 0; i < 100; i++) {
+            uint256 tokenId = tokenIds[i];
+            // if tokenId is zero, continue
+            if (tokenId == 0) {
+                return;
             }
+            Pool storage pool = pools[tokenId];
+
+            // if no one tribute, continue
+            // as it's loof from high tvl to low tvl
+            if (pool.totalAmount == 0) {
+                return;
+            }
+
+            uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
+
+            // 85% to pool
+            pool.accRebornPerShare +=
+                (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
+                pool.totalAmount;
+
+            // 15% to owner
+            address owner = IERC721(address(this)).ownerOf(tokenId);
+            Portfolio storage portfolio = portfolios[owner][tokenId];
+            portfolio.pendingOwnerRebornReward += (dropAmount * 15) / 100;
         }
     }
 

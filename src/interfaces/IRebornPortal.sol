@@ -6,7 +6,6 @@ import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 interface IRebornDefination {
-  
     struct Innate {
         uint256 talentPrice;
         uint256 propertyPrice;
@@ -24,7 +23,6 @@ interface IRebornDefination {
         string creatorName;
     }
 
-
     struct SeasonData {
         mapping(uint256 => PortalLib.Pool) pools;
         /// @dev user address => pool tokenId => Portfolio
@@ -34,6 +32,20 @@ interface IRebornDefination {
         mapping(uint256 => uint256) _oldStakeAmounts;
         /// tokenId => bool
         BitMapsUpgradeable.BitMap _isTopHundredScore;
+    }
+
+    enum AirdropVrfType {
+        Invalid,
+        DropReborn,
+        DropNative
+    }
+
+    struct RequestStatus {
+        bool fulfilled; // whether the request has been successfully fulfilled
+        bool exists; // whether a requestId exists
+        bool executed; // whether the airdrop is executed
+        AirdropVrfType t;
+        uint256[] randomWords;
     }
 
     event Incarnate(
@@ -50,7 +62,6 @@ interface IRebornDefination {
         uint256 score,
         uint256 reward
     );
-
 
     event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
 

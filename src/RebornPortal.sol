@@ -19,6 +19,7 @@ import {RankUpgradeable} from "src/RankUpgradeable.sol";
 import {Renderer} from "src/lib/Renderder.sol";
 
 import {PortalLib} from "src/PortalLib.sol";
+import {FastArray} from "src/lib/FastArray.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -33,6 +34,7 @@ contract RebornPortal is
     VRFConsumerBaseV2Upgradeable
 {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
+    using FastArray for FastArray.Data;
 
     function initialize(
         RBT rebornToken_,
@@ -210,11 +212,15 @@ contract RebornPortal is
     function performUpkeep(
         bytes calldata performData
     ) external override whenNotPaused {
-        uint256 t = abi.decode(performData, (uint256));
+        (uint256 t, uint256 id) = abi.decode(performData, (uint256, uint256));
         if (t == 1) {
-            _dropReborn();
+            _requestDropReborn();
         } else if (t == 2) {
-            _dropNative();
+            _requestDropNative();
+        } else if (t == 3) {
+            _fulfillDropReborn(id);
+        } else if (t == 4) {
+            _fulfillDropReborn(id);
         }
     }
 
@@ -358,18 +364,32 @@ contract RebornPortal is
         returns (bool upkeepNeeded, bytes memory performData)
     {
         if (_dropConf._dropOn == 1) {
+            // first, check whether airdrop is ready and send vrf request
             if (
                 block.timestamp >
                 _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval
             ) {
                 upkeepNeeded = true;
-                performData = abi.encode(1);
+                performData = abi.encode(1, 0);
+                return (upkeepNeeded, performData);
             } else if (
                 block.timestamp >
                 _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval
             ) {
                 upkeepNeeded = true;
-                performData = abi.encode(2);
+                performData = abi.encode(2, 0);
+                return (upkeepNeeded, performData);
+            }
+            // second, check to pending drop and execute
+            for (uint256 i = 0; i < FastArray.length(_pendingDrops); ) {
+                uint256 id = _pendingDrops.get(i);
+                upkeepNeeded = true;
+                if (_vrfRequests[id].t == AirdropVrfType.DropReborn) {
+                    performData = abi.encode(3, id);
+                } else if (_vrfRequests[id].t == AirdropVrfType.DropNative) {
+                    performData = abi.encode(4, id);
+                }
+                return (upkeepNeeded, performData);
             }
         }
     }
@@ -468,34 +488,125 @@ contract RebornPortal is
 
     /**
      * @dev airdrop to top 100 tvl pool
+     * @dev directly drop to top 10
+     * @dev raffle 10 from top 11 - top 100
      */
-    function _dropReborn() internal onlyDropOn {
-        uint256[] memory tokenIds = _getTopNTokenId(100);
-        PortalLib._dropRebornTokenIds(
-            tokenIds,
+    function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
+        uint256[] memory topTens = _getTopNTokenId(10);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(90, 10);
+        PortalLib._directDropRebornTokenIds(
+            topTens,
             _dropConf,
             _seasonData[_season].pools,
             _seasonData[_season].portfolios
         );
+
+        uint256[] memory selectedTokenIds = new uint256[](10);
+
+        RequestStatus memory rs = _vrfRequests[requestId];
+
+        for (uint256 i = 0; i < rs.randomWords.length; i++) {
+            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+        }
+
+        PortalLib._directDropRebornTokenIds(
+            topTens,
+            _dropConf,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
+
+        _pendingDrops.remove(requestId);
     }
 
     /**
      * @dev airdrop to top 100 tvl pool
+     * @dev directly drop to top 10
+     * @dev raffle 10 from top 11 - top 100
      */
-    function _dropNative() internal onlyDropOn {
-        uint256[] memory tokenIds = _getTopNTokenId(100);
-        PortalLib._dropNativeTokenIds(
-            tokenIds,
+    function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
+        uint256[] memory topTens = _getTopNTokenId(10);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(90, 10);
+
+        PortalLib._directDropNativeTokenIds(
+            topTens,
             _dropConf,
             _seasonData[_season].pools,
             _seasonData[_season].portfolios
         );
+
+        uint256[] memory selectedTokenIds = new uint256[](10);
+
+        RequestStatus memory rs = _vrfRequests[requestId];
+
+        for (uint256 i = 0; i < rs.randomWords.length; i++) {
+            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+        }
+
+        PortalLib._directDropNativeTokenIds(
+            topTens,
+            _dropConf,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
+
+        _pendingDrops.remove(requestId);
+    }
+
+    function _requestDropReborn() internal onlyDropOn {
+        // update last drop timestamp to specific hour
+        _dropConf._rebornDropLastUpdate = uint40(
+            PortalLib._toLastHour(block.timestamp)
+        );
+
+        // raffle
+        uint256 requestId = VRFCoordinatorV2Interface(vrfCoordinator)
+            .requestRandomWords(
+                _vrfConf.keyHash,
+                _vrfConf.s_subscriptionId,
+                _vrfConf.requestConfirmations,
+                _vrfConf.callbackGasLimit,
+                _vrfConf.numWords
+            );
+
+        _vrfRequests[requestId].exists = true;
+        _vrfRequests[requestId].t = AirdropVrfType.DropReborn;
+    }
+
+    function _requestDropNative() internal onlyDropOn {
+        // update last drop timestamp to specific hour
+        _dropConf._nativeDropLastUpdate = uint40(
+            PortalLib._toLastHour(block.timestamp)
+        );
+
+        // raffle
+        uint256 requestId = VRFCoordinatorV2Interface(vrfCoordinator)
+            .requestRandomWords(
+                _vrfConf.keyHash,
+                _vrfConf.s_subscriptionId,
+                _vrfConf.requestConfirmations,
+                _vrfConf.callbackGasLimit,
+                _vrfConf.numWords
+            );
+
+        _vrfRequests[requestId].exists = true;
+        _vrfRequests[requestId].t = AirdropVrfType.DropNative;
     }
 
     function fulfillRandomWords(
         uint256 requestId,
         uint256[] memory randomWords
-    ) internal override {}
+    ) internal override {
+        if (
+            _vrfRequests[requestId].fulfilled || !_vrfRequests[requestId].exists
+        ) {
+            revert PortalLib.InvalidRequestId(requestId);
+        }
+
+        _vrfRequests[requestId].randomWords = randomWords;
+
+        _pendingDrops.insert(requestId);
+    }
 
     /**
      * @dev user claim a drop from a pool

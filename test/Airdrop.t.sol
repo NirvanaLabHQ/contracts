@@ -5,9 +5,76 @@ import "test/RebornPortal.t.sol";
 
 import {PortalLib} from "src/PortalLib.sol";
 
+import "forge-std/console.sol";
+
 contract AirdropTest is RebornPortalTest {
+    function setDropConf() public {
+        // set drop conf
+        vm.prank(owner);
+        portal.setDropConf(
+            PortalLib.AirdropConf(
+                1,
+                1 hours,
+                3 hours,
+                uint40(block.timestamp),
+                uint40(block.timestamp),
+                300,
+                1000
+            )
+        );
+    }
+
+    function testUpKeepProgressSmoothly() public {
+        setDropConf();
+        // set timestamp
+        vm.warp(block.timestamp + 1 days);
+
+        bool up;
+        bytes memory perfromData;
+
+        // request reborn token
+        (up, perfromData) = portal.checkUpkeep(new bytes(0));
+        assertEq(up, true);
+        portal.performUpkeep(perfromData);
+
+        // request drop native
+        (up, perfromData) = portal.checkUpkeep(new bytes(0));
+        assertEq(up, true);
+        portal.performUpkeep(perfromData);
+
+        (up, perfromData) = portal.checkUpkeep(new bytes(0));
+        assertEq(up, false);
+
+        uint256[] memory words;
+        // fulfill random number of the reborn request;
+        words = new uint256[](10);
+        vm.prank(_vrfCoordinator);
+        portal.rawFulfillRandomWords(1, words);
+
+        // fulfill random number of the native request;
+        words = new uint256[](10);
+        vm.prank(_vrfCoordinator);
+        portal.rawFulfillRandomWords(2, words);
+
+        // perform the random number with native drop
+        (up, perfromData) = portal.checkUpkeep(new bytes(0));
+        assertEq(up, true);
+        portal.performUpkeep(perfromData);
+
+        // perform the random number with reborn drop
+        (up, perfromData) = portal.checkUpkeep(new bytes(0));
+        assertEq(up, true);
+        portal.performUpkeep(perfromData);
+
+        // after all perform, upKeep should be false
+        (up, perfromData) = portal.checkUpkeep(new bytes(0));
+        assertEq(up, false);
+    }
+
     function testDropFuzz(address[] memory users) public {
+        setDropConf();
         vm.assume(users.length > 100);
+
         // mock infuse
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
@@ -27,33 +94,10 @@ contract AirdropTest is RebornPortalTest {
             vm.stopPrank();
         }
 
-        // set drop conf
-        vm.prank(owner);
-        portal.setDropConf(
-            PortalLib.AirdropConf(
-                1,
-                1 hours,
-                3 hours,
-                uint40(block.timestamp),
-                uint40(block.timestamp),
-                300,
-                1000
-            )
-        );
-
-        // set timestamp
-        vm.warp(block.timestamp + 1 days);
-
-        (bool up, ) = portal.checkUpkeep(new bytes(0));
-        assertEq(up, true);
-
         // give native token to portal
         vm.deal(address(portal), 10 ** 18 * 1 ether);
 
-        // drop reborn token
-        portal.performUpkeep(abi.encode(1));
-        // drop native token
-        portal.performUpkeep(abi.encode(2));
+        testUpKeepProgressSmoothly();
 
         // mint reward to reward vault
         mintRBT(rbt, owner, address(portal.vault()), 1000000 ether);

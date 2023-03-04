@@ -13,6 +13,7 @@ import {TestUtils} from "test/TestUtils.sol";
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {BurnPool} from "src/BurnPool.sol";
+import {VRFCoordinatorV2Mock} from "src/mock/VRFCoordinatorV2Mock.sol";
 
 contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     uint256 public constant SOUP_PRICE = 0.01 * 1 ether;
@@ -22,7 +23,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     address owner = vm.addr(2);
     address _user = vm.addr(10);
     address signer = vm.addr(11);
-    address _vrfCoordinator = vm.addr(12);
+    // address on bnb testnet
+    address internal _vrfCoordinator;
     // solhint-disable-next-line var-name-mixedcase
     bytes32 internal constant _PERMIT_TYPEHASH =
         keccak256(
@@ -33,12 +35,15 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
         );
 
-    function setUp() public {
+    function setUp() public virtual {
         // ignore effect of chainId to tokenId
         vm.chainId(0);
 
         rbt = TestUtils.deployRBT(owner);
         mintRBT(rbt, owner, _user, 100000 ether);
+
+        // deploy vrf coordinator
+        _vrfCoordinator = address(new VRFCoordinatorV2Mock());
 
         // deploy portal
         portal = deployPortal();
