@@ -354,7 +354,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         uint256 amount
     ) public {
         vm.expectEmit(true, true, true, true);
-        emit ReferReward(
+        emit PortalLib.ReferReward(
             account,
             ref1,
             ref1Reward,

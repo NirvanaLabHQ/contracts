@@ -307,13 +307,12 @@ contract RebornPortal is
         uint16 refL2Fee,
         PortalLib.RewardType rewardType
     ) external onlyOwner {
-        if (rewardType == PortalLib.RewardType.NativeToken) {
-            rewardFees.incarnateRef1Fee = refL1Fee;
-            rewardFees.incarnateRef2Fee = refL2Fee;
-        } else if (rewardType == PortalLib.RewardType.RebornToken) {
-            rewardFees.vaultRef1Fee = refL1Fee;
-            rewardFees.vaultRef2Fee = refL2Fee;
-        }
+        PortalLib._setReferrerRewardFee(
+            rewardFees,
+            refL1Fee,
+            refL2Fee,
+            rewardType
+        );
     }
 
     // set burnPool address for pre burn $REBORN
@@ -339,15 +338,12 @@ contract RebornPortal is
     function pendingDrop(
         uint256[] memory tokenIds
     ) external view returns (uint256 pNative, uint256 pReborn) {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            (uint256 n, uint256 r) = PortalLib._calculatePoolDrop(
-                tokenIds[i],
+        return
+            PortalLib._pendingDrop(
                 _seasonData[_season].pools,
-                _seasonData[_season].portfolios
+                _seasonData[_season].portfolios,
+                tokenIds
             );
-            pNative += n;
-            pReborn += r;
-        }
     }
 
     /**
@@ -522,32 +518,12 @@ contract RebornPortal is
      * @dev vault $REBORN token to referrers
      */
     function _vaultRewardToRefs(address account, uint256 amount) internal {
-        (
-            address ref1,
-            uint256 ref1Reward,
-            address ref2,
-            uint256 ref2Reward
-        ) = calculateReferReward(
-                account,
-                amount,
-                PortalLib.RewardType.RebornToken
-            );
-
-        if (ref1Reward > 0) {
-            vault.reward(ref1, ref1Reward);
-        }
-
-        if (ref2Reward > 0) {
-            vault.reward(ref2, ref2Reward);
-        }
-
-        emit ReferReward(
+        PortalLib._vaultRewardToRefs(
+            referrals,
+            rewardFees,
+            vault,
             account,
-            ref1,
-            ref1Reward,
-            ref2,
-            ref2Reward,
-            PortalLib.RewardType.RebornToken
+            amount
         );
     }
 
@@ -555,33 +531,7 @@ contract RebornPortal is
      * @dev send NativeToken to referrers
      */
     function _sendRewardToRefs(address account, uint256 amount) internal {
-        (
-            address ref1,
-            uint256 ref1Reward,
-            address ref2,
-            uint256 ref2Reward
-        ) = calculateReferReward(
-                account,
-                amount,
-                PortalLib.RewardType.NativeToken
-            );
-
-        if (ref1Reward > 0) {
-            payable(ref1).transfer(ref1Reward);
-        }
-
-        if (ref2Reward > 0) {
-            payable(ref2).transfer(ref2Reward);
-        }
-
-        emit ReferReward(
-            account,
-            ref1,
-            ref1Reward,
-            ref2,
-            ref2Reward,
-            PortalLib.RewardType.NativeToken
-        );
+        PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
     }
 
     /**

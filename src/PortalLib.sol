@@ -74,6 +74,14 @@ library PortalLib {
     event NewDropConf(AirdropConf conf);
     event NewVrfConf(VrfConf conf);
     event SignerUpdate(address signer, bool valid);
+    event ReferReward(
+        address indexed user,
+        address indexed ref1,
+        uint256 amount1,
+        address indexed ref2,
+        uint256 amount2,
+        PortalLib.RewardType rewardType
+    );
 
     function _claimPoolRebornDrop(
         uint256 tokenId,
@@ -151,7 +159,7 @@ library PortalLib {
         uint256 tokenId,
         mapping(uint256 => Pool) storage pools,
         mapping(address => mapping(uint256 => Portfolio)) storage portfolios
-    ) external view returns (uint256 pendingNative, uint256 pendingReborn) {
+    ) public view returns (uint256 pendingNative, uint256 pendingReborn) {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 
@@ -171,6 +179,26 @@ library PortalLib {
             PERSHARE_BASE -
             portfolio.rebornRewardDebt +
             portfolio.pendingOwnerRebornReward;
+    }
+
+    /**
+     * @dev read pending reward from specific pool
+     * @param tokenIds tokenId array of the pools
+     */
+    function _pendingDrop(
+        mapping(uint256 => Pool) storage pools,
+        mapping(address => mapping(uint256 => Portfolio)) storage portfolios,
+        uint256[] memory tokenIds
+    ) external view returns (uint256 pNative, uint256 pReborn) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            (uint256 n, uint256 r) = _calculatePoolDrop(
+                tokenIds[i],
+                pools,
+                portfolios
+            );
+            pNative += n;
+            pReborn += r;
+        }
     }
 
     function _dropNativeTokenIds(
@@ -333,5 +361,106 @@ library PortalLib {
                 : (amount * rewardFees.vaultRef2Fee) /
                     PortalLib.PERCENTAGE_BASE;
         }
+    }
+
+    /**
+     * @notice mul 100 when set. eg: 8% -> 800 18%-> 1800
+     * @dev set percentage of referrer reward
+     * @param rewardType 0: incarnate reward 1: engrave reward
+     */
+    function _setReferrerRewardFee(
+        ReferrerRewardFees storage rewardFees,
+        uint16 refL1Fee,
+        uint16 refL2Fee,
+        PortalLib.RewardType rewardType
+    ) external {
+        if (rewardType == PortalLib.RewardType.NativeToken) {
+            rewardFees.incarnateRef1Fee = refL1Fee;
+            rewardFees.incarnateRef2Fee = refL2Fee;
+        } else if (rewardType == PortalLib.RewardType.RebornToken) {
+            rewardFees.vaultRef1Fee = refL1Fee;
+            rewardFees.vaultRef2Fee = refL2Fee;
+        }
+    }
+
+    /**
+     * @dev send NativeToken to referrers
+     */
+    function _sendRewardToRefs(
+        mapping(address => address) storage referrals,
+        ReferrerRewardFees storage rewardFees,
+        address account,
+        uint256 amount
+    ) public {
+        (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        ) = _calculateReferReward(
+                referrals,
+                rewardFees,
+                account,
+                amount,
+                PortalLib.RewardType.NativeToken
+            );
+
+        if (ref1Reward > 0) {
+            payable(ref1).transfer(ref1Reward);
+        }
+
+        if (ref2Reward > 0) {
+            payable(ref2).transfer(ref2Reward);
+        }
+
+        emit ReferReward(
+            account,
+            ref1,
+            ref1Reward,
+            ref2,
+            ref2Reward,
+            PortalLib.RewardType.NativeToken
+        );
+    }
+
+    /**
+     * @dev vault $REBORN token to referrers
+     */
+    function _vaultRewardToRefs(
+        mapping(address => address) storage referrals,
+        ReferrerRewardFees storage rewardFees,
+        RewardVault vault,
+        address account,
+        uint256 amount
+    ) public {
+        (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        ) = _calculateReferReward(
+                referrals,
+                rewardFees,
+                account,
+                amount,
+                PortalLib.RewardType.RebornToken
+            );
+
+        if (ref1Reward > 0) {
+            vault.reward(ref1, ref1Reward);
+        }
+
+        if (ref2Reward > 0) {
+            vault.reward(ref2, ref2Reward);
+        }
+
+        emit ReferReward(
+            account,
+            ref1,
+            ref1Reward,
+            ref2,
+            ref2Reward,
+            PortalLib.RewardType.RebornToken
+        );
     }
 }
