@@ -25,6 +25,7 @@ interface IRebornDefination {
         uint128 cost;
         uint128 reward;
         uint256 score;
+        string nickName;
     }
 
     struct ReferrerRewardFees {
@@ -144,7 +145,8 @@ interface IRebornPortal is IRebornDefination {
         uint256 reward,
         uint256 score,
         uint256 age,
-        uint256 cost
+        uint256 cost,
+        string calldata nickName
     ) external;
 
     /**
