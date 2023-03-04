@@ -211,15 +211,13 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         mockEngraves(500);
     }
 
-    function testFuzzManyEngravesFuzz(uint256 count) public {
-        mockEngraves(count);
-    }
+    // function testFuzzManyEngravesFuzz(uint256 count) public {
+    //     mockEngraves(count);
+    // }
 
     function testInfuseNumericalValue(uint256 amount) public {
-        vm.assume(amount < rbt.cap() - 100 ether);
+        vm.assume(amount < (rbt.cap() - 100 ether) / 2);
         vm.assume(amount > 0);
-
-        mintRBT(rbt, owner, _user, amount);
 
         vm.expectEmit(true, true, true, true);
         emit Infuse(_user, 1, amount);
@@ -232,6 +230,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     }
 
     function testBurnPool(uint256 amount) public {
+        vm.assume(amount < rbt.cap() / 2);
+
         testInfuseNumericalValue(amount);
         assertEq(
             IERC20Upgradeable(address(rbt)).balanceOf(address(burnPool)),

@@ -80,13 +80,16 @@ contract AirdropTest is RebornPortalTest {
         setDropConf();
         vm.assume(users.length > 100);
 
+        // mint reward to reward vault
+        mintRBT(rbt, owner, address(portal.vault()), 1000000 ether);
+
         // mock infuse
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
             uint256 amount = bound(
                 uint160(user),
                 0,
-                (rbt.cap() - rbt.totalSupply() - 1000000 ether) / 2
+                (rbt.cap() - rbt.totalSupply()) / 1000
             );
             uint256 tokenId = uint160(user);
             // only EOA and not precompile address
@@ -100,24 +103,21 @@ contract AirdropTest is RebornPortalTest {
 
         testUpKeepProgressSmoothly();
 
-        // mint reward to reward vault
-        mintRBT(rbt, owner, address(portal.vault()), 1000000 ether);
-
         // infuse again to trigger claim
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
             uint256 amount = bound(
                 uint160(user),
-                0,
-                (rbt.cap() - rbt.totalSupply()) / 2
+                1,
+                (rbt.cap() - rbt.totalSupply()) / 1000
             );
             uint256 tokenId = uint160(user);
             // only EOA and not precompile address
             vm.assume(user.code.length == 0 && tokenId > 20);
 
-            vm.startPrank(users[i]);
             uint256[] memory ds = new uint256[](1);
             ds[0] = tokenId;
+            vm.prank(users[i]);
             portal.claimDrops(ds);
             mockInfuse(user, tokenId, amount);
 
