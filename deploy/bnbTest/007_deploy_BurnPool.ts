@@ -21,7 +21,7 @@ const func: DeployFunction = async function ({
   //   set burn pool for portal
   await execute(
     "RebornPortal",
-    { from: owner },
+    { from: owner, log: true },
     "setBurnPool",
     burnPool.address
   );
