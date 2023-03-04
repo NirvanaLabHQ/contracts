@@ -68,7 +68,7 @@ contract RebornPortal is
         uint256 score,
         uint256 age,
         uint256 cost,
-        string calldata nickName
+        string calldata creatorName
     ) external override onlySigner whenNotPaused {
         if (_seeds.get(uint256(seed))) {
             revert SameSeed();
@@ -87,7 +87,7 @@ contract RebornPortal is
             uint128(cost),
             uint128(reward),
             score,
-            nickName
+            creatorName
         );
         // mint erc721
         _safeMint(user, tokenId);
