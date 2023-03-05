@@ -13,6 +13,7 @@ import {TestUtils} from "test/TestUtils.sol";
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {BurnPool} from "src/BurnPool.sol";
+import {VRFCoordinatorV2Mock} from "src/mock/VRFCoordinatorV2Mock.sol";
 
 contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     uint256 public constant SOUP_PRICE = 0.01 * 1 ether;
@@ -22,6 +23,9 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     address owner = vm.addr(2);
     address _user = vm.addr(10);
     address signer = vm.addr(11);
+    uint256 internal _seedIndex;
+    // address on bnb testnet
+    address internal _vrfCoordinator;
     // solhint-disable-next-line var-name-mixedcase
     bytes32 internal constant _PERMIT_TYPEHASH =
         keccak256(
@@ -32,12 +36,15 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
         );
 
-    function setUp() public {
+    function setUp() public virtual {
         // ignore effect of chainId to tokenId
         vm.chainId(0);
 
         rbt = TestUtils.deployRBT(owner);
         mintRBT(rbt, owner, _user, 100000 ether);
+
+        // deploy vrf coordinator
+        _vrfCoordinator = address(new VRFCoordinatorV2Mock());
 
         // deploy portal
         portal = deployPortal();
@@ -67,7 +74,13 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
     function deployPortal() public returns (RebornPortal portal_) {
         portal_ = new RebornPortal();
-        portal_.initialize(rbt, owner, "Degen Tombstone", "RIP");
+        portal_.initialize(
+            rbt,
+            owner,
+            "Degen Tombstone",
+            "RIP",
+            _vrfCoordinator
+        );
     }
 
     function mintRBT(
@@ -162,15 +175,49 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
 
         vm.prank(signer);
         portal.engrave(seed, _user, reward, score, age, 1, "@ElonMusk");
-
-        // assertEq(portal.details[], b);
     }
 
-    function testInfuseNumericalValue(uint256 amount) public {
-        vm.assume(amount < rbt.cap() - 100 ether);
-        vm.assume(amount > 0);
+    function mockEngrave() public returns (uint256 r) {
+        r = ++_seedIndex;
+        mintRBT(rbt, owner, address(portal.vault()), r);
 
-        mintRBT(rbt, owner, _user, amount);
+        vm.prank(signer);
+        portal.engrave(
+            keccak256(abi.encode(r)),
+            _user,
+            r,
+            r,
+            r,
+            r,
+            "@DegenReborn"
+        );
+    }
+
+    function mockEngraves(uint256 count) public {
+        for (uint i = 0; i < count; i++) {
+            mockEngrave();
+        }
+    }
+
+    function mockEngravesAndInfuses(uint256 count) public {
+        for (uint i = 0; i < count; i++) {
+            uint256 t = mockEngrave();
+            mockInfuse(_user, t, 1);
+        }
+    }
+
+    // for test engrave gas
+    function testManyEngraves() public {
+        mockEngraves(500);
+    }
+
+    // function testFuzzManyEngravesFuzz(uint256 count) public {
+    //     mockEngraves(count);
+    // }
+
+    function testInfuseNumericalValue(uint256 amount) public {
+        vm.assume(amount < (rbt.cap() - 100 ether) / 2);
+        vm.assume(amount > 0);
 
         vm.expectEmit(true, true, true, true);
         emit Infuse(_user, 1, amount);
@@ -183,6 +230,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     }
 
     function testBurnPool(uint256 amount) public {
+        vm.assume(amount < rbt.cap() / 2);
+
         testInfuseNumericalValue(amount);
         assertEq(
             IERC20Upgradeable(address(rbt)).balanceOf(address(burnPool)),
@@ -198,6 +247,8 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
     }
 
     function mockInfuse(address user, uint256 tokenId, uint256 amount) public {
+        mintRBT(rbt, owner, user, amount);
+
         vm.startPrank(user);
         rbt.approve(address(portal), amount);
         portal.infuse(tokenId, amount);
@@ -311,7 +362,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         address ref2 = vm.addr(21);
 
         vm.prank(owner);
-        portal.setReferrerRewardFee(800, 200, RewardType.NativeToken);
+        portal.setReferrerRewardFee(800, 200, PortalLib.RewardType.NativeToken);
 
         // refer ref2->ref1
         hoax(ref1);
@@ -347,13 +398,13 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
         uint256 amount
     ) public {
         vm.expectEmit(true, true, true, true);
-        emit ReferReward(
+        emit PortalLib.ReferReward(
             account,
             ref1,
             ref1Reward,
             ref2,
             ref2Reward,
-            RewardType.NativeToken
+            PortalLib.RewardType.NativeToken
         );
         payable(address(portal)).call{value: amount}(
             abi.encodeWithSignature(

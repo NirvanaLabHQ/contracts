@@ -6,11 +6,6 @@ import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 interface IRebornDefination {
-    enum RewardType {
-        NativeToken,
-        RebornToken
-    }
-
     struct Innate {
         uint256 talentPrice;
         uint256 propertyPrice;
@@ -28,14 +23,6 @@ interface IRebornDefination {
         string creatorName;
     }
 
-    struct ReferrerRewardFees {
-        uint16 incarnateRef1Fee;
-        uint16 incarnateRef2Fee;
-        uint16 vaultRef1Fee;
-        uint16 vaultRef2Fee;
-        uint192 _slotPlaceholder;
-    }
-
     struct SeasonData {
         mapping(uint256 => PortalLib.Pool) pools;
         /// @dev user address => pool tokenId => Portfolio
@@ -45,6 +32,20 @@ interface IRebornDefination {
         mapping(uint256 => uint256) _oldStakeAmounts;
         /// tokenId => bool
         BitMapsUpgradeable.BitMap _isTopHundredScore;
+    }
+
+    enum AirdropVrfType {
+        Invalid,
+        DropReborn,
+        DropNative
+    }
+
+    struct RequestStatus {
+        bool fulfilled; // whether the request has been successfully fulfilled
+        bool exists; // whether a requestId exists
+        bool executed; // whether the airdrop is executed
+        AirdropVrfType t;
+        uint256[] randomWords;
     }
 
     event Incarnate(
@@ -62,15 +63,6 @@ interface IRebornDefination {
         uint256 reward
     );
 
-    event ReferReward(
-        address indexed user,
-        address indexed ref1,
-        uint256 amount1,
-        address indexed ref2,
-        uint256 amount2,
-        RewardType rewardType
-    );
-
     event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
 
     event Dry(address indexed user, uint256 indexed tokenId, uint256 amount);
@@ -78,8 +70,6 @@ interface IRebornDefination {
     event Baptise(address indexed user, uint256 amount);
 
     event NewSoupPrice(uint256 price);
-
-    event SignerUpdate(address signer, bool valid);
 
     event Refer(address referee, address referrer);
 
@@ -198,6 +188,11 @@ interface IRebornPortal is IRebornDefination {
      * @dev set new airdrop config
      */
     function setDropConf(PortalLib.AirdropConf calldata conf) external;
+
+    /**
+     * @dev set new chainlink vrf v2 config
+     */
+    function setVrfConf(PortalLib.VrfConf calldata conf) external;
 
     /**
      * @dev user claim many pools' native token airdrop

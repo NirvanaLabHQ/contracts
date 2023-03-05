@@ -9,6 +9,19 @@ library PortalLib {
     // percentage base of refer reward fees
     uint256 public constant PERCENTAGE_BASE = 10000;
 
+    enum RewardType {
+        NativeToken,
+        RebornToken
+    }
+
+    struct ReferrerRewardFees {
+        uint16 incarnateRef1Fee;
+        uint16 incarnateRef2Fee;
+        uint16 vaultRef1Fee;
+        uint16 vaultRef2Fee;
+        uint192 _slotPlaceholder;
+    }
+
     struct Pool {
         uint256 totalAmount;
         uint256 accRebornPerShare;
@@ -48,9 +61,32 @@ library PortalLib {
         uint72 _rebornDropEthAmount; //    ---
     }
 
+    struct VrfConf {
+        bytes32 keyHash;
+        uint64 s_subscriptionId;
+        uint32 callbackGasLimit;
+        uint32 numWords;
+        uint16 requestConfirmations;
+    }
+
+    event DropNative(uint256 indexed tokenId);
+    event DropReborn(uint256 indexed tokenId);
     event ClaimRebornDrop(uint256 indexed tokenId, uint256 rebornAmount);
     event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
     event NewDropConf(AirdropConf conf);
+    event NewVrfConf(VrfConf conf);
+    event SignerUpdate(address signer, bool valid);
+    event ReferReward(
+        address indexed user,
+        address indexed ref1,
+        uint256 amount1,
+        address indexed ref2,
+        uint256 amount2,
+        PortalLib.RewardType rewardType
+    );
+
+    /// @dev invliad chainlink vrf request id
+    error InvalidRequestId(uint256);
 
     function _claimPoolRebornDrop(
         uint256 tokenId,
@@ -128,7 +164,7 @@ library PortalLib {
         uint256 tokenId,
         mapping(uint256 => Pool) storage pools,
         mapping(address => mapping(uint256 => Portfolio)) storage portfolios
-    ) external view returns (uint256 pendingNative, uint256 pendingReborn) {
+    ) public view returns (uint256 pendingNative, uint256 pendingReborn) {
         Pool storage pool = pools[tokenId];
         Portfolio storage portfolio = portfolios[msg.sender][tokenId];
 
@@ -150,96 +186,273 @@ library PortalLib {
             portfolio.pendingOwnerRebornReward;
     }
 
-    function _dropNativeTokenIds(
-        uint256[] memory tokenIds,
-        AirdropConf storage _dropConf,
+    /**
+     * @dev read pending reward from specific pool
+     * @param tokenIds tokenId array of the pools
+     */
+    function _pendingDrop(
         mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
-    ) external {
-        bool dropNative = block.timestamp >
-            _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval;
-        if (dropNative) {
-            // set last drop timestamp to specific hour
-            _dropConf._nativeDropLastUpdate = uint40(
-                _toLastHour(block.timestamp)
+        mapping(address => mapping(uint256 => Portfolio)) storage portfolios,
+        uint256[] memory tokenIds
+    ) external view returns (uint256 pNative, uint256 pReborn) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            (uint256 n, uint256 r) = _calculatePoolDrop(
+                tokenIds[i],
+                pools,
+                portfolios
             );
-
-            for (uint256 i = 0; i < 100; i++) {
-                uint256 tokenId = tokenIds[i];
-                // if tokenId is zero , return
-                if (tokenId == 0) {
-                    return;
-                }
-
-                Pool storage pool = pools[tokenId];
-
-                // if no one tribute, return
-                // as it's loof from high tvl to low tvl
-                if (pool.totalAmount == 0) {
-                    return;
-                }
-
-                uint256 dropAmount = (_dropConf._nativeDropRatio *
-                    address(this).balance) / PortalLib.PERCENTAGE_BASE;
-
-                // 85% to pool
-                pool.accNativePerShare +=
-                    (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
-                    PERCENTAGE_BASE /
-                    pool.totalAmount;
-
-                // 15% to owner
-                address owner = IERC721(address(this)).ownerOf(tokenId);
-                Portfolio storage portfolio = portfolios[owner][tokenId];
-                portfolio.pendingOwernNativeReward += (dropAmount * 15) / 100;
-            }
+            pNative += n;
+            pReborn += r;
         }
     }
 
-    function _dropRebornTokenIds(
+    function _directDropNativeTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
         mapping(uint256 => Pool) storage pools,
         mapping(address => mapping(uint256 => Portfolio)) storage portfolios
     ) external {
-        bool dropReborn = block.timestamp >
-            _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval;
-        if (dropReborn) {
-            // set last drop timestamp to specific hour
-            _dropConf._rebornDropLastUpdate = uint40(
-                _toLastHour(block.timestamp)
-            );
-
-            for (uint256 i = 0; i < 100; i++) {
-                uint256 tokenId = tokenIds[i];
-                // if tokenId is zero, continue
-                if (tokenId == 0) {
-                    return;
-                }
-                Pool storage pool = pools[tokenId];
-
-                // if no one tribute, continue
-                // as it's loof from high tvl to low tvl
-                if (pool.totalAmount == 0) {
-                    return;
-                }
-
-                uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
-
-                // 85% to pool
-                pool.accRebornPerShare +=
-                    (((dropAmount * 85) / 100) * PortalLib.PERSHARE_BASE) /
-                    pool.totalAmount;
-
-                // 15% to owner
-                address owner = IERC721(address(this)).ownerOf(tokenId);
-                Portfolio storage portfolio = portfolios[owner][tokenId];
-                portfolio.pendingOwnerRebornReward += (dropAmount * 15) / 100;
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            // if tokenId is zero , return
+            if (tokenId == 0) {
+                return;
             }
+
+            Pool storage pool = pools[tokenId];
+
+            // if no one tribute, return
+            // as it's loof from high tvl to low tvl
+            if (pool.totalAmount == 0) {
+                return;
+            }
+
+            uint256 dropAmount = (_dropConf._nativeDropRatio *
+                address(this).balance) / PortalLib.PERCENTAGE_BASE;
+
+            // 80% to pool
+            pool.accNativePerShare +=
+                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
+                PERCENTAGE_BASE /
+                pool.totalAmount;
+
+            // 20% to owner
+            address owner = IERC721(address(this)).ownerOf(tokenId);
+            Portfolio storage portfolio = portfolios[owner][tokenId];
+            portfolio.pendingOwernNativeReward += (dropAmount * 1) / 5;
+
+            emit DropNative(tokenId);
+        }
+    }
+
+    function _directDropRebornTokenIds(
+        uint256[] memory tokenIds,
+        AirdropConf storage _dropConf,
+        mapping(uint256 => Pool) storage pools,
+        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+    ) external {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+
+            // if tokenId is zero, continue
+            if (tokenId == 0) {
+                return;
+            }
+            Pool storage pool = pools[tokenId];
+
+            // if no one tribute, continue
+            // as it's loof from high tvl to low tvl
+            if (pool.totalAmount == 0) {
+                return;
+            }
+
+            uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
+
+            // 80% to pool
+            pool.accRebornPerShare +=
+                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
+                pool.totalAmount;
+
+            // 20% to owner
+            address owner = IERC721(address(this)).ownerOf(tokenId);
+            Portfolio storage portfolio = portfolios[owner][tokenId];
+            portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
+
+            emit DropNative(tokenId);
         }
     }
 
     function _toLastHour(uint256 timestamp) internal pure returns (uint256) {
         return timestamp - (timestamp % (1 hours));
+    }
+
+    /**
+     * @dev update signers
+     * @param toAdd list of to be added signer
+     * @param toRemove list of to be removed signer
+     */
+    function _updateSigners(
+        mapping(address => bool) storage signers,
+        address[] calldata toAdd,
+        address[] calldata toRemove
+    ) public {
+        for (uint256 i = 0; i < toAdd.length; i++) {
+            signers[toAdd[i]] = true;
+            emit SignerUpdate(toAdd[i], true);
+        }
+        for (uint256 i = 0; i < toRemove.length; i++) {
+            delete signers[toRemove[i]];
+            emit SignerUpdate(toRemove[i], false);
+        }
+    }
+
+    /**
+     * @dev returns referrer and referer reward
+     * @return ref1  level1 of referrer. direct referrer
+     * @return ref1Reward  level 1 referrer reward
+     * @return ref2  level2 of referrer. referrer's referrer
+     * @return ref2Reward  level 2 referrer reward
+     */
+    function _calculateReferReward(
+        mapping(address => address) storage referrals,
+        ReferrerRewardFees storage rewardFees,
+        address account,
+        uint256 amount,
+        RewardType rewardType
+    )
+        public
+        view
+        returns (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        )
+    {
+        ref1 = referrals[account];
+        ref2 = referrals[ref1];
+
+        if (rewardType == RewardType.NativeToken) {
+            ref1Reward = ref1 == address(0)
+                ? 0
+                : (amount * rewardFees.incarnateRef1Fee) /
+                    PortalLib.PERCENTAGE_BASE;
+            ref2Reward = ref2 == address(0)
+                ? 0
+                : (amount * rewardFees.incarnateRef2Fee) /
+                    PortalLib.PERCENTAGE_BASE;
+        }
+
+        if (rewardType == RewardType.RebornToken) {
+            ref1Reward = ref1 == address(0)
+                ? 0
+                : (amount * rewardFees.vaultRef1Fee) /
+                    PortalLib.PERCENTAGE_BASE;
+            ref2Reward = ref2 == address(0)
+                ? 0
+                : (amount * rewardFees.vaultRef2Fee) /
+                    PortalLib.PERCENTAGE_BASE;
+        }
+    }
+
+    /**
+     * @notice mul 100 when set. eg: 8% -> 800 18%-> 1800
+     * @dev set percentage of referrer reward
+     * @param rewardType 0: incarnate reward 1: engrave reward
+     */
+    function _setReferrerRewardFee(
+        ReferrerRewardFees storage rewardFees,
+        uint16 refL1Fee,
+        uint16 refL2Fee,
+        PortalLib.RewardType rewardType
+    ) external {
+        if (rewardType == PortalLib.RewardType.NativeToken) {
+            rewardFees.incarnateRef1Fee = refL1Fee;
+            rewardFees.incarnateRef2Fee = refL2Fee;
+        } else if (rewardType == PortalLib.RewardType.RebornToken) {
+            rewardFees.vaultRef1Fee = refL1Fee;
+            rewardFees.vaultRef2Fee = refL2Fee;
+        }
+    }
+
+    /**
+     * @dev send NativeToken to referrers
+     */
+    function _sendRewardToRefs(
+        mapping(address => address) storage referrals,
+        ReferrerRewardFees storage rewardFees,
+        address account,
+        uint256 amount
+    ) public {
+        (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        ) = _calculateReferReward(
+                referrals,
+                rewardFees,
+                account,
+                amount,
+                PortalLib.RewardType.NativeToken
+            );
+
+        if (ref1Reward > 0) {
+            payable(ref1).transfer(ref1Reward);
+        }
+
+        if (ref2Reward > 0) {
+            payable(ref2).transfer(ref2Reward);
+        }
+
+        emit ReferReward(
+            account,
+            ref1,
+            ref1Reward,
+            ref2,
+            ref2Reward,
+            PortalLib.RewardType.NativeToken
+        );
+    }
+
+    /**
+     * @dev vault $REBORN token to referrers
+     */
+    function _vaultRewardToRefs(
+        mapping(address => address) storage referrals,
+        ReferrerRewardFees storage rewardFees,
+        RewardVault vault,
+        address account,
+        uint256 amount
+    ) public {
+        (
+            address ref1,
+            uint256 ref1Reward,
+            address ref2,
+            uint256 ref2Reward
+        ) = _calculateReferReward(
+                referrals,
+                rewardFees,
+                account,
+                amount,
+                PortalLib.RewardType.RebornToken
+            );
+
+        if (ref1Reward > 0) {
+            vault.reward(ref1, ref1Reward);
+        }
+
+        if (ref2Reward > 0) {
+            vault.reward(ref2, ref2Reward);
+        }
+
+        emit ReferReward(
+            account,
+            ref1,
+            ref1Reward,
+            ref2,
+            ref2Reward,
+            PortalLib.RewardType.RebornToken
+        );
     }
 }

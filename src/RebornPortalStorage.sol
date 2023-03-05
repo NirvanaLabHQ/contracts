@@ -7,6 +7,7 @@ import {RewardVault} from "src/RewardVault.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {PortalLib} from "src/PortalLib.sol";
+import {FastArray} from "src/lib/FastArray.sol";
 
 contract RebornPortalStorage is IRebornDefination {
     uint256 internal _season;
@@ -24,7 +25,7 @@ contract RebornPortalStorage is IRebornDefination {
     mapping(uint256 => SeasonData) internal _seasonData;
 
     mapping(address => address) public referrals;
-    ReferrerRewardFees public rewardFees;
+    PortalLib.ReferrerRewardFees public rewardFees;
 
     RewardVault public vault;
 
@@ -35,6 +36,13 @@ contract RebornPortalStorage is IRebornDefination {
 
     address public burnPool;
 
-    /// @dev gap for potential vairable
-    uint256[37] private _gap;
+    PortalLib.VrfConf internal _vrfConf;
+
+    // requestId =>
+    mapping(uint256 => RequestStatus) internal _vrfRequests;
+
+    FastArray.Data internal _pendingDrops;
+
+    /// @dev gap for potential variable
+    uint256[34] private _gap;
 }

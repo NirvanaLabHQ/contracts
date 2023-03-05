@@ -48,4 +48,14 @@ contract RankUpgradeable is RebornPortalStorage {
     ) internal view returns (uint256[] memory values) {
         return _seasonData[_season]._tributeRank.get(0, n);
     }
+
+    /**
+     * TODO: old data should have higher priority when value is the same
+     */
+    function _getFirstNTokenIdByOffSet(
+        uint256 n,
+        uint256 offSet
+    ) internal view returns (uint256[] memory values) {
+        return _seasonData[_season]._tributeRank.get(offSet, n);
+    }
 }

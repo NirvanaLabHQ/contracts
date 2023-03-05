@@ -7,6 +7,8 @@ import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import {VRFConsumerBaseV2Upgradeable} from "src/modified/VRFConsumerBaseV2Upgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {IBurnPool} from "src/interfaces/IBurnPool.sol";
@@ -17,6 +19,7 @@ import {RankUpgradeable} from "src/RankUpgradeable.sol";
 import {Renderer} from "src/lib/Renderder.sol";
 
 import {PortalLib} from "src/PortalLib.sol";
+import {FastArray} from "src/lib/FastArray.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -27,21 +30,25 @@ contract RebornPortal is
     ReentrancyGuardUpgradeable,
     PausableUpgradeable,
     AutomationCompatible,
-    RankUpgradeable
+    RankUpgradeable,
+    VRFConsumerBaseV2Upgradeable
 {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
+    using FastArray for FastArray.Data;
 
     function initialize(
         RBT rebornToken_,
         address owner_,
         string memory name_,
-        string memory symbol_
+        string memory symbol_,
+        address _vrfCoordinator
     ) public initializer {
         rebornToken = rebornToken_;
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
         __Pausable_init();
+        __VRFConsumerBaseV2_init(_vrfCoordinator);
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -205,11 +212,15 @@ contract RebornPortal is
     function performUpkeep(
         bytes calldata performData
     ) external override whenNotPaused {
-        uint256 t = abi.decode(performData, (uint256));
+        (uint256 t, uint256 id) = abi.decode(performData, (uint256, uint256));
         if (t == 1) {
-            _dropReborn();
+            _requestDropReborn();
         } else if (t == 2) {
-            _dropNative();
+            _requestDropNative();
+        } else if (t == 3) {
+            _fulfillDropReborn(id);
+        } else if (t == 4) {
+            _fulfillDropNative(id);
         }
     }
 
@@ -247,6 +258,16 @@ contract RebornPortal is
     }
 
     /**
+     * @inheritdoc IRebornPortal
+     */
+    function setVrfConf(
+        PortalLib.VrfConf calldata conf
+    ) external override onlyOwner {
+        _vrfConf = conf;
+        emit PortalLib.NewVrfConf(conf);
+    }
+
+    /**
      * @dev set vault
      * @param vault_ new vault address
      */
@@ -279,14 +300,7 @@ contract RebornPortal is
         address[] calldata toAdd,
         address[] calldata toRemove
     ) external onlyOwner {
-        for (uint256 i = 0; i < toAdd.length; i++) {
-            signers[toAdd[i]] = true;
-            emit SignerUpdate(toAdd[i], true);
-        }
-        for (uint256 i = 0; i < toRemove.length; i++) {
-            delete signers[toRemove[i]];
-            emit SignerUpdate(toRemove[i], false);
-        }
+        PortalLib._updateSigners(signers, toAdd, toRemove);
     }
 
     /**
@@ -297,15 +311,14 @@ contract RebornPortal is
     function setReferrerRewardFee(
         uint16 refL1Fee,
         uint16 refL2Fee,
-        RewardType rewardType
+        PortalLib.RewardType rewardType
     ) external onlyOwner {
-        if (rewardType == RewardType.NativeToken) {
-            rewardFees.incarnateRef1Fee = refL1Fee;
-            rewardFees.incarnateRef2Fee = refL2Fee;
-        } else if (rewardType == RewardType.RebornToken) {
-            rewardFees.vaultRef1Fee = refL1Fee;
-            rewardFees.vaultRef2Fee = refL2Fee;
-        }
+        PortalLib._setReferrerRewardFee(
+            rewardFees,
+            refL1Fee,
+            refL2Fee,
+            rewardType
+        );
     }
 
     // set burnPool address for pre burn $REBORN
@@ -331,15 +344,12 @@ contract RebornPortal is
     function pendingDrop(
         uint256[] memory tokenIds
     ) external view returns (uint256 pNative, uint256 pReborn) {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            (uint256 n, uint256 r) = PortalLib._calculatePoolDrop(
-                tokenIds[i],
+        return
+            PortalLib._pendingDrop(
                 _seasonData[_season].pools,
-                _seasonData[_season].portfolios
+                _seasonData[_season].portfolios,
+                tokenIds
             );
-            pNative += n;
-            pReborn += r;
-        }
     }
 
     /**
@@ -354,18 +364,32 @@ contract RebornPortal is
         returns (bool upkeepNeeded, bytes memory performData)
     {
         if (_dropConf._dropOn == 1) {
+            // first, check whether airdrop is ready and send vrf request
             if (
                 block.timestamp >
                 _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval
             ) {
                 upkeepNeeded = true;
-                performData = abi.encode(1);
+                performData = abi.encode(1, 0);
+                return (upkeepNeeded, performData);
             } else if (
                 block.timestamp >
                 _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval
             ) {
                 upkeepNeeded = true;
-                performData = abi.encode(2);
+                performData = abi.encode(2, 0);
+                return (upkeepNeeded, performData);
+            }
+            // second, check to pending drop and execute
+            for (uint256 i = 0; i < FastArray.length(_pendingDrops); ) {
+                uint256 id = _pendingDrops.get(i);
+                upkeepNeeded = true;
+                if (_vrfRequests[id].t == AirdropVrfType.DropReborn) {
+                    performData = abi.encode(3, id);
+                } else if (_vrfRequests[id].t == AirdropVrfType.DropNative) {
+                    performData = abi.encode(4, id);
+                }
+                return (upkeepNeeded, performData);
             }
         }
     }
@@ -464,28 +488,124 @@ contract RebornPortal is
 
     /**
      * @dev airdrop to top 100 tvl pool
+     * @dev directly drop to top 10
+     * @dev raffle 10 from top 11 - top 100
      */
-    function _dropReborn() internal onlyDropOn {
-        uint256[] memory tokenIds = _getTopNTokenId(100);
-        PortalLib._dropRebornTokenIds(
-            tokenIds,
+    function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
+        uint256[] memory topTens = _getTopNTokenId(10);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(90, 10);
+        PortalLib._directDropRebornTokenIds(
+            topTens,
             _dropConf,
             _seasonData[_season].pools,
             _seasonData[_season].portfolios
         );
+
+        uint256[] memory selectedTokenIds = new uint256[](10);
+
+        RequestStatus memory rs = _vrfRequests[requestId];
+
+        for (uint256 i = 0; i < rs.randomWords.length; i++) {
+            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+        }
+
+        PortalLib._directDropRebornTokenIds(
+            topTens,
+            _dropConf,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
+
+        _pendingDrops.remove(requestId);
     }
 
     /**
      * @dev airdrop to top 100 tvl pool
+     * @dev directly drop to top 10
+     * @dev raffle 10 from top 11 - top 100
      */
-    function _dropNative() internal onlyDropOn {
-        uint256[] memory tokenIds = _getTopNTokenId(100);
-        PortalLib._dropNativeTokenIds(
-            tokenIds,
+    function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
+        uint256[] memory topTens = _getTopNTokenId(10);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(90, 10);
+
+        PortalLib._directDropNativeTokenIds(
+            topTens,
             _dropConf,
             _seasonData[_season].pools,
             _seasonData[_season].portfolios
         );
+
+        uint256[] memory selectedTokenIds = new uint256[](10);
+
+        RequestStatus memory rs = _vrfRequests[requestId];
+
+        for (uint256 i = 0; i < rs.randomWords.length; i++) {
+            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+        }
+
+        PortalLib._directDropNativeTokenIds(
+            topTens,
+            _dropConf,
+            _seasonData[_season].pools,
+            _seasonData[_season].portfolios
+        );
+
+        _pendingDrops.remove(requestId);
+    }
+
+    function _requestDropReborn() internal onlyDropOn {
+        // update last drop timestamp to specific hour
+        _dropConf._rebornDropLastUpdate = uint40(
+            PortalLib._toLastHour(block.timestamp)
+        );
+
+        // raffle
+        uint256 requestId = VRFCoordinatorV2Interface(vrfCoordinator)
+            .requestRandomWords(
+                _vrfConf.keyHash,
+                _vrfConf.s_subscriptionId,
+                _vrfConf.requestConfirmations,
+                _vrfConf.callbackGasLimit,
+                _vrfConf.numWords
+            );
+
+        _vrfRequests[requestId].exists = true;
+        _vrfRequests[requestId].t = AirdropVrfType.DropReborn;
+    }
+
+    function _requestDropNative() internal onlyDropOn {
+        // update last drop timestamp to specific hour
+        _dropConf._nativeDropLastUpdate = uint40(
+            PortalLib._toLastHour(block.timestamp)
+        );
+
+        // raffle
+        uint256 requestId = VRFCoordinatorV2Interface(vrfCoordinator)
+            .requestRandomWords(
+                _vrfConf.keyHash,
+                _vrfConf.s_subscriptionId,
+                _vrfConf.requestConfirmations,
+                _vrfConf.callbackGasLimit,
+                _vrfConf.numWords
+            );
+
+        _vrfRequests[requestId].exists = true;
+        _vrfRequests[requestId].t = AirdropVrfType.DropNative;
+    }
+
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) internal override {
+        if (
+            _vrfRequests[requestId].fulfilled || !_vrfRequests[requestId].exists
+        ) {
+            revert PortalLib.InvalidRequestId(requestId);
+        }
+
+        _vrfRequests[requestId].randomWords = randomWords;
+
+        _pendingDrops.insert(requestId);
     }
 
     /**
@@ -509,28 +629,12 @@ contract RebornPortal is
      * @dev vault $REBORN token to referrers
      */
     function _vaultRewardToRefs(address account, uint256 amount) internal {
-        (
-            address ref1,
-            uint256 ref1Reward,
-            address ref2,
-            uint256 ref2Reward
-        ) = calculateReferReward(account, amount, RewardType.RebornToken);
-
-        if (ref1Reward > 0) {
-            vault.reward(ref1, ref1Reward);
-        }
-
-        if (ref2Reward > 0) {
-            vault.reward(ref2, ref2Reward);
-        }
-
-        emit ReferReward(
+        PortalLib._vaultRewardToRefs(
+            referrals,
+            rewardFees,
+            vault,
             account,
-            ref1,
-            ref1Reward,
-            ref2,
-            ref2Reward,
-            RewardType.RebornToken
+            amount
         );
     }
 
@@ -538,29 +642,7 @@ contract RebornPortal is
      * @dev send NativeToken to referrers
      */
     function _sendRewardToRefs(address account, uint256 amount) internal {
-        (
-            address ref1,
-            uint256 ref1Reward,
-            address ref2,
-            uint256 ref2Reward
-        ) = calculateReferReward(account, amount, RewardType.NativeToken);
-
-        if (ref1Reward > 0) {
-            payable(ref1).transfer(ref1Reward);
-        }
-
-        if (ref2Reward > 0) {
-            payable(ref2).transfer(ref2Reward);
-        }
-
-        emit ReferReward(
-            account,
-            ref1,
-            ref1Reward,
-            ref2,
-            ref2Reward,
-            RewardType.NativeToken
-        );
+        PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
     }
 
     /**
@@ -618,7 +700,7 @@ contract RebornPortal is
     function calculateReferReward(
         address account,
         uint256 amount,
-        RewardType rewardType
+        PortalLib.RewardType rewardType
     )
         public
         view
@@ -629,30 +711,14 @@ contract RebornPortal is
             uint256 ref2Reward
         )
     {
-        ref1 = referrals[account];
-        ref2 = referrals[ref1];
-
-        if (rewardType == RewardType.NativeToken) {
-            ref1Reward = ref1 == address(0)
-                ? 0
-                : (amount * rewardFees.incarnateRef1Fee) /
-                    PortalLib.PERCENTAGE_BASE;
-            ref2Reward = ref2 == address(0)
-                ? 0
-                : (amount * rewardFees.incarnateRef2Fee) /
-                    PortalLib.PERCENTAGE_BASE;
-        }
-
-        if (rewardType == RewardType.RebornToken) {
-            ref1Reward = ref1 == address(0)
-                ? 0
-                : (amount * rewardFees.vaultRef1Fee) /
-                    PortalLib.PERCENTAGE_BASE;
-            ref2Reward = ref2 == address(0)
-                ? 0
-                : (amount * rewardFees.vaultRef2Fee) /
-                    PortalLib.PERCENTAGE_BASE;
-        }
+        return
+            PortalLib._calculateReferReward(
+                referrals,
+                rewardFees,
+                account,
+                amount,
+                rewardType
+            );
     }
 
     /**
