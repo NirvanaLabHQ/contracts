@@ -4,6 +4,8 @@ import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {RewardVault} from "src/RewardVault.sol";
 
+import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
+
 library PortalLib {
     uint256 public constant PERSHARE_BASE = 10e18;
     // percentage base of refer reward fees
@@ -224,8 +226,7 @@ library PortalLib {
     function _directDropNativeTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornPortal.SeasonData storage _seasonData
     ) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -234,7 +235,7 @@ library PortalLib {
                 return;
             }
 
-            Pool storage pool = pools[tokenId];
+            Pool storage pool = _seasonData.pools[tokenId];
 
             // if no one tribute, return
             // as it's loof from high tvl to low tvl
@@ -242,8 +243,10 @@ library PortalLib {
                 return;
             }
 
+            // a ratio of jackpot goes to airdrop, and reduce jackpot
             uint256 dropAmount = (_dropConf._nativeDropRatio *
-                address(this).balance) / PortalLib.PERCENTAGE_BASE;
+                _seasonData._jackpot) / PortalLib.PERCENTAGE_BASE;
+            _seasonData._jackpot -= dropAmount;
 
             // 80% to pool
             pool.accNativePerShare +=
@@ -253,7 +256,9 @@ library PortalLib {
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = portfolios[owner][tokenId];
+            Portfolio storage portfolio = _seasonData.portfolios[owner][
+                tokenId
+            ];
             portfolio.pendingOwernNativeReward += (dropAmount * 1) / 5;
 
             emit DropNative(tokenId);
@@ -392,13 +397,14 @@ library PortalLib {
 
     /**
      * @dev send NativeToken to referrers
+     * @dev return net amount
      */
     function _sendRewardToRefs(
         mapping(address => address) storage referrals,
         ReferrerRewardFees storage rewardFees,
         address account,
         uint256 amount
-    ) public {
+    ) public returns (uint256 netAmount) {
         (
             address ref1,
             uint256 ref1Reward,
@@ -419,6 +425,8 @@ library PortalLib {
         if (ref2Reward > 0) {
             payable(ref2).transfer(ref2Reward);
         }
+
+        netAmount = amount - ref1Reward - ref2Reward;
 
         emit ReferReward(
             account,

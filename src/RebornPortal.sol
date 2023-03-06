@@ -243,7 +243,9 @@ contract RebornPortal is
         _season += 1;
 
         // 16% to next season jackpot
-        payable(msg.sender).transfer((address(this).balance * 16) / 100);
+        _seasonData[_season]._jackpot =
+            (_seasonData[_season - 1]._jackpot * 16) /
+            100;
 
         // pause the contract
         _pause();
@@ -468,7 +470,10 @@ contract RebornPortal is
         payable(msg.sender).transfer(msg.value - totalFee);
 
         // reward referrers
-        _sendRewardToRefs(msg.sender, totalFee);
+        uint256 netAmount = _sendRewardToRefs(msg.sender, totalFee);
+
+        // add net amount to jackpot
+        _seasonData[_season]._jackpot += netAmount;
 
         emit Incarnate(
             msg.sender,
@@ -537,8 +542,7 @@ contract RebornPortal is
         PortalLib._directDropNativeTokenIds(
             topTens,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
@@ -552,8 +556,7 @@ contract RebornPortal is
         PortalLib._directDropNativeTokenIds(
             topTens,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         _pendingDrops.remove(requestId);
@@ -647,8 +650,12 @@ contract RebornPortal is
     /**
      * @dev send NativeToken to referrers
      */
-    function _sendRewardToRefs(address account, uint256 amount) internal {
-        PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
+    function _sendRewardToRefs(
+        address account,
+        uint256 amount
+    ) internal returns (uint256) {
+        return
+            PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
     }
 
     /**
