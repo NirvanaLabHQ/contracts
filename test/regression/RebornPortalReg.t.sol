@@ -8,6 +8,9 @@ import "src/RebornPortal.sol";
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 
+/**
+ * @notice this file can be edited freely if the whole test can not pass
+ */
 contract RebornPortalReg is Test {
     uint256 bnbTest;
     RebornPortal portal;
@@ -32,17 +35,16 @@ contract RebornPortalReg is Test {
         portal.performUpkeep(b);
     }
 
-    function testPendingDrop() public {
-        vm.rollFork(27693331);
-        uint256[] memory arr = new uint256[](4);
-        (arr[0], arr[1], arr[2], arr[3]) = (
-            97000000000000000015,
-            97000000000000000011,
-            97000000000000000013,
-            97000000000000000010
-        );
-        vm.prank(0x679658Be03475D0A5393c70ea0E9A1158Dfae1Ff);
+    function testSimulatePendingDrop() public {
+        vm.rollFork(27717594);
+        mockUpgradeToDevVersion();
+        uint256[] memory arr = new uint256[](1);
+        (arr[0]) = (97000000000000000036);
+
+        vm.startPrank(0x8A1f5030dBdcC7A630af068Cc0440Bb05bDD8220);
+        portal.flattenRewardDebt(97000000000000000036);
         portal.pendingDrop(arr);
+        vm.stopPrank();
     }
 
     function testClaimRebornDrop() public {
