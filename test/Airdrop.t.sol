@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.17;
 
-import "test/RebornPortal.t.sol";
+import "test/portal/RebornPortalBase.t.sol";
 
 import {PortalLib} from "src/PortalLib.sol";
 
 import "forge-std/console.sol";
 
-contract AirdropTest is RebornPortalTest {
+contract AirdropTest is RebornPortalBaseTest {
     function setDropConf() public {
         // set drop conf
         vm.prank(owner);
@@ -80,9 +80,6 @@ contract AirdropTest is RebornPortalTest {
         setDropConf();
         vm.assume(users.length > 100);
 
-        // mint reward to reward vault
-        mintRBT(rbt, owner, address(portal.vault()), 1000000 ether);
-
         // mock infuse
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
@@ -99,9 +96,12 @@ contract AirdropTest is RebornPortalTest {
         }
 
         // give native token to portal
-        vm.deal(address(portal), 10 ** 18 * 1 ether);
+        deal(address(portal), UINT256_MAX);
 
         testUpKeepProgressSmoothly();
+
+        // deal some reborn token to reward vault
+        deal(address(rbt), address(portal.vault()), UINT256_MAX);
 
         // infuse again to trigger claim
         for (uint256 i = 0; i < users.length; i++) {
