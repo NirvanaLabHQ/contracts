@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -12,6 +13,7 @@ contract NFTManager is
     OwnableUpgradeable,
     INFTManager
 {
+    uint256 public constant TOTAL_MINT = 2009;
     using CountersUpgradeable for CountersUpgradeable.Counter;
     /**********************************************
      * storage
@@ -20,6 +22,10 @@ contract NFTManager is
     CountersUpgradeable.Counter private _tokenIds;
 
     mapping(address => bool) public signers;
+    mapping(address => bool) public minted;
+
+    // white list merkle tree root
+    bytes32 public merkleRoot;
 
     uint256[48] private _gap;
 
@@ -40,18 +46,39 @@ contract NFTManager is
     /**
      * @inheritdoc INFTManager
      */
-    function mint() public override onlyEOA {
-        uint256 tokenId = _tokenIds.current();
-        _mint(msg.sender, tokenId);
-        _tokenIds.increment();
+    function mint(bytes32[] calldata merkleProof) public override onlyEOA {
+        bytes32 leaf = keccak256(
+            bytes.concat(keccak256(abi.encode(msg.sender)))
+        );
 
-        emit Minted(msg.sender, tokenId);
+        bool verified = MerkleProofUpgradeable.verify(
+            merkleProof,
+            merkleRoot,
+            leaf
+        );
+
+        if (!verified) {
+            revert InvalidProof();
+        }
+
+        _mintTo(msg.sender);
     }
 
     /**
      * @inheritdoc INFTManager
      */
-    function freeMint() external override onlySigner {}
+    function airdrop(
+        address[] calldata receivers
+    ) external override onlySigner {
+        for (uint256 i = 0; i < receivers.length; i++) {
+            _mintTo(receivers[i]);
+        }
+    }
+
+    /**
+     * @inheritdoc INFTManager
+     */
+    function openMysteryBox(uint256 tokenId) external override {}
 
     function merge(uint256 tokenId1, uint256 tokenId2) external override {}
 
@@ -72,9 +99,44 @@ contract NFTManager is
         }
     }
 
+    // set white list merkler tree root
+    function setMerkleRoot(bytes32 root) external override onlyOwner {
+        if (root == bytes32(0)) {
+            revert ZeroRootSet();
+        }
+
+        merkleRoot = root;
+
+        emit MerkleTreeRootSet(root);
+    }
+
+    /**********************************************
+     * read functions
+     **********************************************/
+    function exists(uint256 tokenId) external view returns (bool) {
+        return _exists(tokenId);
+    }
+
     /**********************************************
      * internal functions
      **********************************************/
+    function _mintTo(address to) internal {
+        uint256 tokenId = _tokenIds.current();
+
+        if (tokenId >= TOTAL_MINT) {
+            revert MintIsMaxedOut();
+        }
+
+        if (minted[to]) {
+            revert AlreadyMinted();
+        }
+
+        _mint(to, tokenId);
+        minted[to] = true;
+        _tokenIds.increment();
+
+        emit Minted(msg.sender, tokenId);
+    }
 
     /**********************************************
      * modiriers
