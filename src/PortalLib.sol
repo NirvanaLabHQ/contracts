@@ -233,7 +233,7 @@ library PortalLib {
                 return;
             }
 
-            Pool storage pool = pools[tokenId];
+            Pool storage pool = _seasonData.pools[tokenId];
 
             // if no one tribute, return
             // as it's loof from high tvl to low tvl
@@ -252,7 +252,7 @@ library PortalLib {
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = portfolios[owner][tokenId];
+            Portfolio storage portfolio = _seasonData.portfolios[owner][tokenId];
             portfolio.pendingOwernNativeReward += (dropAmount * 1) / 5;
 
             emit DropNative(tokenId);

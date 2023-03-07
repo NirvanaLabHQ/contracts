@@ -537,8 +537,7 @@ contract RebornPortal is
         PortalLib._directDropNativeTokenIds(
             topTens,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
@@ -552,8 +551,7 @@ contract RebornPortal is
         PortalLib._directDropNativeTokenIds(
             topTens,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         _pendingDrops.remove(requestId);
