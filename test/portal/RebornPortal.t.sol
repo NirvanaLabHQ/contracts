@@ -43,13 +43,14 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
     }
 
     // for test engrave gas
-    function testManyEngraves() public {
-        mockEngraves(500);
+    function testManyEngravesIncre() public {
+        mockEngravesIncre(500);
     }
 
-    // function testFuzzManyEngravesFuzz(uint256 count) public {
-    //     mockEngraves(count);
-    // }
+    // for test engrave gas
+    function testManyEngravesDecre() public {
+        mockEngravesDecre(500);
+    }
 
     function testInfuseNumericalValue(uint256 amount) public {
         vm.assume(amount < (rbt.cap() - 100 ether) / 2);

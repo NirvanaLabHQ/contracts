@@ -23,7 +23,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
     address owner = vm.addr(2);
     address _user = vm.addr(10);
     address signer = vm.addr(11);
-    uint256 internal _seedIndex;
+    uint256 internal _seedIndex = 1 ether;
     // address on bnb testnet
     address internal _vrfCoordinator;
     // solhint-disable-next-line var-name-mixedcase
@@ -132,7 +132,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         (v, r, s) = vm.sign(10, hash);
     }
 
-    function mockEngrave() public returns (uint256 r) {
+    function mockEngraveFromLowToHigh() public returns (uint256 r) {
         r = ++_seedIndex;
         deal(address(rbt), address(portal.vault()), r);
 
@@ -148,15 +148,37 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         );
     }
 
-    function mockEngraves(uint256 count) public {
+    function mockEngraveFromHighToLow() public returns (uint256 r) {
+        r = --_seedIndex;
+        deal(address(rbt), address(portal.vault()), r);
+
+        vm.prank(signer);
+        portal.engrave(
+            keccak256(abi.encode(r)),
+            _user,
+            r,
+            r,
+            r,
+            r,
+            "@DegenReborn"
+        );
+    }
+
+    function mockEngravesIncre(uint256 count) public {
         for (uint i = 0; i < count; i++) {
-            mockEngrave();
+            mockEngraveFromLowToHigh();
+        }
+    }
+
+    function mockEngravesDecre(uint256 count) public {
+        for (uint i = 0; i < count; i++) {
+            mockEngraveFromHighToLow();
         }
     }
 
     function mockEngravesAndInfuses(uint256 count) public {
         for (uint i = 0; i < count; i++) {
-            uint256 t = mockEngrave();
+            uint256 t = mockEngraveFromLowToHigh();
             mockInfuse(_user, t, 1);
         }
     }

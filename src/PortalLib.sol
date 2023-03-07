@@ -224,8 +224,7 @@ library PortalLib {
     function _directDropNativeTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];

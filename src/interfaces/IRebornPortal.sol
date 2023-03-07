@@ -32,6 +32,8 @@ interface IRebornDefination {
         mapping(uint256 => uint256) _oldStakeAmounts;
         /// tokenId => bool
         BitMapsUpgradeable.BitMap _isTopHundredScore;
+        // the value of minimum score
+        uint256 _minScore;
     }
 
     enum AirdropVrfType {

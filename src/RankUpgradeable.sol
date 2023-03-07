@@ -16,14 +16,7 @@ contract RankUpgradeable is RebornPortalStorage {
      * @param value incarnation life score
      */
     function _enterScoreRank(uint256 tokenId, uint256 value) internal {
-        DegenRank._enterScoreRank(
-            _seasonData[_season]._scoreRank,
-            _seasonData[_season]._tributeRank,
-            _seasonData[_season]._isTopHundredScore,
-            _seasonData[_season]._oldStakeAmounts,
-            tokenId,
-            value
-        );
+        DegenRank._enterScoreRank(_seasonData[_season], tokenId, value);
     }
 
     /**
