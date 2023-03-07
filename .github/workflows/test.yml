@@ -2,7 +2,6 @@ name: Foundry Test
 
 on:
   push:
-  pull_request:
 
 env:
   FOUNDRY_PROFILE: ci
