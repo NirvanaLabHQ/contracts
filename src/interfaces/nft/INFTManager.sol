@@ -5,7 +5,6 @@ interface INFTManager {
     /**********************************************
      * errors
      **********************************************/
-    error OnlyEOA();
     error ZeroOwnerSet();
     error NotSigner();
     error MintIsMaxedOut();

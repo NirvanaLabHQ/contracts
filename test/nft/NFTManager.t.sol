@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 import "src/nft/NFTManager.sol";
+import "murky/Merkle.sol";
 
 contract NFTManagerTest is Test {
     NFTManager nftManager;
@@ -38,6 +39,25 @@ contract NFTManagerTest is Test {
         assertEq(nftManager.balanceOf(address(10)), 1);
         assertEq(nftManager.ownerOf(3), address(13));
         assertEq(nftManager.exists(4), false);
+    }
+
+    function testMint() public {
+        Merkle m = new Merkle();
+        bytes32[] memory data = new bytes32[](4);
+        data[0] = keccak256(bytes.concat(keccak256(abi.encode(address(10)))));
+        data[1] = keccak256(bytes.concat(keccak256(abi.encode(address(11)))));
+        data[2] = keccak256(bytes.concat(keccak256(abi.encode(address(12)))));
+        data[3] = keccak256(bytes.concat(keccak256(abi.encode(address(13)))));
+
+        bytes32 root = m.getRoot(data);
+        vm.prank(owner);
+        nftManager.setMerkleRoot(root);
+        bytes32[] memory proof = m.getProof(data, 2);
+        vm.prank(address(12));
+        nftManager.mint(proof);
+
+        assertEq(nftManager.balanceOf(address(12)), 1);
+        assertEq(nftManager.ownerOf(0), address(12));
     }
 
     function _initialize() internal {

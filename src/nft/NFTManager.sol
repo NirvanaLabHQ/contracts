@@ -46,7 +46,7 @@ contract NFTManager is
     /**
      * @inheritdoc INFTManager
      */
-    function mint(bytes32[] calldata merkleProof) public override onlyEOA {
+    function mint(bytes32[] calldata merkleProof) public override {
         bytes32 leaf = keccak256(
             bytes.concat(keccak256(abi.encode(msg.sender)))
         );
@@ -123,7 +123,7 @@ contract NFTManager is
     function _mintTo(address to) internal {
         uint256 tokenId = _tokenIds.current();
 
-        if (tokenId >= TOTAL_MINT) {
+        if (tokenId >= TOTAL_MINT - 1) {
             revert MintIsMaxedOut();
         }
 
@@ -141,13 +141,6 @@ contract NFTManager is
     /**********************************************
      * modiriers
      **********************************************/
-    modifier onlyEOA() {
-        if (msg.sender != tx.origin) {
-            revert OnlyEOA();
-        }
-        _;
-    }
-
     modifier onlySigner() {
         if (!signers[msg.sender]) {
             revert NotSigner();
