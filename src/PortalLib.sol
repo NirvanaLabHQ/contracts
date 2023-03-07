@@ -252,7 +252,9 @@ library PortalLib {
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = _seasonData.portfolios[owner][tokenId];
+            Portfolio storage portfolio = _seasonData.portfolios[owner][
+                tokenId
+            ];
             portfolio.pendingOwernNativeReward += (dropAmount * 1) / 5;
 
             emit DropNative(tokenId);

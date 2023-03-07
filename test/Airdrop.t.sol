@@ -96,7 +96,7 @@ contract AirdropTest is RebornPortalBaseTest {
         }
 
         // give native token to portal
-        deal(address(portal), UINT256_MAX);
+        deal(address(portal), 1 << 128);
 
         testUpKeepProgressSmoothly();
 

@@ -23,7 +23,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
     address owner = vm.addr(2);
     address _user = vm.addr(10);
     address signer = vm.addr(11);
-    uint256 internal _seedIndex = 1 ether;
+    uint256 internal _seedIndex;
     // address on bnb testnet
     address internal _vrfCoordinator;
     // solhint-disable-next-line var-name-mixedcase
@@ -149,7 +149,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
     }
 
     function mockEngraveFromHighToLow() public returns (uint256 r) {
-        r = --_seedIndex;
+        r = 1 ether - ++_seedIndex;
         deal(address(rbt), address(portal.vault()), r);
 
         vm.prank(signer);
