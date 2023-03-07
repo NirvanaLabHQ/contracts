@@ -207,6 +207,18 @@ contract RebornPortal is
     }
 
     /**
+     * @dev use only in test environment
+     * @dev flatten Reward Debt, for fix in dev mode
+     */
+    function flattenRewardDebt(uint256 tokenId) external {
+        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
+        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
+            msg.sender
+        ][tokenId];
+        PortalLib._flattenRewardDebt(pool, portfolio);
+    }
+
+    /**
      * @dev Upkeep perform of chainlink automation
      */
     function performUpkeep(
@@ -231,7 +243,9 @@ contract RebornPortal is
         _season += 1;
 
         // 16% to next season jackpot
-        payable(msg.sender).transfer((address(this).balance * 16) / 100);
+        _seasonData[_season]._jackpot =
+            (_seasonData[_season - 1]._jackpot * 16) /
+            100;
 
         // pause the contract
         _pause();
@@ -433,14 +447,8 @@ contract RebornPortal is
     }
 
     function _infuse(uint256 tokenId, uint256 amount) internal {
-        // if amount is zero, nothing happen
-        if (amount == 0) {
-            return;
-        }
-        // deposit $REBORN to burn pool
-        if (burnPool == address(0)) {
-            revert NotSetBurnPoolAddress();
-        }
+        // it's not necessary to check the whether the address of burnPool is zero
+        // as function tranferFrom does not allow transfer to zero address by default
         rebornToken.transferFrom(msg.sender, burnPool, amount);
 
         _increasePool(tokenId, amount);
@@ -462,7 +470,10 @@ contract RebornPortal is
         payable(msg.sender).transfer(msg.value - totalFee);
 
         // reward referrers
-        _sendRewardToRefs(msg.sender, totalFee);
+        uint256 netAmount = _sendRewardToRefs(msg.sender, totalFee);
+
+        // add net amount to jackpot
+        _seasonData[_season]._jackpot += netAmount;
 
         emit Incarnate(
             msg.sender,
@@ -531,8 +542,7 @@ contract RebornPortal is
         PortalLib._directDropNativeTokenIds(
             topTens,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
@@ -546,8 +556,7 @@ contract RebornPortal is
         PortalLib._directDropNativeTokenIds(
             topTens,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         _pendingDrops.remove(requestId);
@@ -641,8 +650,12 @@ contract RebornPortal is
     /**
      * @dev send NativeToken to referrers
      */
-    function _sendRewardToRefs(address account, uint256 amount) internal {
-        PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
+    function _sendRewardToRefs(
+        address account,
+        uint256 amount
+    ) internal returns (uint256) {
+        return
+            PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
     }
 
     /**
@@ -654,12 +667,11 @@ contract RebornPortal is
         ][tokenId];
         PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
 
-        if (portfolio.accumulativeAmount < amount) {
-            revert SwitchAmountExceedBalance();
-        }
-
+        // don't need to check accumulativeAmount, as it would revert if accumulativeAmount is less
         portfolio.accumulativeAmount -= amount;
         pool.totalAmount -= amount;
+
+        PortalLib._flattenRewardDebt(pool, portfolio);
 
         _enterTvlRank(tokenId, pool.totalAmount);
 
@@ -670,8 +682,7 @@ contract RebornPortal is
      * @dev increase amount to pool of switch to
      */
     function _increaseToPool(uint256 tokenId, uint256 amount) internal {
-        uint256 burnAmount = (amount * 5) / 100;
-        uint256 restakeAmount = amount - burnAmount;
+        uint256 restakeAmount = (amount * 95) / 100;
 
         _increasePool(tokenId, restakeAmount);
 
@@ -686,6 +697,8 @@ contract RebornPortal is
 
         PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
         pool.totalAmount += amount;
+
+        PortalLib._flattenRewardDebt(pool, portfolio);
 
         _enterTvlRank(tokenId, pool.totalAmount);
     }

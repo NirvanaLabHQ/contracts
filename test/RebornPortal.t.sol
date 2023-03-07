@@ -315,7 +315,7 @@ contract RebornPortalTest is Test, IRebornDefination, EventDefination {
             1.095 * 1 ether
         );
 
-        vm.expectRevert(SwitchAmountExceedBalance.selector);
+        vm.expectRevert();
         vm.prank(_user);
         portal.switchPool(1, 2, 0.5 * 1 ether);
     }

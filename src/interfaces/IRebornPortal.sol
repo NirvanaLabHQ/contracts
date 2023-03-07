@@ -32,6 +32,8 @@ interface IRebornDefination {
         mapping(uint256 => uint256) _oldStakeAmounts;
         /// tokenId => bool
         BitMapsUpgradeable.BitMap _isTopHundredScore;
+        /// amount of the jackpot
+        uint256 _jackpot;
     }
 
     enum AirdropVrfType {
@@ -96,8 +98,6 @@ interface IRebornDefination {
 
     /// @dev revert when the random seed is duplicated
     error SameSeed();
-    /// @dev revert when swith amount from pool exceed staked balance
-    error SwitchAmountExceedBalance();
 
     /// @dev revert when set ZeroAddress
     error ZeroAddressSet();
