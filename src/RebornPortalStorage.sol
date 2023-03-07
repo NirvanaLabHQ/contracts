@@ -20,7 +20,7 @@ contract RebornPortalStorage is IRebornDefination {
 
     uint256 internal idx;
 
-    mapping(uint256 => LifeDetail) public details;
+    mapping(uint256 => LifeDetail) internal details;
 
     mapping(uint256 => SeasonData) internal _seasonData;
 
