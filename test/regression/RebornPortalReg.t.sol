@@ -32,12 +32,16 @@ contract RebornPortalReg is Test {
         portal.performUpkeep(b);
     }
 
-    function testSimulatePendingDrop() public {
-        vm.rollFork(27717592);
-        mockUpgradeToDevVersion();
-        uint256[] memory arr = new uint256[](1);
-        (arr[0]) = (97000000000000000036);
-        vm.prank(0x8A1f5030dBdcC7A630af068Cc0440Bb05bDD8220);
+    function testPendingDrop() public {
+        vm.rollFork(27693331);
+        uint256[] memory arr = new uint256[](4);
+        (arr[0], arr[1], arr[2], arr[3]) = (
+            97000000000000000015,
+            97000000000000000011,
+            97000000000000000013,
+            97000000000000000010
+        );
+        vm.prank(0x679658Be03475D0A5393c70ea0E9A1158Dfae1Ff);
         portal.pendingDrop(arr);
     }
 
