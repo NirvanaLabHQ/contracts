@@ -43,7 +43,9 @@ contract RebornPortalReg is Test {
 
         vm.startPrank(0x8A1f5030dBdcC7A630af068Cc0440Bb05bDD8220);
         portal.flattenRewardDebt(97000000000000000036);
-        portal.pendingDrop(arr);
+        (uint256 n, uint256 t) = portal.pendingDrop(arr);
+        assertEq(n, 0);
+        assertEq(t, 0);
         vm.stopPrank();
     }
 
@@ -59,6 +61,13 @@ contract RebornPortalReg is Test {
             97000000000000000013,
             97000000000000000010
         );
+
+        vm.expectEmit(false, false, false, false);
+        emit PortalLib.ClaimRebornDrop(97000000000000000015, 0);
+        emit PortalLib.ClaimRebornDrop(97000000000000000011, 0);
+        emit PortalLib.ClaimRebornDrop(97000000000000000013, 0);
+        emit PortalLib.ClaimRebornDrop(97000000000000000010, 0);
+
         vm.prank(0x679658Be03475D0A5393c70ea0E9A1158Dfae1Ff);
         portal.claimRebornDrops(arr);
     }
