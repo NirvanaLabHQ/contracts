@@ -10,7 +10,7 @@ import {IRewardVault} from "src/interfaces/IRewardVault.sol";
 contract RewardVault is IRewardVault, Ownable {
     using SafeERC20 for IERC20;
 
-    address public rebornToken;
+    address public immutable rebornToken;
 
     constructor(address owner_, address rebornToken_) {
         if (rebornToken_ == address(0)) revert ZeroAddressSet();
@@ -23,12 +23,10 @@ contract RewardVault is IRewardVault, Ownable {
      * @param to The address of awards
      * @param amount number of awards
      */
-    function reward(address to, uint256 amount)
-        external
-        virtual
-        override
-        onlyOwner
-    {
+    function reward(
+        address to,
+        uint256 amount
+    ) external virtual override onlyOwner {
         IERC20(rebornToken).safeTransfer(to, amount);
     }
 
