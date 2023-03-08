@@ -18,10 +18,20 @@ contract AirdropTest is RebornPortalBaseTest {
                 3 hours,
                 uint40(block.timestamp),
                 uint40(block.timestamp),
-                300,
-                1000
+                20,
+                10,
+                800,
+                400
             )
         );
+    }
+
+    function testManyDrop() public {
+        testUpKeepProgressSmoothly();
+        testUpKeepProgressSmoothly();
+        testUpKeepProgressSmoothly();
+        testUpKeepProgressSmoothly();
+        testUpKeepProgressSmoothly();
     }
 
     function testUpKeepProgressSmoothly() public {
@@ -50,13 +60,21 @@ contract AirdropTest is RebornPortalBaseTest {
         uint256[] memory words;
         // fulfill random number of the reborn request;
         words = new uint256[](10);
-        vm.prank(_vrfCoordinator);
-        portal.rawFulfillRandomWords(1, words);
+        vm.startPrank(_vrfCoordinator);
+        portal.rawFulfillRandomWords(
+            VRFCoordinatorV2Mock(_vrfCoordinator)._idx() - 1,
+            words
+        );
+        vm.stopPrank();
 
         // fulfill random number of the native request;
         words = new uint256[](10);
-        vm.prank(_vrfCoordinator);
-        portal.rawFulfillRandomWords(2, words);
+        vm.startPrank(_vrfCoordinator);
+        portal.rawFulfillRandomWords(
+            VRFCoordinatorV2Mock(_vrfCoordinator)._idx(),
+            words
+        );
+        vm.stopPrank();
 
         // perform the random number with reborn drop
         (up, perfromData) = portal.checkUpkeep(new bytes(0));

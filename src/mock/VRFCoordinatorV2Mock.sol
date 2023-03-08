@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 contract VRFCoordinatorV2Mock {
-    uint256 private _idx;
+    uint256 public _idx;
 
     function requestRandomWords(
         bytes32 keyHash,
