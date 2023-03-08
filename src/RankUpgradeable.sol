@@ -19,6 +19,7 @@ contract RankUpgradeable {
     function _enter(uint256 tokenId, uint256 value) internal {
         if (value == 0) {
             _exit(tokenId);
+            return;
         }
 
         // remove old value from the rank, keep one token Id only one value
