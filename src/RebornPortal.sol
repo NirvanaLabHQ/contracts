@@ -429,10 +429,11 @@ contract RebornPortal is
                 }
 
                 pool.accNativePerShare +=
-                    (((_dropConf._nativeDropRatio * address(this).balance * 3) /
-                        200) * PERSHARE_BASE) /
-                    PERCENTAGE_BASE /
-                    pool.totalAmount;
+                    (_dropConf._nativeDropRatio *
+                        address(this).balance *
+                        3 *
+                        PERSHARE_BASE) /
+                    (200 * PERCENTAGE_BASE * pool.totalAmount);
             }
             // set last drop timestamp to specific hour
             _dropConf._nativeDropLastUpdate = uint40(
