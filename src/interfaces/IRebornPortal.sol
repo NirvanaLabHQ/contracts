@@ -132,6 +132,9 @@ interface IRebornDefination {
     /// @dev revert when to caller is not signer
     error NotSigner();
 
+    /// @dev revert when some address var are set to zero
+    error ZeroAddressSet();
+
     /// @dev revert when the random seed is duplicated
     error SameSeed();
     /// @dev revert when swith amount from pool exceed staked balance

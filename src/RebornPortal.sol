@@ -34,6 +34,9 @@ contract RebornPortal is
         string memory name_,
         string memory symbol_
     ) public initializer {
+        if (address(rebornToken_) == address(0)) {
+            revert ZeroAddressSet();
+        }
         rebornToken = rebornToken_;
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
