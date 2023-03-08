@@ -157,7 +157,8 @@ contract RebornPortal is
      * @param tokenIds pools' tokenId array to claim
      */
     function claimDrops(uint256[] memory tokenIds) external whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
+        uint256 length = tokenIds.length;
+        for (uint256 i = 0; i < length; i++) {
             _claimPoolDrop(tokenIds[i]);
         }
     }
