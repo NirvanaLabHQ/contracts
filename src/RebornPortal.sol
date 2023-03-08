@@ -385,6 +385,12 @@ contract RebornPortal is
                 }
                 Pool storage pool = pools[tokenIds[i]];
 
+                // if no one tribute, continue
+                // as it's loof from high tvl to low tvl
+                if (pool.totalAmount == 0) {
+                    return;
+                }
+
                 pool.accRebornPerShare +=
                     (_dropConf._rebornDropEthAmount * 1 ether * PERSHARE_BASE) /
                     pool.totalAmount;
@@ -410,6 +416,12 @@ contract RebornPortal is
                     return;
                 }
                 Pool storage pool = pools[tokenIds[i]];
+
+                // if no one tribute, continue
+                // as it's loof from high tvl to low tvl
+                if (pool.totalAmount == 0) {
+                    return;
+                }
 
                 pool.accNativePerShare +=
                     (((_dropConf._nativeDropRatio * address(this).balance * 3) / 200) *
