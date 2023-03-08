@@ -124,6 +124,9 @@ interface IRebornDefination {
 
     event Drop(uint256[] tokenIds);
 
+    /// @dev event about the vault address is set
+    event VaultSet(address rewardVault);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer

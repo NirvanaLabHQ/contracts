@@ -197,6 +197,7 @@ contract RebornPortal is
      */
     function setVault(RewardVault vault_) external onlyOwner {
         vault = vault_;
+        emit VaultSet(address(vault_));
     }
 
     /**
@@ -424,8 +425,8 @@ contract RebornPortal is
                 }
 
                 pool.accNativePerShare +=
-                    (((_dropConf._nativeDropRatio * address(this).balance * 3) / 200) *
-                        PERSHARE_BASE) /
+                    (((_dropConf._nativeDropRatio * address(this).balance * 3) /
+                        200) * PERSHARE_BASE) /
                     PERCENTAGE_BASE /
                     pool.totalAmount;
             }
