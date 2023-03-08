@@ -181,7 +181,7 @@ contract RebornPortal is
         if (t == 1) {
             _dropReborn();
         } else if (t == 2) {
-            _dropReborn();
+            _dropNative();
         }
     }
 
