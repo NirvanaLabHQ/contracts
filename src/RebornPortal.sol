@@ -380,7 +380,7 @@ contract RebornPortal is
      */
     function _dropReborn() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
-        bool dropReborn = block.timestamp >
+        bool dropReborn = uint40(_toLastHour(block.timestamp)) >
             _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval;
         if (dropReborn) {
             for (uint256 i = 0; i < 100; i++) {
@@ -412,7 +412,7 @@ contract RebornPortal is
      */
     function _dropNative() internal onlyDropOn {
         uint256[] memory tokenIds = _getTopNTokenId(100);
-        bool dropNative = block.timestamp >
+        bool dropNative = uint40(_toLastHour(block.timestamp)) >
             _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval;
         if (dropNative) {
             for (uint256 i = 0; i < 100; i++) {
