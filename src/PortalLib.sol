@@ -245,9 +245,8 @@ library PortalLib {
 
             // 80% to pool
             pool.accNativePerShare +=
-                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
-                PERCENTAGE_BASE /
-                pool.totalAmount;
+                (((dropAmount * 4)) * PortalLib.PERSHARE_BASE) /
+                (PERCENTAGE_BASE * 5 * pool.totalAmount);
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
@@ -285,9 +284,8 @@ library PortalLib {
 
             // 80% to pool
             pool.accNativePerShare +=
-                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
-                PERCENTAGE_BASE /
-                pool.totalAmount;
+                (((dropAmount * 4)) * PortalLib.PERSHARE_BASE) /
+                (PERCENTAGE_BASE * 5 * pool.totalAmount);
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
@@ -326,8 +324,8 @@ library PortalLib {
 
             // 80% to pool
             pool.accRebornPerShare +=
-                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
-                pool.totalAmount;
+                (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
+                (5 * pool.totalAmount);
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
@@ -364,8 +362,8 @@ library PortalLib {
 
             // 80% to pool
             pool.accRebornPerShare +=
-                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
-                pool.totalAmount;
+                (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
+                (5 * pool.totalAmount);
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
