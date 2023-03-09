@@ -603,15 +603,13 @@ contract RebornPortal is
         uint256[] memory randomWords
     ) internal override {
         if (
-            _vrfRequests[requestId].fulfilled || !_vrfRequests[requestId].exists
+            !_vrfRequests[requestId].fulfilled && _vrfRequests[requestId].exists
         ) {
-            revert PortalLib.InvalidRequestId(requestId);
+            _vrfRequests[requestId].randomWords = randomWords;
+            _vrfRequests[requestId].fulfilled = true;
+
+            _pendingDrops.insert(requestId);
         }
-
-        _vrfRequests[requestId].randomWords = randomWords;
-        _vrfRequests[requestId].fulfilled = true;
-
-        _pendingDrops.insert(requestId);
     }
 
     /**

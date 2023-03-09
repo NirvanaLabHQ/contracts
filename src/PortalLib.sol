@@ -87,9 +87,6 @@ library PortalLib {
         PortalLib.RewardType rewardType
     );
 
-    /// @dev invliad chainlink vrf request id
-    error InvalidRequestId(uint256);
-
     function _claimPoolRebornDrop(
         uint256 tokenId,
         RewardVault vault,
