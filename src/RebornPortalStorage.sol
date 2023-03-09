@@ -32,7 +32,7 @@ contract RebornPortalStorage is IRebornDefination {
     BitMapsUpgradeable.BitMap internal _seeds;
 
     // airdrop config
-    PortalLib.AirdropConf public _dropConf;
+    PortalLib.AirdropConf internal _dropConf;
 
     address public burnPool;
 

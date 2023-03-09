@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 import {SingleRanking} from "src/lib/SingleRanking.sol";
+import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 library DegenRank {
@@ -8,10 +9,7 @@ library DegenRank {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
     function _enterScoreRank(
-        SingleRanking.Data storage _scoreRank,
-        SingleRanking.Data storage _tributeRank,
-        BitMapsUpgradeable.BitMap storage _isTopHundredScore,
-        mapping(uint256 => uint256) storage _oldStakeAmounts,
+        IRebornPortal.SeasonData storage _seasonData,
         uint256 tokenId,
         uint256 value
     ) external {
@@ -19,37 +17,41 @@ library DegenRank {
             return;
         }
         // only when length is larger than 100, remove
-        if (SingleRanking.length(_scoreRank) >= 100) {
-            uint256 minValue = _scoreRank.getNthValue(99);
+        if (SingleRanking.length(_seasonData._scoreRank) >= 100) {
             // get the 100th value and compare, if new value is smaller, nothing happen
-            if (value <= minValue) {
+            if (value <= _seasonData._minScore) {
                 return;
             }
             // remove the smallest in the score rank
-            uint256 tokenIdWithMinmalScore = _scoreRank.get(99, 1)[0];
-            _scoreRank.remove(tokenIdWithMinmalScore, minValue);
+            uint256 tokenIdWithMinmalScore = _seasonData._scoreRank.get(99, 1)[
+                0
+            ];
+            _seasonData._scoreRank.remove(tokenIdWithMinmalScore, _seasonData._minScore);
 
             // also remove it from tvl rank
-            _isTopHundredScore.unset(tokenIdWithMinmalScore);
+            _seasonData._isTopHundredScore.unset(tokenIdWithMinmalScore);
             _exitTvlRank(
-                _tributeRank,
-                _oldStakeAmounts,
+                _seasonData._tributeRank,
+                _seasonData._oldStakeAmounts,
                 tokenIdWithMinmalScore
             );
+
+            // set min value
+            _seasonData._minScore = _seasonData._scoreRank.getNthValue(99);
         }
 
         // add to score rank
-        _scoreRank.add(tokenId, value);
+        _seasonData._scoreRank.add(tokenId, value);
         // can enter the tvl rank
-        _isTopHundredScore.set(tokenId);
+        _seasonData._isTopHundredScore.set(tokenId);
 
         // Enter as a very small value, just ensure it's not zero and pass check
         // it doesn't matter too much as really stake has decimal with 18.
         // General value woule be much larger than 1
         _enterTvlRank(
-            _tributeRank,
-            _isTopHundredScore,
-            _oldStakeAmounts,
+            _seasonData._tributeRank,
+            _seasonData._isTopHundredScore,
+            _seasonData._oldStakeAmounts,
             tokenId,
             1
         );

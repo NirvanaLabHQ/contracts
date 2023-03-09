@@ -16,14 +16,7 @@ contract RankUpgradeable is RebornPortalStorage {
      * @param value incarnation life score
      */
     function _enterScoreRank(uint256 tokenId, uint256 value) internal {
-        DegenRank._enterScoreRank(
-            _seasonData[_season]._scoreRank,
-            _seasonData[_season]._tributeRank,
-            _seasonData[_season]._isTopHundredScore,
-            _seasonData[_season]._oldStakeAmounts,
-            tokenId,
-            value
-        );
+        DegenRank._enterScoreRank(_seasonData[_season], tokenId, value);
     }
 
     /**
@@ -53,8 +46,8 @@ contract RankUpgradeable is RebornPortalStorage {
      * TODO: old data should have higher priority when value is the same
      */
     function _getFirstNTokenIdByOffSet(
-        uint256 n,
-        uint256 offSet
+        uint256 offSet,
+        uint256 n
     ) internal view returns (uint256[] memory values) {
         return _seasonData[_season]._tributeRank.get(offSet, n);
     }
