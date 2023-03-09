@@ -91,8 +91,6 @@ interface IRebornDefination {
 
     event NewSeason(uint256);
 
-    error InvalidPerformData(bytes);
-
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer

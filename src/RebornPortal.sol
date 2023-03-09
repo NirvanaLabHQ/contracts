@@ -224,9 +224,6 @@ contract RebornPortal is
     function performUpkeep(
         bytes calldata performData
     ) external override whenNotPaused {
-        if (performData.length != 64) {
-            revert InvalidPerformData(performData);
-        }
         (uint256 t, uint256 id) = abi.decode(performData, (uint256, uint256));
 
         if (t == 1) {
@@ -245,9 +242,6 @@ contract RebornPortal is
      */
     function toNextSeason() external onlyOwner {
         _season += 1;
-
-        // 16% to next season jackpot
-        payable(msg.sender).transfer((address(this).balance * 16) / 100);
 
         // pause the contract
         _pause();
