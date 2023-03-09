@@ -291,7 +291,7 @@ contract RebornPortal is
      * @dev withdraw token from vault
      * @param to the address which owner withdraw token to
      */
-    function withdrawVault(address to) external onlyOwner {
+    function withdrawVault(address to) external whenPaused onlyOwner {
         vault.withdrawEmergency(to);
     }
 
@@ -345,7 +345,7 @@ contract RebornPortal is
      * @dev withdraw native token for reward distribution
      * @dev amount how much to withdraw
      */
-    function withdrawNativeToken(uint256 amount) external onlyOwner {
+    function withdrawNativeToken(uint256 amount) external whenPaused onlyOwner {
         payable(msg.sender).transfer(amount);
     }
 
