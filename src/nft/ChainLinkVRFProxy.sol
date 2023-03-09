@@ -72,7 +72,7 @@ contract ChainLinkVRF is VRFConsumerBaseV2, ConfirmedOwner {
         requests[requestId].fulfilled = true;
         requests[requestId].randomWords = randomWords;
 
-        owner.call{value: 23000}(
+        owner.call(
             abi.encodeWithSignature(
                 "fulfillRandomWordsCallback(uint256 _requestId,uint256[] memory randomWords)",
                 requestId,
