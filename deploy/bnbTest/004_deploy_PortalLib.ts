@@ -1,5 +1,4 @@
 import { DeployFunction } from "hardhat-deploy/types";
-import { parseEther } from "ethers/lib/utils";
 
 const func: DeployFunction = async function ({
   deployments,
