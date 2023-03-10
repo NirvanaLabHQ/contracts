@@ -242,7 +242,7 @@ library PortalLib {
             }
 
             uint256 dropAmount = (_dropConf._nativeTopDropRatio *
-                address(this).balance) / PortalLib.PERCENTAGE_BASE;
+                _seasonData._jackpot) / PortalLib.PERCENTAGE_BASE;
 
             // 80% to pool
             pool.accNativePerShare +=
@@ -281,7 +281,7 @@ library PortalLib {
             }
 
             uint256 dropAmount = (_dropConf._nativeRaffleDropRatio *
-                address(this).balance) / PortalLib.PERCENTAGE_BASE;
+                _seasonData._jackpot) / PortalLib.PERCENTAGE_BASE;
 
             // 80% to pool
             pool.accNativePerShare +=

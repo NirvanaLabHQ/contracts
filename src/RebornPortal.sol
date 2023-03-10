@@ -455,6 +455,9 @@ contract RebornPortal is
         // transfer redundant native token back
         payable(msg.sender).transfer(msg.value - totalFee);
 
+        // native token to to jackpot
+        _seasonData[_season]._jackpot += msg.value;
+
         // reward referrers
         _sendRewardToRefs(msg.sender, totalFee);
 
