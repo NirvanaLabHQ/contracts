@@ -349,12 +349,7 @@ contract RebornPortal is
     function pendingDrop(
         uint256[] memory tokenIds
     ) external view returns (uint256 pNative, uint256 pReborn) {
-        return
-            PortalLib._pendingDrop(
-                _seasonData[_season].pools,
-                _seasonData[_season].portfolios,
-                tokenIds
-            );
+        return PortalLib._pendingDrop(_seasonData[_season], tokenIds);
     }
 
     /**
@@ -386,8 +381,8 @@ contract RebornPortal is
                 return (upkeepNeeded, performData);
             }
             // second, check pending drop and execute
-            for (uint256 i = 0; i < FastArray.length(_pendingDrops); i++) {
-                uint256 id = _pendingDrops.get(i);
+            if (FastArray.length(_pendingDrops) > 0) {
+                uint256 id = _pendingDrops.get(0);
                 upkeepNeeded = true;
                 if (_vrfRequests[id].t == AirdropVrfType.DropReborn) {
                     performData = abi.encode(3, id);
@@ -497,8 +492,7 @@ contract RebornPortal is
         PortalLib._directDropRebornToTopTokenIds(
             topTens,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
@@ -506,15 +500,14 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
-        for (uint256 i = 0; i < rs.randomWords.length; i++) {
+        for (uint256 i = 0; i < 10; i++) {
             selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
         }
 
         PortalLib._directDropRebornToRaffleTokenIds(
             selectedTokenIds,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         _pendingDrops.remove(requestId);

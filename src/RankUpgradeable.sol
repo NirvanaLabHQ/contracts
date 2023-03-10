@@ -7,7 +7,7 @@ import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 
 import {DegenRank} from "src/DegenRank.sol";
 
-contract RankUpgradeable is RebornPortalStorage {
+abstract contract RankUpgradeable is RebornPortalStorage {
     using SingleRanking for SingleRanking.Data;
 
     /**

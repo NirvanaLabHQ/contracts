@@ -178,11 +178,12 @@ library PortalLib {
      */
     function _calculatePoolDrop(
         uint256 tokenId,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) public view returns (uint256 pendingNative, uint256 pendingReborn) {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        Pool storage pool = _seasonData.pools[tokenId];
+        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
+            tokenId
+        ];
 
         // if no portfolio, no pending reward
         if (portfolio.accumulativeAmount == 0) {
@@ -207,15 +208,13 @@ library PortalLib {
      * @param tokenIds tokenId array of the pools
      */
     function _pendingDrop(
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios,
+        IRebornDefination.SeasonData storage _seasonData,
         uint256[] memory tokenIds
     ) external view returns (uint256 pNative, uint256 pReborn) {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             (uint256 n, uint256 r) = _calculatePoolDrop(
                 tokenIds[i],
-                pools,
-                portfolios
+                _seasonData
             );
             pNative += n;
             pReborn += r;
@@ -303,8 +302,7 @@ library PortalLib {
     function _directDropRebornToTopTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -313,7 +311,7 @@ library PortalLib {
             if (tokenId == 0) {
                 return;
             }
-            Pool storage pool = pools[tokenId];
+            Pool storage pool = _seasonData.pools[tokenId];
 
             // if no one tribute, continue
             // as it's loof from high tvl to low tvl
@@ -331,7 +329,9 @@ library PortalLib {
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = portfolios[owner][tokenId];
+            Portfolio storage portfolio = _seasonData.portfolios[owner][
+                tokenId
+            ];
             portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
 
             emit DropReborn(tokenId);
@@ -341,8 +341,7 @@ library PortalLib {
     function _directDropRebornToRaffleTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -351,7 +350,7 @@ library PortalLib {
             if (tokenId == 0) {
                 return;
             }
-            Pool storage pool = pools[tokenId];
+            Pool storage pool = _seasonData.pools[tokenId];
 
             // if no one tribute, continue
             // as it's loof from high tvl to low tvl
@@ -369,7 +368,9 @@ library PortalLib {
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = portfolios[owner][tokenId];
+            Portfolio storage portfolio = _seasonData.portfolios[owner][
+                tokenId
+            ];
             portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
 
             emit DropReborn(tokenId);
