@@ -71,4 +71,11 @@ contract RebornPortalReg is Test {
         vm.prank(0x679658Be03475D0A5393c70ea0E9A1158Dfae1Ff);
         portal.claimRebornDrops(arr);
     }
+
+    function testSimulatePerformUpKeep() public {
+        vm.rollFork(27913896);
+        mockUpgradeToDevVersion();
+
+        // portal.performUpkeep(abi.encode(1, 0));
+    }
 }

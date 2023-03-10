@@ -214,6 +214,13 @@ contract RebornPortal is
     }
 
     /**
+     * @dev set vrf cor, only in test environment
+     */
+    function initVrfCor(address vrfCor) public onlyOwner {
+        vrfCoordinator = vrfCor;
+    }
+
+    /**
      * @dev Upkeep perform of chainlink automation
      */
     function performUpkeep(
