@@ -5,7 +5,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
-contract ChainLinkVRF is VRFConsumerBaseV2, ConfirmedOwner {
+contract ChainlinkVRF is VRFConsumerBaseV2, ConfirmedOwner {
     struct RequestStatus {
         bool fulfilled;
         bool exists;
@@ -15,23 +15,42 @@ contract ChainLinkVRF is VRFConsumerBaseV2, ConfirmedOwner {
     event RequestRandomWords(uint256 requestId);
     event FulfilledRandomWords(uint256 requestId, uint256[] randomWords);
 
-    address owner;
+    /**
+     * @dev controller of current proxy. onlyOwner means only controller
+     * @notice must be contract with implament function
+     * `fulfillRandomWordsCallback(uint256 requestId,uint256[] memory randomWords)`
+     */
+    address controller;
+
     uint64 subscriptionId;
+
     uint16 requestConfirmations;
+
     VRFCoordinatorV2Interface public coordinator;
+
     bytes32 public keyHash;
+
     uint256 public latestRequestId;
+
     uint256[] public requestIds;
+
     mapping(uint256 => RequestStatus) public requests;
 
     constructor(
-        address owner_, // control contract
+        address controller_, // control contract
         address consumer_,
         address coordinator_,
         bytes32 keyHash_
-    ) VRFConsumerBaseV2(consumer_) ConfirmedOwner(owner_) {
-        require(owner != address(0), "Ownable: owner is the zero address");
-        owner = owner;
+    ) VRFConsumerBaseV2(consumer_) ConfirmedOwner(controller_) {
+        require(
+            controller_ != address(0),
+            "Ownable: controller is the zero address"
+        );
+        require(coordinator_ != address(0), "coordinator is the zero address");
+        require(keyHash != bytes32(0), "keyHash is bytes32(0)");
+        controller = controller_;
+        coordinator = VRFCoordinatorV2Interface(coordinator_);
+        keyHash = keyHash_;
     }
 
     function requestRandomWords(
@@ -72,9 +91,9 @@ contract ChainLinkVRF is VRFConsumerBaseV2, ConfirmedOwner {
         requests[requestId].fulfilled = true;
         requests[requestId].randomWords = randomWords;
 
-        owner.call(
+        controller.call(
             abi.encodeWithSignature(
-                "fulfillRandomWordsCallback(uint256 _requestId,uint256[] memory randomWords)",
+                "fulfillRandomWordsCallback(uint256 requestId,uint256[] memory randomWords)",
                 requestId,
                 randomWords
             )

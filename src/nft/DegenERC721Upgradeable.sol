@@ -10,7 +10,7 @@ contract DegenERC721Upgradeable is ERC721Upgradeable, IDegenERC721Upgradeable {
 
     function _setProperties(
         uint256 tokenId,
-        Properties calldata _properties
+        Properties memory _properties
     ) internal {
         properties[tokenId] = _properties;
         emit SetProperties(_properties);

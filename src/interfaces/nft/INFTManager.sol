@@ -13,6 +13,9 @@ interface INFTManager {
     error InvalidProof();
     error NotTokenOwner();
     error InvalidTokens();
+    error ZeroAddressSet();
+    error OnlyChainlinkVRFProxy();
+    error InvalidRequestId();
 
     /**********************************************
      * events
@@ -28,6 +31,9 @@ interface INFTManager {
         uint256 newTokenId
     );
     event BurnToken(address account, uint256 tokenId);
+    event ChangedChainlinkVRFProxy(address chainlinkVRFProxy);
+    event OpenMysteryBoxFailed(uint256 tokenId);
+    event OpenMysteryBoxSuccess(uint256 tokenId, uint256 metadataId);
 
     /**********************************************
      * functions
@@ -44,9 +50,8 @@ interface INFTManager {
 
     /**
      * @dev bind tokenId and metadata
-     * @param tokenId tokenId wait to open
      */
-    function openMysteryBox(uint256 tokenId) external;
+    function openMysteryBox(uint256[] calldata tokenIds) external;
 
     function merge(uint256 tokenId1, uint256 tokenId2) external;
 
