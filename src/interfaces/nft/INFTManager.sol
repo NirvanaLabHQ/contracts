@@ -11,6 +11,8 @@ interface INFTManager {
     error AlreadyMinted();
     error ZeroRootSet();
     error InvalidProof();
+    error NotTokenOwner();
+    error InvalidTokens();
 
     /**********************************************
      * events
@@ -18,6 +20,14 @@ interface INFTManager {
     event Minted(address indexed account, uint256 indexed tokenId);
     event SignerUpdate(address indexed signer, bool valid);
     event MerkleTreeRootSet(bytes32 root);
+    // burn the tokenId of from account
+    event MergeTokens(
+        address indexed from,
+        uint256 tokenId1,
+        uint256 tokenId2,
+        uint256 newTokenId
+    );
+    event BurnToken(address account, uint256 tokenId);
 
     /**********************************************
      * functions

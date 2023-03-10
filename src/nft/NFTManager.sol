@@ -2,14 +2,15 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
+import "./DegenERC721URIStorageUpgradeable.sol";
 import "src/interfaces/nft/INFTManager.sol";
 
 contract NFTManager is
-    ERC721URIStorageUpgradeable,
+    DegenERC721URIStorageUpgradeable,
     OwnableUpgradeable,
     INFTManager
 {
@@ -23,6 +24,11 @@ contract NFTManager is
 
     mapping(address => bool) public signers;
     mapping(address => bool) public minted;
+
+    // id => metadata map
+    mapping(uint256 => Properties) metadatas;
+    // latest index of metadata map
+    uint16 public latestMetadataIdx;
 
     // white list merkle tree root
     bytes32 public merkleRoot;
@@ -61,7 +67,9 @@ contract NFTManager is
             revert InvalidProof();
         }
 
-        _mintTo(msg.sender);
+        uint256 tokenId = _mintTo(msg.sender, true);
+
+        emit Minted(msg.sender, tokenId);
     }
 
     /**
@@ -71,7 +79,9 @@ contract NFTManager is
         address[] calldata receivers
     ) external override onlySigner {
         for (uint256 i = 0; i < receivers.length; i++) {
-            _mintTo(receivers[i]);
+            uint256 tokenId = _mintTo(receivers[i], true);
+
+            emit Minted(receivers[i], tokenId);
         }
     }
 
@@ -80,9 +90,34 @@ contract NFTManager is
      */
     function openMysteryBox(uint256 tokenId) external override {}
 
-    function merge(uint256 tokenId1, uint256 tokenId2) external override {}
+    function merge(uint256 tokenId1, uint256 tokenId2) external override {
+        _checkOwner(msg.sender, tokenId1);
+        _checkOwner(msg.sender, tokenId2);
 
-    function burn(uint256 tokenId) external override {}
+        bool propertiEq = _checkPropertiesEq(tokenId1, tokenId2);
+        if (!propertiEq) {
+            revert InvalidTokens();
+        }
+
+        _burn(tokenId1);
+        _burn(tokenId2);
+
+        uint256 tokenId = _mintTo(msg.sender, false);
+        _setTokenURI(
+            tokenId,
+            string.concat(StringsUpgradeable.toString(tokenId), ".json")
+        );
+
+        emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
+    }
+
+    function burn(uint256 tokenId) external override {
+        _checkOwner(msg.sender, tokenId);
+
+        _burn(tokenId);
+
+        emit BurnToken(msg.sender, tokenId);
+    }
 
     function updateSigners(
         address[] calldata toAdd,
@@ -110,6 +145,19 @@ contract NFTManager is
         emit MerkleTreeRootSet(root);
     }
 
+    /**
+     * @dev set id=>metadata map
+     * latestMetadata is useed for compatible sence with multiple times to setting
+     */
+    function setMetadatas(
+        Properties[] calldata metadataList
+    ) external onlyOwner {
+        for (uint256 i = 0; i < metadataList.length; i++) {
+            metadatas[latestMetadataIdx] = metadataList[i];
+            latestMetadataIdx++;
+        }
+    }
+
     /**********************************************
      * read functions
      **********************************************/
@@ -117,25 +165,60 @@ contract NFTManager is
         return _exists(tokenId);
     }
 
+    // get metadata config list
+    function getMetadataList(
+        uint16 length,
+        uint256 offset
+    ) external view returns (Properties[] memory) {
+        Properties[] memory properties = new Properties[](length);
+        for (uint256 i = offset; i < length; i++) {
+            properties[i] = metadatas[i];
+        }
+        return properties;
+    }
+
     /**********************************************
      * internal functions
      **********************************************/
-    function _mintTo(address to) internal {
-        uint256 tokenId = _tokenIds.current();
+    function _mintTo(
+        address to,
+        bool checkTotal
+    ) internal returns (uint256 tokenId) {
+        tokenId = _tokenIds.current();
 
-        if (tokenId >= TOTAL_MINT - 1) {
-            revert MintIsMaxedOut();
-        }
+        if (checkTotal) {
+            if (tokenId >= TOTAL_MINT - 1) {
+                revert MintIsMaxedOut();
+            }
 
-        if (minted[to]) {
-            revert AlreadyMinted();
+            if (minted[to]) {
+                revert AlreadyMinted();
+            }
         }
 
         _mint(to, tokenId);
         minted[to] = true;
         _tokenIds.increment();
+    }
 
-        emit Minted(msg.sender, tokenId);
+    function _checkOwner(address owner, uint256 tokenId) internal view {
+        if (ownerOf(tokenId) != owner) {
+            revert NotTokenOwner();
+        }
+    }
+
+    // only name && tokenType equal means token1 and token2 can merge
+    function _checkPropertiesEq(
+        uint256 tokenId1,
+        uint256 tokenId2
+    ) internal view returns (bool) {
+        Properties memory token1Property = propertyOf(tokenId1);
+        Properties memory token2Property = propertyOf(tokenId2);
+
+        return
+            keccak256(bytes(token1Property.name)) ==
+            keccak256(bytes(token2Property.name)) &&
+            token1Property.tokenType == token2Property.tokenType;
     }
 
     /**********************************************
