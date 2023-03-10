@@ -116,7 +116,7 @@ contract DropHandler is Test {
 
     function drop() public {
         // set timestamp forward to trigger airdrop
-        vm.warp(block.timestamp + 1 days);
+        vm.warp(_portal.getDropConf()._rebornDropLastUpdate + 1 days);
 
         bool up;
         bytes memory perfromData;

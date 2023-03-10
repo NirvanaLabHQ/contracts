@@ -241,7 +241,7 @@ contract RebornPortal is
         // pause the contract
         _pause();
 
-        // 16% jackpot to next season 
+        // 16% jackpot to next season
         _seasonData[_season]._jackpot =
             (_seasonData[_season - 1]._jackpot * 16) /
             100;
