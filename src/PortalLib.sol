@@ -90,11 +90,12 @@ library PortalLib {
     function _claimPoolRebornDrop(
         uint256 tokenId,
         RewardVault vault,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        Pool storage pool = _seasonData.pools[tokenId];
+        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
+            tokenId
+        ];
 
         if (portfolio.accumulativeAmount == 0) {
             return;
@@ -124,11 +125,12 @@ library PortalLib {
 
     function _claimPoolNativeDrop(
         uint256 tokenId,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        Pool storage pool = _seasonData.pools[tokenId];
+        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
+            tokenId
+        ];
 
         if (portfolio.accumulativeAmount == 0) {
             return;

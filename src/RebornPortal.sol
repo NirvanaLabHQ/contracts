@@ -182,11 +182,7 @@ contract RebornPortal is
         uint256[] calldata tokenIds
     ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            PortalLib._claimPoolNativeDrop(
-                tokenIds[i],
-                _seasonData[_season].pools,
-                _seasonData[_season].portfolios
-            );
+            PortalLib._claimPoolNativeDrop(tokenIds[i], _seasonData[_season]);
         }
     }
 
@@ -200,8 +196,7 @@ contract RebornPortal is
             PortalLib._claimPoolRebornDrop(
                 tokenIds[i],
                 vault,
-                _seasonData[_season].pools,
-                _seasonData[_season].portfolios
+                _seasonData[_season]
             );
         }
     }
@@ -289,7 +284,7 @@ contract RebornPortal is
      * @dev withdraw token from vault
      * @param to the address which owner withdraw token to
      */
-    function withdrawVault(address to) external onlyOwner {
+    function withdrawVault(address to) external whenPaused onlyOwner {
         vault.withdrawEmergency(to);
     }
 
@@ -343,7 +338,7 @@ contract RebornPortal is
      * @dev withdraw native token for reward distribution
      * @dev amount how much to withdraw
      */
-    function withdrawNativeToken(uint256 amount) external onlyOwner {
+    function withdrawNativeToken(uint256 amount) external whenPaused onlyOwner {
         payable(msg.sender).transfer(amount);
     }
 
@@ -616,17 +611,8 @@ contract RebornPortal is
      * @dev user claim a drop from a pool
      */
     function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
-        PortalLib._claimPoolNativeDrop(
-            tokenId,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
-        );
-        PortalLib._claimPoolRebornDrop(
-            tokenId,
-            vault,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
-        );
+        PortalLib._claimPoolNativeDrop(tokenId, _seasonData[_season]);
+        PortalLib._claimPoolRebornDrop(tokenId, vault, _seasonData[_season]);
     }
 
     /**
