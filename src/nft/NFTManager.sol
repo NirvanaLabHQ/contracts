@@ -235,6 +235,10 @@ contract NFTManager is
         return properties;
     }
 
+    function getLatestTokenId() external view returns (uint256) {
+        return _tokenIds.current();
+    }
+
     /**********************************************
      * internal functions
      **********************************************/
