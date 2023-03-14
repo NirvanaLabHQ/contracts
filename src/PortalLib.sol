@@ -242,12 +242,12 @@ library PortalLib {
             }
 
             uint256 dropAmount = (_dropConf._nativeTopDropRatio *
-                _seasonData._jackpot) / PortalLib.PERCENTAGE_BASE;
+                _seasonData._jackpot) / PERCENTAGE_BASE;
 
             // 80% to pool
             pool.accNativePerShare +=
-                (((dropAmount * 4)) * PortalLib.PERSHARE_BASE) /
-                (PERCENTAGE_BASE * 5 * pool.totalAmount);
+                (4 * dropAmount * PERSHARE_BASE) /
+                (5 * pool.totalAmount);
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
@@ -281,12 +281,12 @@ library PortalLib {
             }
 
             uint256 dropAmount = (_dropConf._nativeRaffleDropRatio *
-                _seasonData._jackpot) / PortalLib.PERCENTAGE_BASE;
+                _seasonData._jackpot) / PERCENTAGE_BASE;
 
             // 80% to pool
             pool.accNativePerShare +=
-                (((dropAmount * 4)) * PortalLib.PERSHARE_BASE) /
-                (PERCENTAGE_BASE * 5 * pool.totalAmount);
+                (4 * dropAmount * PERSHARE_BASE) /
+                (5 * pool.totalAmount);
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);

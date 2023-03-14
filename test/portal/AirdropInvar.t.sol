@@ -50,10 +50,17 @@ contract AirdropInvar is RebornPortalBaseTest, InvariantTest {
             portal.getDropConf()._nativeTopDropRatio
         ) * 10) + (uint256(portal.getDropConf()._nativeRaffleDropRatio) * 10));
 
-        uint256 totalAmount = _dropHandler.initalJackPot() -
-            ((_dropHandler.initalJackPot() *
-                (totalRatio ** _dropHandler.dropCount())) /
-                (PortalLib.PERCENTAGE_BASE ** _dropHandler.dropCount()));
+        // calculate airdropped amount of native token
+        uint256 totalAmount;
+        uint256 initAmount = _dropHandler.initalJackPot();
+        for (uint256 i = 0; i < _dropHandler.dropCount(); i++) {
+            uint256 newAmount = (initAmount * totalRatio) /
+                PortalLib.PERCENTAGE_BASE;
+
+            totalAmount += newAmount;
+
+            initAmount -= newAmount;
+        }
 
         // 80% to staker should match
         uint256 StakerAmount;
@@ -65,8 +72,6 @@ contract AirdropInvar is RebornPortalBaseTest, InvariantTest {
                 PortalLib.PERSHARE_BASE;
         }
 
-        console.log(totalAmount);
-        console.log(StakerAmount);
         assertApproxEqAbs((totalAmount * 4) / 5, StakerAmount, 1000);
 
         // 20% to owner should match

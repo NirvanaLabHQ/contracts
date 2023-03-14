@@ -551,6 +551,12 @@ contract RebornPortal is
             _seasonData[_season]
         );
 
+        // remove the amount from jackpot
+        uint256 totalDropAmount = (((uint256(_dropConf._nativeTopDropRatio) *
+            10) + (uint256(_dropConf._nativeRaffleDropRatio) * 10)) *
+            _seasonData[_season]._jackpot) / PortalLib.PERCENTAGE_BASE;
+        _seasonData[_season]._jackpot -= totalDropAmount;
+
         _pendingDrops.remove(requestId);
     }
 
