@@ -326,10 +326,10 @@ contract RebornPortal is
         );
     }
 
-    function setExtraReward(uint256 extraReward_) external onlyOwner {
-        extraReward = extraReward_;
+    function setExtraReward(uint256 extraReward) external onlyOwner {
+        _extraReward = extraReward;
 
-        emit NewExtraReward(extraReward);
+        emit NewExtraReward(_extraReward);
     }
 
     // set burnPool address for pre burn $REBORN
@@ -631,7 +631,7 @@ contract RebornPortal is
             vault,
             account,
             amount,
-            extraReward
+            _extraReward
         );
     }
 

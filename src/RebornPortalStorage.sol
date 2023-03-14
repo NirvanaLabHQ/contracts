@@ -44,7 +44,7 @@ contract RebornPortalStorage is IRebornDefination {
     FastArray.Data internal _pendingDrops;
 
     // extra reward to parent referrer
-    uint256 internal extraReward;
+    uint256 internal _extraReward;
 
     /// @dev gap for potential variable
     uint256[33] private _gap;
