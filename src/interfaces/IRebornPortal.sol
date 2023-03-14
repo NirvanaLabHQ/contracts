@@ -91,6 +91,8 @@ interface IRebornDefination {
 
     event NewSeason(uint256);
 
+    event NewExtraReward(uint256 extraReward);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer

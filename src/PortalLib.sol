@@ -517,7 +517,8 @@ library PortalLib {
         ReferrerRewardFees storage rewardFees,
         RewardVault vault,
         address account,
-        uint256 amount
+        uint256 amount,
+        uint256 extraReward
     ) public {
         (
             address ref1,
@@ -533,7 +534,7 @@ library PortalLib {
             );
 
         if (ref1Reward > 0) {
-            vault.reward(ref1, ref1Reward);
+            vault.reward(ref1, ref1Reward + extraReward);
         }
 
         if (ref2Reward > 0) {
@@ -543,7 +544,7 @@ library PortalLib {
         emit ReferReward(
             account,
             ref1,
-            ref1Reward,
+            ref1Reward + extraReward,
             ref2,
             ref2Reward,
             PortalLib.RewardType.RebornToken

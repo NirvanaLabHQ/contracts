@@ -1,4 +1,5 @@
 import { DeployFunction } from "hardhat-deploy/types";
+import { parseEther } from "ethers/lib/utils";
 
 const func: DeployFunction = async function ({
   deployments,
@@ -59,6 +60,13 @@ const func: DeployFunction = async function ({
   //   200,
   //   0
   // );
+
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setExtraReward",
+    parseEther("8")
+  );
 };
 func.tags = ["Portal"];
 
