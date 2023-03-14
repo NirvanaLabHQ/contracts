@@ -89,6 +89,9 @@ interface IRebornDefination {
 
     event Drop(uint256[] tokenIds);
 
+    /// @dev event about the vault address is set
+    event VaultSet(address rewardVault);
+
     event NewSeason(uint256);
 
     /// @dev revert when msg.value is insufficient
@@ -96,11 +99,11 @@ interface IRebornDefination {
     /// @dev revert when to caller is not signer
     error NotSigner();
 
+    /// @dev revert when some address var are set to zero
+    error ZeroAddressSet();
+
     /// @dev revert when the random seed is duplicated
     error SameSeed();
-
-    /// @dev revert when set ZeroAddress
-    error ZeroAddressSet();
 
     /// @dev revert if burnPool address not set when infuse
     error NotSetBurnPoolAddress();

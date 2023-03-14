@@ -43,6 +43,9 @@ contract RebornPortal is
         string memory symbol_,
         address _vrfCoordinator
     ) public initializer {
+        if (address(rebornToken_) == address(0)) {
+            revert ZeroAddressSet();
+        }
         rebornToken = rebornToken_;
         __Ownable_init(owner_);
         __ERC721_init(name_, symbol_);
@@ -278,6 +281,7 @@ contract RebornPortal is
      */
     function setVault(RewardVault vault_) external onlyOwner {
         vault = vault_;
+        emit VaultSet(address(vault_));
     }
 
     /**
