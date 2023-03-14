@@ -4,12 +4,12 @@ pragma solidity 0.8.17;
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 
-import "src/lib/RenderEngine.sol";
+import "src/lib/Renderer.sol";
 
-contract RenderEngineTest is Test {
+contract RendererTest is Test {
     function testRenderOne() public {
         string memory minSvg = vm.readFile("resources/RIP.new.min.svg");
-        string memory svg = RenderEngine.renderSvg(
+        string memory svg = Renderer.renderSvg(
             hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641",
             2222222,
             9999,
@@ -23,74 +23,74 @@ contract RenderEngineTest is Test {
     function testTransformUint() public {
         assertEq(
             abi.encodePacked("22"),
-            abi.encodePacked(RenderEngine._transformUint256(22))
+            abi.encodePacked(Renderer._transformUint256(22))
         );
         assertEq(
             abi.encodePacked("222"),
-            abi.encodePacked(RenderEngine._transformUint256(222))
+            abi.encodePacked(Renderer._transformUint256(222))
         );
         assertEq(
             abi.encodePacked("1,026"),
-            abi.encodePacked(RenderEngine._transformUint256(1026))
+            abi.encodePacked(Renderer._transformUint256(1026))
         );
         assertEq(
             abi.encodePacked("2,222"),
-            abi.encodePacked(RenderEngine._transformUint256(2222))
+            abi.encodePacked(Renderer._transformUint256(2222))
         );
         assertEq(
             abi.encodePacked("10,006"),
-            abi.encodePacked(RenderEngine._transformUint256(10006))
+            abi.encodePacked(Renderer._transformUint256(10006))
         );
         assertEq(
             abi.encodePacked("222,222"),
-            abi.encodePacked(RenderEngine._transformUint256(222222))
+            abi.encodePacked(Renderer._transformUint256(222222))
         );
         assertEq(
             abi.encodePacked("2,222,222"),
-            abi.encodePacked(RenderEngine._transformUint256(2222222))
+            abi.encodePacked(Renderer._transformUint256(2222222))
         );
         assertEq(
             abi.encodePacked("2,002,002"),
-            abi.encodePacked(RenderEngine._transformUint256(2002002))
+            abi.encodePacked(Renderer._transformUint256(2002002))
         );
         assertEq(
             abi.encodePacked("22M"),
-            abi.encodePacked(RenderEngine._transformUint256(22222222))
+            abi.encodePacked(Renderer._transformUint256(22222222))
         );
         assertEq(
             abi.encodePacked("222M"),
-            abi.encodePacked(RenderEngine._transformUint256(222222222))
+            abi.encodePacked(Renderer._transformUint256(222222222))
         );
         assertEq(
             abi.encodePacked("2,222M"),
-            abi.encodePacked(RenderEngine._transformUint256(2222222222))
+            abi.encodePacked(Renderer._transformUint256(2222222222))
         );
         assertEq(
             abi.encodePacked("22,222M"),
-            abi.encodePacked(RenderEngine._transformUint256(22222222222))
+            abi.encodePacked(Renderer._transformUint256(22222222222))
         );
         assertEq(
             abi.encodePacked("20,002M"),
-            abi.encodePacked(RenderEngine._transformUint256(20002222222))
+            abi.encodePacked(Renderer._transformUint256(20002222222))
         );
         assertEq(
             abi.encodePacked("222B"),
-            abi.encodePacked(RenderEngine._transformUint256(222222222222))
+            abi.encodePacked(Renderer._transformUint256(222222222222))
         );
         assertEq(
             abi.encodePacked("2,222B"),
-            abi.encodePacked(RenderEngine._transformUint256(2222222222222))
+            abi.encodePacked(Renderer._transformUint256(2222222222222))
         );
         assertEq(
             abi.encodePacked("22,222B"),
-            abi.encodePacked(RenderEngine._transformUint256(22222222222222))
+            abi.encodePacked(Renderer._transformUint256(22222222222222))
         );
         assertEq(
             abi.encodePacked("222,222B"),
-            abi.encodePacked(RenderEngine._transformUint256(222222222222222))
+            abi.encodePacked(Renderer._transformUint256(222222222222222))
         );
         vm.expectRevert();
-        RenderEngine._transformUint256(2222222222222222);
+        Renderer._transformUint256(2222222222222222);
     }
 
     function testTransformBytes32Seed() public {
@@ -101,7 +101,7 @@ contract RenderEngineTest is Test {
                 "33e46c81af970d72b6641"
             ),
             abi.encodePacked(
-                RenderEngine._transformBytes32Seed(
+                Renderer._transformBytes32Seed(
                     hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641"
                 )
             )
@@ -113,7 +113,7 @@ contract RenderEngineTest is Test {
                 "000000000000000001e62"
             ),
             abi.encodePacked(
-                RenderEngine._transformBytes32Seed(
+                Renderer._transformBytes32Seed(
                     hex"0000000000000000000000000000000000000000000000000000000000001e62"
                 )
             )
@@ -121,7 +121,7 @@ contract RenderEngineTest is Test {
     }
 
     function testRenderTrait() public {
-        string memory traits = RenderEngine.renderTrait(
+        string memory traits = Renderer.renderTrait(
             hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641",
             2222222,
             9999,

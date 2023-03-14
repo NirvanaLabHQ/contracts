@@ -8,7 +8,6 @@ const func: DeployFunction = async function ({
   const { deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
-  const render = await get("RenderEngine");
 
   const isFirstDeploy = !(await getOrNull("RebornPortal"));
 
@@ -25,7 +24,7 @@ const func: DeployFunction = async function ({
       },
     },
     libraries: {
-      RenderEngine: render.address,
+      RenderConstant: (await get("RenderConstant")).address,
       Renderer: (await get("Renderer")).address,
       FastArray: (await get("FastArray")).address,
       RankingRedBlackTree: (await get("RankingRedBlackTree")).address,

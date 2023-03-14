@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import "src/lib/RenderEngine.sol";
+import "src/lib/Renderer.sol";
 
 contract RenderMock {
     function render(
@@ -12,6 +12,6 @@ contract RenderMock {
         address addr,
         uint256 reward
     ) public pure returns (string memory) {
-        return RenderEngine.renderSvg(seed, lifeScore, round, age, addr, reward);
+        return Renderer.renderSvg(seed, lifeScore, round, age, addr, reward);
     }
 }

@@ -94,6 +94,8 @@ interface IRebornDefination {
 
     event NewSeason(uint256);
 
+    event BetaStageSet(bool);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer
@@ -110,6 +112,9 @@ interface IRebornDefination {
 
     /// @dev revert when the drop is not on
     error DropOff();
+
+    /// @dev revert when the status is beta
+    error InBeta();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -219,4 +224,9 @@ interface IRebornPortal is IRebornDefination {
      * @dev switch to next season, call by owner
      */
     function toNextSeason() external;
+
+    /**
+     * @dev set the stage to beta to disable some func
+     */
+    function setBeta(bool isBeta_) external;
 }
