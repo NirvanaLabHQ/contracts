@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity 0.8.17;
+
+contract ChainlinkVRFProxyMock {
+    address public controller;
+    uint256 public counter;
+
+    function setController(address controller_) public {
+        controller = controller_;
+    }
+
+    function requestRandomWords(
+        uint32 numWords,
+        uint32 callbackGasLimit
+    ) public returns (uint256) {
+        counter++;
+        uint256 randomWord = uint256(
+            keccak256(abi.encode(numWords, callbackGasLimit * counter))
+        );
+
+        uint256[] memory randomWords = new uint256[](1);
+        randomWords[0] = randomWord;
+
+        fulfillRandomWords(randomWords);
+        return counter;
+    }
+
+    function fulfillRandomWords(uint256[] memory randomWords) internal {
+        controller.call(
+            abi.encodeWithSignature(
+                "fulfillRandomWordsCallback(uint256 requestId,uint256[] memory randomWords)",
+                counter,
+                randomWords
+            )
+        );
+    }
+}
