@@ -48,7 +48,7 @@ library PortalLib {
 
         /// @dev reward for holding the NFT when the NFT is selected
         uint256 pendingOwnerRebornReward;
-        uint256 pendingOwernNativeReward;
+        uint256 pendingOwnerNativeReward;
     }
 
     struct AirdropConf {
@@ -140,7 +140,7 @@ library PortalLib {
             pool.accNativePerShare) /
             PERSHARE_BASE -
             portfolio.nativeRewardDebt +
-            portfolio.pendingOwernNativeReward;
+            portfolio.pendingOwnerNativeReward;
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
@@ -148,7 +148,7 @@ library PortalLib {
             PERSHARE_BASE;
 
         // clean up reward as owner
-        portfolio.pendingOwernNativeReward = 0;
+        portfolio.pendingOwnerNativeReward = 0;
 
         /// @dev send drop
         if (pendingNative != 0) {
@@ -194,7 +194,7 @@ library PortalLib {
             (portfolio.accumulativeAmount * pool.accNativePerShare) /
             PERSHARE_BASE -
             portfolio.nativeRewardDebt +
-            portfolio.pendingOwernNativeReward;
+            portfolio.pendingOwnerNativeReward;
 
         pendingReborn =
             (portfolio.accumulativeAmount * pool.accRebornPerShare) /
@@ -254,7 +254,7 @@ library PortalLib {
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
-            portfolio.pendingOwernNativeReward += (dropAmount * 1) / 5;
+            portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
 
             emit DropNative(tokenId);
         }
@@ -293,7 +293,7 @@ library PortalLib {
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
-            portfolio.pendingOwernNativeReward += (dropAmount * 1) / 5;
+            portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
 
             emit DropNative(tokenId);
         }
