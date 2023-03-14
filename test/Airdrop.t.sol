@@ -34,7 +34,28 @@ contract AirdropTest is RebornPortalBaseTest {
         testUpKeepProgressSmoothly();
     }
 
+    function _mockIncarnate() internal {
+        address user = address(uint160(uint256(keccak256(abi.encode(9999)))));
+
+        deal(user, 10000 ether);
+
+        vm.startPrank(user);
+
+        payable(address(portal)).call{value: 1000 ether}(
+            abi.encodeWithSignature(
+                "incarnate((uint256,uint256),address,uint256)",
+                0.1 ether,
+                0.5 ether,
+                address(1),
+                0.1 ether
+            )
+        );
+
+        vm.stopPrank();
+    }
+
     function testUpKeepProgressSmoothly() public {
+        _mockIncarnate();
         mockEngravesAndInfuses(120);
 
         setDropConf();

@@ -34,6 +34,8 @@ interface IRebornDefination {
         BitMapsUpgradeable.BitMap _isTopHundredScore;
         // the value of minimum score
         uint256 _minScore;
+        // jackpot of this season
+        uint256 _jackpot;
     }
 
     enum AirdropVrfType {

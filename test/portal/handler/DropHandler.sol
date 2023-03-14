@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import "src/RebornPortal.sol";
+import "src/interfaces/IRebornPortal.sol";
 import "src/mock/VRFCoordinatorV2Mock.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
@@ -20,6 +21,8 @@ contract DropHandler is Test {
     address[] public actors;
 
     address internal currentActor;
+
+    uint256 public initalJackPot;
 
     modifier useActor(uint256 actorIndexSeed) {
         currentActor = actors[bound(actorIndexSeed, 0, actors.length - 1)];
@@ -57,6 +60,31 @@ contract DropHandler is Test {
 
         // initial actor
         _initActors(50);
+
+        // incarnate to be added to jackpot
+        _mockIncarnate();
+    }
+
+    function _mockIncarnate() internal {
+        address _user = address(uint160(uint256(keccak256(abi.encode(9999)))));
+
+        deal(_user, 10000 ether);
+
+        vm.startPrank(_user);
+
+        payable(address(_portal)).call{value: 1000 ether}(
+            abi.encodeWithSignature(
+                "incarnate((uint256,uint256),address,uint256)",
+                0.1 ether,
+                0.5 ether,
+                address(1),
+                0.1 ether
+            )
+        );
+
+        vm.stopPrank();
+
+        initalJackPot = 1000 ether;
     }
 
     function _setDropConf() internal {
@@ -116,7 +144,7 @@ contract DropHandler is Test {
 
     function drop() public {
         // set timestamp forward to trigger airdrop
-        vm.warp(block.timestamp + 1 days);
+        vm.warp(_portal.getDropConf()._rebornDropLastUpdate + 1 days);
 
         bool up;
         bytes memory perfromData;

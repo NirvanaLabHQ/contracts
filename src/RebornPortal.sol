@@ -244,6 +244,11 @@ contract RebornPortal is
         // pause the contract
         _pause();
 
+        // 16% jackpot to next season
+        _seasonData[_season]._jackpot =
+            (_seasonData[_season - 1]._jackpot * 16) /
+            100;
+
         emit NewSeason(_season);
     }
 
@@ -353,12 +358,7 @@ contract RebornPortal is
     function pendingDrop(
         uint256[] memory tokenIds
     ) external view returns (uint256 pNative, uint256 pReborn) {
-        return
-            PortalLib._pendingDrop(
-                _seasonData[_season].pools,
-                _seasonData[_season].portfolios,
-                tokenIds
-            );
+        return PortalLib._pendingDrop(_seasonData[_season], tokenIds);
     }
 
     /**
@@ -390,8 +390,8 @@ contract RebornPortal is
                 return (upkeepNeeded, performData);
             }
             // second, check pending drop and execute
-            for (uint256 i = 0; i < FastArray.length(_pendingDrops); i++) {
-                uint256 id = _pendingDrops.get(i);
+            if (FastArray.length(_pendingDrops) > 0) {
+                uint256 id = _pendingDrops.get(0);
                 upkeepNeeded = true;
                 if (_vrfRequests[id].t == AirdropVrfType.DropReborn) {
                     performData = abi.encode(3, id);
@@ -464,6 +464,9 @@ contract RebornPortal is
         // transfer redundant native token back
         payable(msg.sender).transfer(msg.value - totalFee);
 
+        // native token to to jackpot
+        _seasonData[_season]._jackpot += msg.value;
+
         // reward referrers
         _sendRewardToRefs(msg.sender, totalFee);
 
@@ -501,8 +504,7 @@ contract RebornPortal is
         PortalLib._directDropRebornToTopTokenIds(
             topTens,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
@@ -510,15 +512,14 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
-        for (uint256 i = 0; i < rs.randomWords.length; i++) {
+        for (uint256 i = 0; i < 10; i++) {
             selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
         }
 
         PortalLib._directDropRebornToRaffleTokenIds(
             selectedTokenIds,
             _dropConf,
-            _seasonData[_season].pools,
-            _seasonData[_season].portfolios
+            _seasonData[_season]
         );
 
         _pendingDrops.remove(requestId);
@@ -553,6 +554,12 @@ contract RebornPortal is
             _dropConf,
             _seasonData[_season]
         );
+
+        // remove the amount from jackpot
+        uint256 totalDropAmount = (((uint256(_dropConf._nativeTopDropRatio) *
+            10) + (uint256(_dropConf._nativeRaffleDropRatio) * 10)) *
+            _seasonData[_season]._jackpot) / PortalLib.PERCENTAGE_BASE;
+        _seasonData[_season]._jackpot -= totalDropAmount;
 
         _pendingDrops.remove(requestId);
     }
