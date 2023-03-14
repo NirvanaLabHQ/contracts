@@ -134,13 +134,13 @@ library Renderer {
         return
             string(
                 abi.encodePacked(
-                    RenderConstant.P1,
+                    RenderConstant.P1(),
                     _transformBytes32Seed(seed),
-                    RenderConstant.P2,
+                    RenderConstant.P2(),
                     _transformUint256(lifeScore),
-                    RenderConstant.P3,
+                    RenderConstant.P3(),
                     Strings.toString(round),
-                    RenderConstant.P4,
+                    RenderConstant.P4(),
                     Strings.toString(age)
                 )
             );
@@ -153,11 +153,11 @@ library Renderer {
         return
             string(
                 abi.encodePacked(
-                    RenderConstant.P5,
+                    RenderConstant.P5(),
                     _shortenAddr(addr),
-                    RenderConstant.P6,
+                    RenderConstant.P6(),
                     _transformUint256(reward),
-                    RenderConstant.P7
+                    RenderConstant.P7()
                 )
             );
     }
