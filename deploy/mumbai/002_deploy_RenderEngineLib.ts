@@ -7,14 +7,14 @@ const func: DeployFunction = async function ({
   const { deploy, get } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  await deploy("RenderEngine", {
+  await deploy("RenderConstant", {
     from: deployer,
     log: true,
   });
   await deploy("Renderer", {
     from: deployer,
     log: true,
-    libraries: { RenderEngine: (await get("RenderEngine")).address },
+    libraries: { RenderConstant: (await get("RenderConstant")).address },
   });
 };
 func.tags = ["RenderEngine"];

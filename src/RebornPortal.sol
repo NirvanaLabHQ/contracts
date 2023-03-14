@@ -16,7 +16,7 @@ import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
-import {Renderer} from "src/lib/Renderder.sol";
+import {Renderer} from "src/lib/Renderer.sol";
 
 import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
