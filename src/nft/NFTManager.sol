@@ -47,6 +47,8 @@ contract NFTManager is
     // Mapping from tokenId to wether has been bind metadata
     mapping(uint256 => bool) opened;
 
+    string public baseURI;
+
     uint256[] private openFailedBoxs;
 
     uint256[48] private _gap;
@@ -55,8 +57,8 @@ contract NFTManager is
      * write functions
      **********************************************/
     function initialize(
-        string memory name_,
-        string memory symbol_,
+        string calldata name_,
+        string calldata symbol_,
         address owner
     ) public initializer {
         __ERC721_init_unchained(name_, symbol_);
@@ -216,6 +218,12 @@ contract NFTManager is
         emit ChangedChainlinkVRFProxy(chainlinkVRFProxy_);
     }
 
+    function setBaseURI(string calldata baseURI_) external onlyOwner {
+        baseURI = baseURI_;
+
+        emit SetBaseURI(baseURI_);
+    }
+
     /**********************************************
      * read functions
      **********************************************/
@@ -269,6 +277,10 @@ contract NFTManager is
         if (ownerOf(tokenId) != owner) {
             revert NotTokenOwner();
         }
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
     }
 
     // only name && tokenType equal means token1 and token2 can merge

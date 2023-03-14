@@ -34,6 +34,7 @@ interface INFTManager {
     event ChangedChainlinkVRFProxy(address chainlinkVRFProxy);
     event OpenMysteryBoxFailed(uint256 tokenId);
     event OpenMysteryBoxSuccess(uint256 tokenId, uint256 metadataId);
+    event SetBaseURI(string baseURI);
 
     /**********************************************
      * functions

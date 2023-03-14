@@ -5,7 +5,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
-contract ChainlinkVRF is VRFConsumerBaseV2, ConfirmedOwner {
+contract ChainlinkVRFProxy is VRFConsumerBaseV2, ConfirmedOwner {
     struct RequestStatus {
         bool fulfilled;
         bool exists;
