@@ -105,9 +105,6 @@ interface IRebornDefination {
     /// @dev revert when the random seed is duplicated
     error SameSeed();
 
-    /// @dev revert when set ZeroAddress
-    error ZeroAddressSet();
-
     /// @dev revert if burnPool address not set when infuse
     error NotSetBurnPoolAddress();
 
