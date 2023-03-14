@@ -78,20 +78,20 @@ contract NFTManagerTest is Test {
         _setMetadataList();
     }
 
-    // function testOpenMysteryBox() public {
-    //     // set metadata list
-    //     _setMetadataList();
-    //     // set current as chainlink proxy
-    //     vm.prank(owner);
-    //     nftManager.setChainlinkVRFProxy(address(chainlinkVRFProxyMock));
-    //     _airdrop();
-    //     // request random number
-    //     vm.prank(signer);
-    //     uint256[] memory tokenIds = _generateTokenIds();
-    //     nftManager.openMysteryBox(tokenIds);
+    function testOpenMysteryBox() public {
+        // set metadata list
+        _setMetadataList();
+        // set current as chainlink proxy
+        vm.prank(owner);
+        nftManager.setChainlinkVRFProxy(address(chainlinkVRFProxyMock));
+        _airdrop();
+        // request random number
+        vm.prank(signer);
+        uint256[] memory tokenIds = _generateTokenIds();
+        nftManager.openMysteryBox(tokenIds);
 
-    //     console.log(nftManager.tokenURI(1));
-    // }
+        console.log(nftManager.tokenURI(1));
+    }
 
     function _initialize() internal {
         nftManager.initialize("TestNFT", "TNFT", owner);

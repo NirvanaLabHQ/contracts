@@ -12,24 +12,25 @@ contract ChainlinkVRFProxyMock {
     function requestRandomWords(
         uint32 numWords,
         uint32 callbackGasLimit
-    ) public {
+    ) public returns (uint256) {
+        counter++;
         uint256 randomWord = uint256(
-            keccak256(abi.encode(numWords, callbackGasLimit * (counter + 1)))
+            keccak256(abi.encode(numWords, callbackGasLimit * counter))
         );
 
         uint256[] memory randomWords = new uint256[](1);
         randomWords[0] = randomWord;
 
         fulfillRandomWords(randomWords);
-        counter++;
+        return counter;
     }
 
     function fulfillRandomWords(uint256[] memory randomWords) internal {
         controller.call(
             abi.encodeWithSignature(
                 "fulfillRandomWordsCallback(uint256 requestId,uint256[] memory randomWords)",
-                1,
-                [randomWords]
+                counter,
+                randomWords
             )
         );
     }
