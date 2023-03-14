@@ -5,13 +5,12 @@ import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {SingleRanking} from "src/lib/SingleRanking.sol";
+import {PortalLib} from "src/PortalLib.sol";
+import {FastArray} from "src/lib/FastArray.sol";
 
 contract RebornPortalStorage is IRebornDefination {
-    // percentage base of refer reward fees
-    uint256 internal constant PERCENTAGE_BASE = 10000;
-    uint256 internal constant PERSHARE_BASE = 10e18;
-    /** Abandoned variable, for slot placeholder*/
-    uint256 private abandonedSoupPrice;
+    uint256 internal _season;
 
     RBT public rebornToken;
 
@@ -19,30 +18,31 @@ contract RebornPortalStorage is IRebornDefination {
 
     mapping(address => uint32) internal rounds;
 
-    mapping(uint256 => LifeDetail) public details;
+    uint256 internal idx;
 
-    mapping(uint256 => Pool) internal pools;
+    mapping(uint256 => LifeDetail) internal details;
 
-    /// @dev user address => pool tokenId => Portfolio
-    mapping(address => mapping(uint256 => Portfolio)) internal portfolios;
+    mapping(uint256 => SeasonData) internal _seasonData;
 
     mapping(address => address) public referrals;
+    PortalLib.ReferrerRewardFees public rewardFees;
 
     RewardVault public vault;
 
     BitMapsUpgradeable.BitMap internal _seeds;
 
-    uint256 internal idx;
-
-    // WARN: data residual exists
-    // BitMapsUpgradeable.BitMap baptism;
-    uint256 private _placeholder;
-
-    ReferrerRewardFees public rewardFees;
-
     // airdrop config
-    AirdropConf internal _dropConf;
+    PortalLib.AirdropConf internal _dropConf;
 
-    /// @dev gap for potential vairable
-    uint256[36] private _gap;
+    address public burnPool;
+
+    PortalLib.VrfConf internal _vrfConf;
+
+    // requestId =>
+    mapping(uint256 => RequestStatus) internal _vrfRequests;
+
+    FastArray.Data internal _pendingDrops;
+
+    /// @dev gap for potential variable
+    uint256[34] private _gap;
 }

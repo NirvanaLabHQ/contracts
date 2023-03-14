@@ -35,3 +35,9 @@ jobs:
         env:
           BNB_SCAN_API_KEY: ${{ secrets.BNB_SCAN_API_KEY }}
           BNB_CHAIN_TEST_URL: ${{ secrets.BNB_CHAIN_TEST_URL }}
+    
+      - name: verify on polygon mumbai
+        run: pnpm run verify --network mumbai
+        env:
+          POLYGON_SCAN_API_KEY: ${{ secrets.POLYGON_SCAN_API_KEY }}
+          POLYGON_MUMBAI_RPC_URL: ${{ secrets.POLYGON_MUMBAI_RPC_URL }}

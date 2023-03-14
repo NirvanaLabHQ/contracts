@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.17;
 import "./FastArray.sol";
 import "./RankingRedBlackTree.sol";
 
@@ -114,5 +114,15 @@ library SingleRanking {
         }
 
         return result;
+    }
+
+    function getNthValue(
+        Data storage _singleRanking,
+        uint n
+    ) public view returns (uint) {
+        require(n >= 0, "order can not be negative");
+        (uint256 id, ) = _singleRanking.tree.lastByOffset(n);
+        uint value = _singleRanking.tree.value(id);
+        return value;
     }
 }

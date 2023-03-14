@@ -3,47 +3,52 @@ pragma solidity 0.8.17;
 
 import {RankingRedBlackTree} from "src/lib/RankingRedBlackTree.sol";
 import {SingleRanking} from "src/lib/SingleRanking.sol";
+import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 
-contract RankUpgradeable {
+import {DegenRank} from "src/DegenRank.sol";
+
+contract RankUpgradeable is RebornPortalStorage {
     using SingleRanking for SingleRanking.Data;
 
-    SingleRanking.Data private _rank;
-    mapping(uint256 => uint256) private _tokenIdOldValue;
-
-    uint256[48] _gap;
+    /**
+     * @dev set tokenId to rank, only top 100 into rank
+     * @param tokenId incarnation tokenId
+     * @param value incarnation life score
+     */
+    function _enterScoreRank(uint256 tokenId, uint256 value) internal {
+        DegenRank._enterScoreRank(_seasonData[_season], tokenId, value);
+    }
 
     /**
      * @dev set a new value in tree, only save top x largest value
      * @param value new value enters in the tree
      */
-    function _enter(uint256 tokenId, uint256 value) internal {
-        if (value == 0) {
-            _exit(tokenId);
-            return;
-        }
-
-        // remove old value from the rank, keep one token Id only one value
-        if (_tokenIdOldValue[tokenId] != 0) {
-            _rank.remove(tokenId, _tokenIdOldValue[tokenId]);
-        }
-        _rank.add(tokenId, value);
-        _tokenIdOldValue[tokenId] = value;
+    function _enterTvlRank(uint256 tokenId, uint256 value) internal {
+        DegenRank._enterTvlRank(
+            _seasonData[_season]._tributeRank,
+            _seasonData[_season]._isTopHundredScore,
+            _seasonData[_season]._oldStakeAmounts,
+            tokenId,
+            value
+        );
     }
 
     /**
-     * @dev if the tokenId's value is zero, it exits the ranking
-     * @param tokenId pool tokenId
+     * TODO: old data should have higher priority when value is the same
      */
-    function _exit(uint256 tokenId) internal {
-        if (_tokenIdOldValue[tokenId] != 0) {
-            _rank.remove(tokenId, _tokenIdOldValue[tokenId]);
-            delete _tokenIdOldValue[tokenId];
-        }
-    }
-
     function _getTopNTokenId(
         uint256 n
     ) internal view returns (uint256[] memory values) {
-        return _rank.get(0, n);
+        return _seasonData[_season]._tributeRank.get(0, n);
+    }
+
+    /**
+     * TODO: old data should have higher priority when value is the same
+     */
+    function _getFirstNTokenIdByOffSet(
+        uint256 offSet,
+        uint256 n
+    ) internal view returns (uint256[] memory values) {
+        return _seasonData[_season]._tributeRank.get(offSet, n);
     }
 }

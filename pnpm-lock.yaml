@@ -12,7 +12,7 @@ specifiers:
   '@openzeppelin/contracts-upgradeable': ^4.8.1
   '@openzeppelin/merkle-tree': ^1.0.2
   '@openzeppelin/upgrades-core': ^1.21.0
-  '@p12/contracts-lib': ^0.0.5
+  '@p12/contracts-lib': ^0.0.8
   '@typechain/ethers-v5': ^10.0.0
   '@typechain/hardhat': ^6.0.0
   '@types/chai': ^4.3.0
@@ -37,7 +37,7 @@ dependencies:
   '@openzeppelin/contracts-upgradeable': 4.8.1
   '@openzeppelin/merkle-tree': 1.0.2
   '@openzeppelin/upgrades-core': 1.21.0
-  '@p12/contracts-lib': 0.0.5
+  '@p12/contracts-lib': 0.0.8
   hardhat-deploy: 0.11.22
 
 devDependencies:
@@ -707,8 +707,8 @@ packages:
       - supports-color
     dev: false
 
-  /@p12/contracts-lib/0.0.5:
-    resolution: {integrity: sha512-io8F8cEDwnfxLER95QgRKqbPzldSHjUbsl50O7EqCxJmCe4uu2hTwYh1QuD/u1swxQGMalhU0NbgwhpDLIRi1g==}
+  /@p12/contracts-lib/0.0.8:
+    resolution: {integrity: sha512-g3orFgs6IEOF4G6dttClJ3lJYJ7FOszSDxqZr2v3EBuOC1qt5y1MLQCHCA6kaWdezumbs79bBpzucTSBfaSOPA==}
     dependencies:
       '@openzeppelin/contracts': 4.8.1
       '@openzeppelin/contracts-upgradeable': 4.8.1

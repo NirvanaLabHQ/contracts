@@ -66,24 +66,44 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/bnbTest"],
       tags: ["test"],
     },
+    mumbai: {
+      url: process.env.POLYGON_MUMBAI_RPC_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/mumbai"],
+      tags: ["test"],
+    },
+    scrollAlpha: {
+      url: "https://alpha-rpc.scroll.io/l2",
+      accounts: accounts,
+      chainId: 534353,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/scrollAlpha"],
+      tags: ["test"],
+    },
   },
   namedAccounts: {
     deployer: {
-      default: 0,
       bnbTest: deployer,
       bnbTestStaging: deployer,
       bnbMain: deployer,
+      mumbai: deployer,
+      scrollAlpha: deployer,
     },
     owner: {
-      default: 0,
       bnbTest: owner,
       bnbTestStaging: owner,
       bnbMain: owner,
+      mumbai: owner,
+      scrollAlpha: owner,
     },
     degen_deployer: {
       bnbMain: degen_deployer,
     },
   },
+
   paths: {
     sources: "./src", // Use ./src rather than ./contracts as Hardhat expects
     cache: "./cache_hardhat", // Use a different cache for Hardhat than Foundry
@@ -109,7 +129,19 @@ const config: HardhatUserConfig = {
     apiKey: {
       bscTestnet: process.env.BNB_SCAN_API_KEY!,
       bsc: process.env.BNB_SCAN_API_KEY!,
+      polygonMumbai: process.env.POLYGON_SCAN_API_KEY!,
+      scrollAlpha: "scrollAlpha",
     },
+    customChains: [
+      {
+        network: "scrollAlpha",
+        chainId: 534353,
+        urls: {
+          apiURL: "https://blockscout.scroll.io/api",
+          browserURL: "https://blockscout.scroll.io",
+        },
+      },
+    ],
   },
   external: {
     contracts: [

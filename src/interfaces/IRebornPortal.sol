@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-interface IRebornDefination {
-    enum RewardType {
-        NativeToken,
-        RebornToken
-    }
+import {PortalLib} from "src/PortalLib.sol";
+import {SingleRanking} from "src/lib/SingleRanking.sol";
+import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
+interface IRebornDefination {
     struct Innate {
         uint256 talentPrice;
         uint256 propertyPrice;
@@ -21,49 +20,34 @@ interface IRebornDefination {
         uint128 cost;
         uint128 reward;
         uint256 score;
+        string creatorName;
     }
 
-    struct Pool {
-        uint256 totalAmount;
-        uint256 accRebornPerShare;
-        uint256 accNativePerShare;
-        uint256 epoch;
-        uint256 lastUpdated;
+    struct SeasonData {
+        mapping(uint256 => PortalLib.Pool) pools;
+        /// @dev user address => pool tokenId => Portfolio
+        mapping(address => mapping(uint256 => PortalLib.Portfolio)) portfolios;
+        SingleRanking.Data _tributeRank;
+        SingleRanking.Data _scoreRank;
+        mapping(uint256 => uint256) _oldStakeAmounts;
+        /// tokenId => bool
+        BitMapsUpgradeable.BitMap _isTopHundredScore;
+        // the value of minimum score
+        uint256 _minScore;
     }
 
-    struct Portfolio {
-        uint256 accumulativeAmount;
-        uint256 rebornRewardDebt;
-        uint256 nativeRewardDebt;
-        //
-        // We do some fancy math here. Basically, any point in time, the amount
-        // entitled to a user but is pending to be distributed is:
-        //
-        //   pending reward = (Amount * pool.accPerShare) - user.rewardDebt
-        //
-        // Whenever a user infuse or switchPool. Here's what happens:
-        //   1. The pool's `accPerShare` (and `lastRewardBlock`) gets updated.
-        //   2. User receives the pending reward sent to his/her address.
-        //   3. User's `amount` gets updated.
-        //   4. User's `rewardDebt` gets updated.
+    enum AirdropVrfType {
+        Invalid,
+        DropReborn,
+        DropNative
     }
 
-    struct ReferrerRewardFees {
-        uint16 incarnateRef1Fee;
-        uint16 incarnateRef2Fee;
-        uint16 vaultRef1Fee;
-        uint16 vaultRef2Fee;
-        uint192 _slotPlaceholder;
-    }
-
-    struct AirdropConf {
-        uint8 _dropOn; //                  ---
-        uint40 _rebornDropInterval; //        |
-        uint40 _nativeDropInterval; //        |
-        uint40 _rebornDropLastUpdate; //      |
-        uint40 _nativeDropLastUpdate; //      |
-        uint16 _nativeDropRatio; //           |
-        uint72 _rebornDropEthAmount; //    ---
+    struct RequestStatus {
+        bool fulfilled; // whether the request has been successfully fulfilled
+        bool exists; // whether a requestId exists
+        bool executed; // whether the airdrop is executed
+        AirdropVrfType t;
+        uint256[] randomWords;
     }
 
     event Incarnate(
@@ -81,15 +65,6 @@ interface IRebornDefination {
         uint256 reward
     );
 
-    event ReferReward(
-        address indexed user,
-        address indexed ref1,
-        uint256 amount1,
-        address indexed ref2,
-        uint256 amount2,
-        RewardType rewardType
-    );
-
     event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
 
     event Dry(address indexed user, uint256 indexed tokenId, uint256 amount);
@@ -98,11 +73,7 @@ interface IRebornDefination {
 
     event NewSoupPrice(uint256 price);
 
-    event SignerUpdate(address signer, bool valid);
-
     event Refer(address referee, address referrer);
-
-    event NewDropConf(AirdropConf conf);
 
     event DecreaseFromPool(
         address indexed account,
@@ -116,16 +87,12 @@ interface IRebornDefination {
         uint256 amount
     );
 
-    event ClaimDrop(
-        uint256 indexed tokenId,
-        uint256 rebornAmount,
-        uint256 nativeAmount
-    );
-
     event Drop(uint256[] tokenIds);
 
     /// @dev event about the vault address is set
     event VaultSet(address rewardVault);
+
+    event NewSeason(uint256);
 
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
@@ -137,8 +104,13 @@ interface IRebornDefination {
 
     /// @dev revert when the random seed is duplicated
     error SameSeed();
-    /// @dev revert when swith amount from pool exceed staked balance
-    error SwitchAmountExceedBalance();
+
+    /// @dev revert when set ZeroAddress
+    error ZeroAddressSet();
+
+    /// @dev revert if burnPool address not set when infuse
+    error NotSetBurnPoolAddress();
+
     /// @dev revert when the drop is not on
     error DropOff();
 }
@@ -169,7 +141,8 @@ interface IRebornPortal is IRebornDefination {
         uint256 reward,
         uint256 score,
         uint256 age,
-        uint256 cost
+        uint256 cost,
+        string calldata creatorName
     ) external;
 
     /**
@@ -220,5 +193,33 @@ interface IRebornPortal is IRebornDefination {
     /**
      * @dev set new airdrop config
      */
-    function setDropConf(AirdropConf calldata conf) external;
+    function setDropConf(PortalLib.AirdropConf calldata conf) external;
+
+    /**
+     * @dev set new chainlink vrf v2 config
+     */
+    function setVrfConf(PortalLib.VrfConf calldata conf) external;
+
+    /**
+     * @dev user claim many pools' native token airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimNativeDrops(uint256[] calldata tokenIds) external;
+
+    /**
+     * @dev user claim many pools' reborn token airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimRebornDrops(uint256[] calldata tokenIds) external;
+
+    /**
+     * @dev user claim many pools' airdrop
+     * @param tokenIds pools' tokenId array to claim
+     */
+    function claimDrops(uint256[] calldata tokenIds) external;
+
+    /**
+     * @dev switch to next season, call by owner
+     */
+    function toNextSeason() external;
 }

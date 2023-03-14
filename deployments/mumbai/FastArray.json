@@ -1,0 +1,60 @@
+{
+  "address": "0x9FFEC691D21aC1Ec21BF6de9A1f310C471BeC8F4",
+  "abi": [],
+  "transactionHash": "0x5a1441b5914d33e67cc095b468a328740576481b913ec948532b59aef1b1ab01",
+  "receipt": {
+    "to": null,
+    "from": "0xe0B4c9C36f5A5D0Ff3A547FeaBB6BC9Ba65805F2",
+    "contractAddress": "0x9FFEC691D21aC1Ec21BF6de9A1f310C471BeC8F4",
+    "transactionIndex": 0,
+    "gasUsed": "119284",
+    "logsBloom": "0x000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000080000020000000000000000000000000000000000000000000000000008000000000000000000401000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000040000000004000000000000000000001000000000000000000000000000000100000000000000000000000000000000000000000000001000000000000000000000000100000",
+    "blockHash": "0xdd45f0579a4daf0cfbc637154059271f6af78b845dd6b0daf68cc6ebfe0b67be",
+    "transactionHash": "0x5a1441b5914d33e67cc095b468a328740576481b913ec948532b59aef1b1ab01",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 32645685,
+        "transactionHash": "0x5a1441b5914d33e67cc095b468a328740576481b913ec948532b59aef1b1ab01",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x000000000000000000000000e0b4c9c36f5a5d0ff3a547feabb6bc9ba65805f2",
+          "0x000000000000000000000000c275dc8be39f50d12f66b6a63629c39da5bae5bd"
+        ],
+        "data": "0x0000000000000000000000000000000000000000000000000001b98bfd62a43c00000000000000000000000000000000000000000000000006b43f4e6e96610d000000000000000000000000000000000000000000000e13200d75bc8cde793400000000000000000000000000000000000000000000000006b285c27133bcd1000000000000000000000000000000000000000000000e13200f2f488a411d70",
+        "logIndex": 0,
+        "blockHash": "0xdd45f0579a4daf0cfbc637154059271f6af78b845dd6b0daf68cc6ebfe0b67be"
+      }
+    ],
+    "blockNumber": 32645685,
+    "cumulativeGasUsed": "119284",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "ee5576cd9d1a90bd97dbc48641d096ea",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"get(FastArray.Data storage,uint256)\":{\"notice\":\"PLease confirm index is not out of bounds\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/lib/FastArray.sol\":\"FastArray\"},\"evmVersion\":\"london\",\"libraries\":{\":__CACHE_BREAKER__\":\"0x0000000000000031363737383236343739343336\"},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":2000},\"remappings\":[]},\"sources\":{\"src/lib/FastArray.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.17;\\n\\n// A simple array that supports insert and removal.\\n// The values are assumed to be unique and the library is meant to be lightweight.\\n// So when calling insert or remove, the caller is responsible to know whether a value already exists in the array or not.\\nlibrary FastArray {\\n    struct Data {\\n        mapping(uint256 => uint256) array;\\n        mapping(uint256 => uint256) indexMap;\\n        uint256 length;\\n    }\\n\\n    /**\\n     * @notice please confirm no eq item exist before insert\\n     */\\n    function insert(Data storage _fastArray, uint256 _value) internal {\\n        _fastArray.array[_fastArray.length] = _value;\\n        _fastArray.indexMap[_value] = _fastArray.length;\\n        _fastArray.length += 1;\\n    }\\n\\n    /**\\n     * @dev remove item from array,but not keep rest item sort\\n     * @notice Please confirm array is not empty && item is exist && index not out of bounds\\n     */\\n    function remove(Data storage _fastArray, uint256 _value) internal {\\n        uint256 index = _fastArray.indexMap[_value];\\n\\n        _fastArray.array[index] = _fastArray.array[_fastArray.length - 1];\\n        delete _fastArray.indexMap[_value];\\n        delete _fastArray.array[_fastArray.length - 1];\\n\\n        _fastArray.length -= 1;\\n    }\\n\\n    /**\\n     * @dev remove item and keep rest item in sort\\n     * @notice Please confirm array is not empty && item is exist && index not out of bounds\\n     */\\n    function removeKeepSort(Data storage _fastArray, uint256 _value) internal {\\n        uint256 index = _fastArray.indexMap[_value];\\n\\n        uint256 tempLastItem = _fastArray.array[_fastArray.length - 1];\\n\\n        for (uint256 i = index; i < _fastArray.length - 1; i++) {\\n            _fastArray.indexMap[_fastArray.array[i + 1]] = i;\\n            _fastArray.array[i] = _fastArray.array[i + 1];\\n        }\\n\\n        delete _fastArray.indexMap[tempLastItem];\\n        delete _fastArray.array[_fastArray.length - 1];\\n        _fastArray.length -= 1;\\n    }\\n\\n    /**\\n     * @notice PLease confirm index is not out of bounds\\n     */\\n    function get(\\n        Data storage _fastArray,\\n        uint256 _index\\n    ) public view returns (uint256) {\\n        return _fastArray.array[_index];\\n    }\\n\\n    function length(Data storage _fastArray) public view returns (uint256) {\\n        return _fastArray.length;\\n    }\\n\\n    function contains(\\n        Data storage _fastArray,\\n        uint256 _value\\n    ) public view returns (bool) {\\n        return _fastArray.indexMap[_value] != 0;\\n    }\\n}\\n\",\"keccak256\":\"0x1aafe47d78876fe514a190e95a87f4720f33617712c66cf95ab73c6dc3a19f3d\",\"license\":\"UNLICENSED\"}},\"version\":1}",
+  "bytecode": "0x61013061003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060475760003560e01c806317dce7e414604c57806324f9017a146071578063c9c3102d1460a3575b600080fd5b605e605736600460c1565b6002015490565b6040519081526020015b60405180910390f35b6094607c36600460d9565b60009081526001919091016020526040902054151590565b60405190151581526020016068565b605e60ae36600460d9565b6000908152602091909152604090205490565b60006020828403121560d257600080fd5b5035919050565b6000806040838503121560eb57600080fd5b5050803592602090910135915056fea2646970667358221220755b5364616487bbfc2e743f750e500fd3869e17ab22d98bd6704772807a97d264736f6c63430008110033",
+  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040526004361060475760003560e01c806317dce7e414604c57806324f9017a146071578063c9c3102d1460a3575b600080fd5b605e605736600460c1565b6002015490565b6040519081526020015b60405180910390f35b6094607c36600460d9565b60009081526001919091016020526040902054151590565b60405190151581526020016068565b605e60ae36600460d9565b6000908152602091909152604090205490565b60006020828403121560d257600080fd5b5035919050565b6000806040838503121560eb57600080fd5b5050803592602090910135915056fea2646970667358221220755b5364616487bbfc2e743f750e500fd3869e17ab22d98bd6704772807a97d264736f6c63430008110033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "get(FastArray.Data storage,uint256)": {
+        "notice": "PLease confirm index is not out of bounds"
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

@@ -1,5 +1,4 @@
 import { DeployFunction } from "hardhat-deploy/types";
-import { parseEther } from "ethers/lib/utils";
 
 const func: DeployFunction = async function ({
   deployments,
@@ -23,16 +22,42 @@ const func: DeployFunction = async function ({
         },
       },
     },
-    libraries: { RenderEngine: render.address },
+    libraries: {
+      RenderEngine: render.address,
+      Renderer: (await get("Renderer")).address,
+      FastArray: (await get("FastArray")).address,
+      RankingRedBlackTree: (await get("RankingRedBlackTree")).address,
+      SingleRanking: (await get("SingleRanking")).address,
+      DegenRank: (await get("DegenRank")).address,
+      PortalLib: (await get("PortalLib")).address,
+    },
     log: true,
   });
 
   // await execute(
   //   "RebornPortal",
-  //   { from: owner },
+  //   { from: owner, log: true },
   //   "updateSigners",
   //   ["0x803470638940Ec595B40397cbAa597439DE55907"],
   //   []
+  // );
+
+  // // set refer reward
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setReferrerRewardFee",
+  //   800,
+  //   200,
+  //   0
+  // );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setReferrerRewardFee",
+  //   1800,
+  //   200,
+  //   0
   // );
 };
 func.tags = ["Portal"];
